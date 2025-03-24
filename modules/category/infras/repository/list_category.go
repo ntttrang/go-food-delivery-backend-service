@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 func (repo *CategoryRepository) ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error) {
@@ -21,7 +22,7 @@ func (repo *CategoryRepository) ListCategories(ctx context.Context, req category
 	if req.Description != "" {
 		query = query.Where("description LIKE ?", "%"+req.Description+"%")
 	}
-	query = query.Where("status in (?)", []string{categorymodel.StatusActive})
+	query = query.Where("status in (?)", []string{sharedModel.StatusActive})
 
 	totalChan := make(chan int64)
 	categoriesChan := make(chan []categorymodel.Category)

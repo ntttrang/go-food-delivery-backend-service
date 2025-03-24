@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	categoryModel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 func (s *CategoryService) BulkInsert(ctx context.Context, datas []categoryModel.CategoryInsertDto) ([]uuid.UUID, error) {
@@ -18,7 +19,7 @@ func (s *CategoryService) BulkInsert(ctx context.Context, datas []categoryModel.
 
 		category := data.ConvertToCategory()
 		category.Id, _ = uuid.NewV7()
-		category.Status = categoryModel.StatusActive // Always set Active Status when insert
+		category.Status = sharedModel.StatusActive // Always set Active Status when insert
 
 		categories = append(categories, *category)
 		ids = append(ids, category.Id)

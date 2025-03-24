@@ -13,9 +13,3 @@ type Category struct {
 	Status      string    `gorm:"column:status;"`
 	sharedModel.AbstractInfo
 }
-
-const (
-	StatusActive   = "ACTIVE"
-	StatusInactive = "INACTIVE"
-	StatusDelete   = "DELETED"
-)
