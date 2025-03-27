@@ -4,13 +4,25 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	categoryModel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
-func (s *CategoryService) BulkInsert(ctx context.Context, datas []categoryModel.CategoryInsertDto) ([]uuid.UUID, error) {
+type IBulkCreateRepo interface {
+	BulkInsert(ctx context.Context, data []categorymodel.Category) error
+}
 
-	var categories []categoryModel.Category
+type BulkCreateCommandHandler struct {
+	catRepo IBulkCreateRepo
+}
+
+func NewBulkCreateCommandHandler(catRepo IBulkCreateRepo) *BulkCreateCommandHandler {
+	return &BulkCreateCommandHandler{catRepo: catRepo}
+}
+
+func (s *BulkCreateCommandHandler) Execute(ctx context.Context, datas []categorymodel.CategoryInsertDto) ([]uuid.UUID, error) {
+
+	var categories []categorymodel.Category
 	var ids []uuid.UUID
 	for _, data := range datas {
 		if err := data.Validate(); err != nil {

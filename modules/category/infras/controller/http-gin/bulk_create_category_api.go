@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
 func (ctl *CategoryHttpController) CreateBulkCategoryAPI(c *gin.Context) {
@@ -16,7 +16,7 @@ func (ctl *CategoryHttpController) CreateBulkCategoryAPI(c *gin.Context) {
 	}
 
 	// call business logic in service
-	ids, err := ctl.catService.BulkInsert(c.Request.Context(), requestBodyData)
+	ids, err := ctl.bulkCreateCmdHdl.Execute(c.Request.Context(), requestBodyData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

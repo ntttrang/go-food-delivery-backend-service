@@ -13,3 +13,7 @@ type Category struct {
 	Status      string    `gorm:"column:status;"`
 	sharedModel.AbstractInfo
 }
+
+func (Category) TableName() string {
+	return "categories"
+}

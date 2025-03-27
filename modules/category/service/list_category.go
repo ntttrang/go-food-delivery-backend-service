@@ -3,10 +3,24 @@ package service
 import (
 	"context"
 
-	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (s *CategoryService) ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.ListCategoryRes, int64, error) {
+type IListRep interface {
+	ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error)
+}
+
+type ListCommandHandler struct {
+	catRepo IListRep
+}
+
+func NewListCommandHandler(catRepo IListRep) *ListCommandHandler {
+	return &ListCommandHandler{
+		catRepo: catRepo,
+	}
+}
+
+func (s *ListCommandHandler) Execute(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.ListCategoryRes, int64, error) {
 	categories, total, err := s.catRepo.ListCategories(ctx, req)
 
 	if err != nil {

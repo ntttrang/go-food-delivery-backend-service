@@ -4,11 +4,23 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	categoryModel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
-func (s *CategoryService) CreateCategory(ctx context.Context, data *categoryModel.CategoryInsertDto) error {
+type ICreateRepo interface {
+	Insert(ctx context.Context, data *categorymodel.Category) error
+}
+
+type CreateCommandHandler struct {
+	catRepo ICreateRepo
+}
+
+func NewCreateCommandHandler(catRepo ICreateRepo) *CreateCommandHandler {
+	return &CreateCommandHandler{catRepo: catRepo}
+}
+
+func (s *CreateCommandHandler) Execute(ctx context.Context, data *categorymodel.CategoryInsertDto) error {
 	if err := data.Validate(); err != nil {
 		return err
 	}

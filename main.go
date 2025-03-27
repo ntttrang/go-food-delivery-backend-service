@@ -48,16 +48,8 @@ func main() {
 	})
 
 	v1 := r.Group("/v1")
-
-	{
-		categories := v1.Group("/categories")
-		categoryModule.SetupCategoryModule(db, categories)
-	}
-
-	{
-		restaurants := v1.Group("/restaurants")
-		restaurantmodule.SetupRestaurantModule(db, restaurants)
-	}
+	categoryModule.SetupCategoryModule(db, v1)
+	restaurantmodule.SetupRestaurantModule(db, v1)
 
 	r.Run(fmt.Sprintf(":%s", port))
 

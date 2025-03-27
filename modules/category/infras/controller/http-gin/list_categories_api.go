@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/internal/model"
+	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
 func (ctl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
@@ -17,7 +17,7 @@ func (ctl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
 
 	dto.Paging.Process()
 
-	data, total, err := ctl.catService.ListCategories(c.Request.Context(), dto)
+	data, total, err := ctl.listCmdHdl.Execute(c.Request.Context(), dto)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
