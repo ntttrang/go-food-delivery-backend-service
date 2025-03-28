@@ -17,3 +17,11 @@ type RestaurantFoodRepo struct {
 func NewRestaurantFoodRepo(db *gorm.DB) *RestaurantFoodRepo {
 	return &RestaurantFoodRepo{db: db}
 }
+
+type RestaurantLikeRepo struct {
+	db *gorm.DB
+}
+
+func NewRestaurantLikeRepo(db *gorm.DB) *RestaurantLikeRepo {
+	return &RestaurantLikeRepo{db: db}
+}

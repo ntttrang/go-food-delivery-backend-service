@@ -24,7 +24,7 @@ CREATE TABLE `categories` (
 
 DROP TABLE IF EXISTS `cities`;
 CREATE TABLE `cities` (
-  `id` VARCHAR(36) NOT NULL,
+  `id` INT NOT NULL,
   `title` varchar(100) NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -143,6 +143,7 @@ CREATE TABLE `restaurant_likes` (
   `restaurant_id` VARCHAR(36)  NOT NULL,
   `user_id` VARCHAR(36)  NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`restaurant_id`,`user_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB;
@@ -168,7 +169,7 @@ CREATE TABLE `restaurants` (
   `owner_id` VARCHAR(36)  NOT NULL,
   `name` varchar(50) NOT NULL,
   `addr` varchar(255) NOT NULL,
-  `city_id` VARCHAR(36)  DEFAULT NULL,
+  `city_id` INT  DEFAULT NULL,
   `lat` double DEFAULT NULL,
   `lng` double DEFAULT NULL,
   `cover` json NOT NULL,
@@ -187,7 +188,7 @@ DROP TABLE IF EXISTS `user_addresses`;
 CREATE TABLE `user_addresses` (
   `id` VARCHAR(36) NOT NULL,
   `user_id` VARCHAR(36)  NOT NULL,
-  `city_id` VARCHAR(36)  NOT NULL,
+  `city_id` INT  NOT NULL,
   `title` varchar(100) DEFAULT NULL,
   `icon` json DEFAULT NULL,
   `addr` varchar(255) NOT NULL,

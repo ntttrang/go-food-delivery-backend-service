@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/internal/model"
+	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 )
 
 func (ctl *RestaurantHttpController) CreateRestaurantAPI(c *gin.Context) {
@@ -15,8 +15,7 @@ func (ctl *RestaurantHttpController) CreateRestaurantAPI(c *gin.Context) {
 		return
 	}
 
-	// call business logic in service
-	if err := ctl.restaurantService.CreateRestaurant(c.Request.Context(), &requestBodyData); err != nil {
+	if err := ctl.createCmdHdl.Execute(c.Request.Context(), &requestBodyData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

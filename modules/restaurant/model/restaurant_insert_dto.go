@@ -11,7 +11,7 @@ type RestaurantInsertDto struct {
 	OwnerId string  `json:"ownerId"`
 	Name    string  `json:"name"`
 	Addr    string  `json:"addr"`
-	CityId  string  `json:"cityId"`
+	CityId  int     `json:"cityId"`
 	Lat     float64 `json:"lat"`
 	Lng     float64 `json:"lng"`
 	//Cover            string  `json:"cover"` // json

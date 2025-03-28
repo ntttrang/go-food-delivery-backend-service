@@ -3,7 +3,7 @@ package restaurantgormmysql
 import (
 	"context"
 
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/internal/model"
+	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 )
 
 func (repo *RestaurantFoodRepo) BulkInsert(ctx context.Context, data []restaurantmodel.RestaurantFood) error {
