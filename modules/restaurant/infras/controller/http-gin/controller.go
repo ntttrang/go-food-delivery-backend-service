@@ -35,6 +35,14 @@ type IDeleteFavoritesCommandHandler interface {
 	Execute(ctx context.Context, req restaurantmodel.RestaurantLike) error
 }
 
+type ICreateRestaurantCommentCommandHandler interface {
+	Execute(ctx context.Context, req restaurantmodel.RestaurantCommentCreateReq) error
+}
+
+type IListRestaurantCommentsQueryHandler interface {
+	Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRatingListRes, error)
+}
+
 type RestaurantHttpController struct {
 	createCmdHdl      ICreateCommandHandler
 	listQueryHdl      IListQueryHandler
@@ -44,11 +52,15 @@ type RestaurantHttpController struct {
 
 	addFavoritesCmdHdl    IAddFavoritesCommandHandler
 	deleteFavoritesCmdHdl IDeleteFavoritesCommandHandler
+
+	createCommentRestaurantCmdHandler    ICreateRestaurantCommentCommandHandler
+	listRestaurantCommentQueryCmdHandler IListRestaurantCommentsQueryHandler
 }
 
 func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler,
 	updateCmdHdl IUpdateRestaurantCommandHandler, deleteCmdHdl IDeleteCommandHandler,
-	addFavoritesCmdHdl IAddFavoritesCommandHandler, deleteFavoritesCmdHdl IDeleteFavoritesCommandHandler) *RestaurantHttpController {
+	addFavoritesCmdHdl IAddFavoritesCommandHandler, deleteFavoritesCmdHdl IDeleteFavoritesCommandHandler,
+	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler, listRestaurantCommentQueryCmdHandler IListRestaurantCommentsQueryHandler) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
 		listQueryHdl:      listQueryHdl,
@@ -58,6 +70,9 @@ func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHd
 
 		addFavoritesCmdHdl:    addFavoritesCmdHdl,
 		deleteFavoritesCmdHdl: deleteFavoritesCmdHdl,
+
+		createCommentRestaurantCmdHandler:    createCommentRestaurantCmdHandler,
+		listRestaurantCommentQueryCmdHandler: listRestaurantCommentQueryCmdHandler,
 	}
 }
 
@@ -68,6 +83,10 @@ func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.PATCH("/:id", ctrl.UpdateRestaurantByIdAPI)
 	g.DELETE("/:id", ctrl.DeleteRestaurantByIdAPI)
 
-	g.POST("/favorites/add", ctrl.AddFavoritesRestaurantAPI)
+	g.POST("/favorites/add", ctrl.CreateFavoritesRestaurantAPI)
 	g.DELETE("/favorites/delete", ctrl.DeleteFavoritesRestaurantAPI)
+
+	g.POST("/comments/add", ctrl.CreateRestaurantCommentCommandHandler)
+	g.GET("/comments/list", ctrl.ListRestaurantCommentCommandHandler)
+	g.DELETE("/comments/delete", ctrl.DeleteFavoritesRestaurantAPI)
 }

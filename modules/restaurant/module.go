@@ -12,6 +12,7 @@ func SetupRestaurantModule(db *gorm.DB, g *gin.RouterGroup) {
 	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(db)
 	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(db)
 	restaurantLikeRepo := restaurantgormmysql.NewRestaurantLikeRepo(db)
+	restaurantRatingRepo := restaurantgormmysql.NewRestaurantRatingRepo(db)
 
 	// TODO
 	//categoryRPCClient := rpcclient.NewCategoryRPCClient(catServiceURL)
@@ -25,9 +26,13 @@ func SetupRestaurantModule(db *gorm.DB, g *gin.RouterGroup) {
 	createRestaurantFavoriteCmdl := restaurantService.NewAddFavoritesCommandHandler(restaurantLikeRepo)
 	deleteRestaurantFavoriteCmdl := restaurantService.NewDeleteRestaurantLikeCommandHandler(restaurantLikeRepo)
 
+	createCommentRestaurantCmdl := restaurantService.NewCommentRestaurantCommandHandler(restaurantRatingRepo)
+	listCommentRestaurantCmdl := restaurantService.NewListRestaurantCommentsQueryHandler(restaurantRatingRepo, restaurantRepo)
+
 	resCtl := restaurantHttpgin.NewRestaurantHttpController(
 		createCmdHdl, listQueryHdl, getDetailQueryHdl, updateCmdHdl, deleteCmdHdl,
-		createRestaurantFavoriteCmdl, deleteRestaurantFavoriteCmdl)
+		createRestaurantFavoriteCmdl, deleteRestaurantFavoriteCmdl,
+		createCommentRestaurantCmdl, listCommentRestaurantCmdl)
 
 	restaurants := g.Group("/restaurants")
 	resCtl.SetupRoutes(restaurants)
