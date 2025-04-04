@@ -83,9 +83,6 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, req *restaurantmodel
 			restaurantFood.RestaurantID = restaurant.Id
 			restaurantFoods = append(restaurantFoods, *restaurantFood)
 		}
-		// if err := s.bulkRestaurantFoodRepo.BulkInsert(ctx, restaurantFoods); err != nil {
-		// 	return err
-		// }
 	}
 
 	if err := s.createRestaurantRepo.Insert(ctx, *restaurant, restaurantFoods); err != nil {
