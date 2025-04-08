@@ -7,7 +7,7 @@ import (
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (r *CategoryRepository) Update(ctx context.Context, id uuid.UUID, dto categorymodel.CategoryUpdateReq) error {
+func (r *CategoryRepo) Update(ctx context.Context, id uuid.UUID, dto categorymodel.CategoryUpdateReq) error {
 	db := r.db.Begin()
 
 	if err := db.Table(dto.TableName()).Where("id = ?", id).Updates(dto).Error; err != nil {

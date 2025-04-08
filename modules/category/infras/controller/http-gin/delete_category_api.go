@@ -8,7 +8,7 @@ import (
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (ctl *CategoryHttpController) DeleteCategoryByIdAPI(c *gin.Context) {
+func (ctrl *CategoryHttpController) DeleteCategoryByIdAPI(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
@@ -16,7 +16,7 @@ func (ctl *CategoryHttpController) DeleteCategoryByIdAPI(c *gin.Context) {
 
 	}
 
-	if err := ctl.deleteCmdHdl.Execute(c.Request.Context(), categorymodel.CategoryDeleteReq{Id: id}); err != nil {
+	if err := ctrl.deleteCmdHdl.Execute(c.Request.Context(), categorymodel.CategoryDeleteReq{Id: id}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

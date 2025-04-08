@@ -1,0 +1,38 @@
+package middleware
+
+import (
+	"errors"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+)
+
+func extractToken(authorizationStr string) (string, error) {
+	token := strings.TrimPrefix(authorizationStr, "Bearer ")
+	if token == "" {
+		panic(errors.New("token is required"))
+	}
+	return token, nil
+}
+
+type ITokenValidator interface {
+	Validate(token string) (string, error)
+}
+
+func Auth(tokenValidator ITokenValidator) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, err := extractToken(c.GetHeader("Authorization"))
+		if err != nil {
+			panic(err)
+		}
+
+		userId, err := tokenValidator.Validate(token)
+		if err != nil {
+			panic(err)
+		}
+
+		c.Set("requester", datatype.NewRequester(userId))
+		c.Next()
+	}
+}

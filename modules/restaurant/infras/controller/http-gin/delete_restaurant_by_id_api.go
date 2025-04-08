@@ -8,7 +8,7 @@ import (
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 )
 
-func (ctl *RestaurantHttpController) DeleteRestaurantByIdAPI(c *gin.Context) {
+func (ctrl *RestaurantHttpController) DeleteRestaurantByIdAPI(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
@@ -16,7 +16,7 @@ func (ctl *RestaurantHttpController) DeleteRestaurantByIdAPI(c *gin.Context) {
 		return
 	}
 
-	if err := ctl.deleteCmdHdl.Execute(c.Request.Context(), restaurantmodel.RestaurantDeleteReq{Id: id}); err != nil {
+	if err := ctrl.deleteCmdHdl.Execute(c.Request.Context(), restaurantmodel.RestaurantDeleteReq{Id: id}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

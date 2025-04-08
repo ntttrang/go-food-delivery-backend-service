@@ -2,10 +2,10 @@ package repository
 
 import "gorm.io/gorm"
 
-type CategoryRepository struct {
+type CategoryRepo struct {
 	db *gorm.DB
 }
 
-func NewCategoryRepository(db *gorm.DB) *CategoryRepository {
-	return &CategoryRepository{db: db}
+func NewCategoryRepo(db *gorm.DB) *CategoryRepo {
+	return &CategoryRepo{db: db}
 }

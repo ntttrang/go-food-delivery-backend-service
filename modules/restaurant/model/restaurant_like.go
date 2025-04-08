@@ -8,7 +8,7 @@ import (
 type RestaurantLike struct {
 	RestaurantID uuid.UUID `gorm:"column:restaurant_id" json:"restaurantId" form:"restaurantId"`
 	UserID       uuid.UUID `gorm:"column:user_id" json:"userId" form:"userId"`
-	sharedmodel.AbstractInfo
+	sharedmodel.DateDto
 }
 
 func (r RestaurantLike) Validate() error {

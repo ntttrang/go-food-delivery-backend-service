@@ -8,7 +8,7 @@ import (
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (ctl *CategoryHttpController) GetCategoryByIdAPI(c *gin.Context) {
+func (ctrl *CategoryHttpController) GetCategoryByIdAPI(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
@@ -16,7 +16,7 @@ func (ctl *CategoryHttpController) GetCategoryByIdAPI(c *gin.Context) {
 		return
 	}
 
-	category, err := ctl.getDetailCmdHdl.Execute(c.Request.Context(), categorymodel.CategoryDetailReq{Id: id})
+	category, err := ctrl.getDetailCmdHdl.Execute(c.Request.Context(), categorymodel.CategoryDetailReq{Id: id})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

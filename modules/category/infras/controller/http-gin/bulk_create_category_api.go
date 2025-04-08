@@ -7,7 +7,7 @@ import (
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (ctl *CategoryHttpController) CreateBulkCategoryAPI(c *gin.Context) {
+func (ctrl *CategoryHttpController) CreateBulkCategoryAPI(c *gin.Context) {
 	var requestBodyData []categorymodel.CategoryInsertDto
 
 	if err := c.ShouldBindJSON(&requestBodyData); err != nil {
@@ -16,7 +16,7 @@ func (ctl *CategoryHttpController) CreateBulkCategoryAPI(c *gin.Context) {
 	}
 
 	// call business logic in service
-	ids, err := ctl.bulkCreateCmdHdl.Execute(c.Request.Context(), requestBodyData)
+	ids, err := ctrl.bulkCreateCmdHdl.Execute(c.Request.Context(), requestBodyData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

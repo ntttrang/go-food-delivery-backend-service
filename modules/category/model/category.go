@@ -11,7 +11,7 @@ type Category struct {
 	Description string    `gorm:"column:description;"`
 	Icon        []byte    `gorm:"column:icon;"`
 	Status      string    `gorm:"column:status;"`
-	sharedModel.AbstractInfo
+	sharedModel.DateDto
 }
 
 func (Category) TableName() string {

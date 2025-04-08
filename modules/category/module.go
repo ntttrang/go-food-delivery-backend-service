@@ -3,14 +3,14 @@ package categorymodule
 import (
 	"github.com/gin-gonic/gin"
 	categoryHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/controller/http-gin"
-	categoryRepository "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository"
+	categoryRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository"
 	categoryService "github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
 	"gorm.io/gorm"
 )
 
 func SetupCategoryModule(db *gorm.DB, g *gin.RouterGroup) {
 	// Setup controller
-	catRepo := categoryRepository.NewCategoryRepository(db)
+	catRepo := categoryRepo.NewCategoryRepo(db)
 	bulkCreateCmdHdl := categoryService.NewBulkCreateCommandHandler(catRepo)
 	createCmdHdl := categoryService.NewCreateCommandHandler(catRepo)
 	listCmdHdl := categoryService.NewListCommandHandler(catRepo)

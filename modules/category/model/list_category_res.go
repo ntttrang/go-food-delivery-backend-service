@@ -10,5 +10,5 @@ type ListCategoryRes struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
-	sharedModel.AbstractInfo
+	sharedModel.DateDto
 }

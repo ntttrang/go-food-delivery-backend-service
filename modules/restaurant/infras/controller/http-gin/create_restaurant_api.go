@@ -7,7 +7,7 @@ import (
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 )
 
-func (ctl *RestaurantHttpController) CreateRestaurantAPI(c *gin.Context) {
+func (ctrl *RestaurantHttpController) CreateRestaurantAPI(c *gin.Context) {
 	var requestBodyData restaurantmodel.RestaurantInsertDto
 
 	if err := c.ShouldBindJSON(&requestBodyData); err != nil {
@@ -15,7 +15,7 @@ func (ctl *RestaurantHttpController) CreateRestaurantAPI(c *gin.Context) {
 		return
 	}
 
-	if err := ctl.createCmdHdl.Execute(c.Request.Context(), &requestBodyData); err != nil {
+	if err := ctrl.createCmdHdl.Execute(c.Request.Context(), &requestBodyData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

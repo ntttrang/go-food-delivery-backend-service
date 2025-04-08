@@ -13,7 +13,7 @@ type DeleteRequest struct {
 	UserID       string `form:"userId" binding:"required,uuid"`
 }
 
-func (ctl *RestaurantHttpController) DeleteFavoritesRestaurantAPI(c *gin.Context) {
+func (ctrl *RestaurantHttpController) DeleteFavoritesRestaurantAPI(c *gin.Context) {
 	var delReq DeleteRequest
 	if err := c.ShouldBindQuery(&delReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -23,7 +23,7 @@ func (ctl *RestaurantHttpController) DeleteFavoritesRestaurantAPI(c *gin.Context
 	var req restaurantmodel.RestaurantLike
 	copier.Copy(&req, &delReq)
 
-	if err := ctl.deleteFavoritesCmdHdl.Execute(c.Request.Context(), req); err != nil {
+	if err := ctrl.deleteFavoritesCmdHdl.Execute(c.Request.Context(), req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

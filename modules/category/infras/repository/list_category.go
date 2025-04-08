@@ -8,7 +8,7 @@ import (
 )
 
 // Shouldn't use Goroutines here. It makes your code more complex and dificult to maintain
-// func (r *CategoryRepository) ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error) {
+// func (r *CategoryRepo) ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error) {
 
 // 	var categories []categorymodel.Category
 // 	var total int64
@@ -64,7 +64,7 @@ import (
 // 	return categories, total, nil
 // }
 
-func (r *CategoryRepository) ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error) {
+func (r *CategoryRepo) ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error) {
 
 	var categories []categorymodel.Category
 	var total int64

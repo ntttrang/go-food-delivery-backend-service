@@ -7,7 +7,7 @@ import (
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (ctl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
+func (ctrl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
 	var dto categorymodel.ListCategoryReq
 
 	if err := c.ShouldBindJSON(&dto); err != nil {
@@ -17,7 +17,7 @@ func (ctl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
 
 	dto.Paging.Process()
 
-	data, total, err := ctl.listCmdHdl.Execute(c.Request.Context(), dto)
+	data, total, err := ctrl.listCmdHdl.Execute(c.Request.Context(), dto)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

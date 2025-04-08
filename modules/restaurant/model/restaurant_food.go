@@ -9,7 +9,7 @@ type RestaurantFood struct {
 	RestaurantID uuid.UUID `gorm:"column:restaurant_id"`
 	FoodID       uuid.UUID `gorm:"column:food_id"`
 	Status       string    `gorm:"column:status"`
-	sharedmodel.AbstractInfo
+	sharedmodel.DateDto
 }
 
 func (r RestaurantFoodDto) ConvertToRestaurantFood() *RestaurantFood {

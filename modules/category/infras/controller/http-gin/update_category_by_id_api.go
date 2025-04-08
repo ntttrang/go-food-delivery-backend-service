@@ -8,7 +8,7 @@ import (
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 )
 
-func (ctl *CategoryHttpController) UpdateCategoryByIdAPI(c *gin.Context) {
+func (ctrl *CategoryHttpController) UpdateCategoryByIdAPI(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
@@ -23,7 +23,7 @@ func (ctl *CategoryHttpController) UpdateCategoryByIdAPI(c *gin.Context) {
 	}
 	req.Id = id
 
-	if err := ctl.updateByIdCommandHandler.Execute(c.Request.Context(), req); err != nil {
+	if err := ctrl.updateByIdCommandHandler.Execute(c.Request.Context(), req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

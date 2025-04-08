@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
+	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -50,6 +51,7 @@ func main() {
 	v1 := r.Group("/v1")
 	categoryModule.SetupCategoryModule(db, v1)
 	restaurantmodule.SetupRestaurantModule(db, v1)
+	usermodule.SetupUserModule(db, v1)
 
 	r.Run(fmt.Sprintf(":%s", port))
 

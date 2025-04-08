@@ -4,18 +4,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 )
 
-func (ctrl *RestaurantHttpController) CreateFavoritesRestaurantAPI(c *gin.Context) {
-	var req restaurantmodel.RestaurantLike
-
+func (ctrl *UserHttpController) RegisterAPI(c *gin.Context) {
+	var req usermodel.RegisterUserReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := ctrl.addFavoritesCmdHdl.Execute(c.Request.Context(), req); err != nil {
+	if err := ctrl.registerUserCmdHdl.Execute(c.Request.Context(), req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

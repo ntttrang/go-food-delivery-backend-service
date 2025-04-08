@@ -21,7 +21,7 @@ type Restaurant struct {
 	Logo             json.RawMessage `gorm:"column:logo;"`  // json
 	ShippingFeePerKm float64         `gorm:"column:shipping_fee_per_km;"`
 	Status           string          `gorm:"column:status;"`
-	sharedmodel.AbstractInfo
+	sharedmodel.DateDto
 }
 
 func (Restaurant) TableName() string {

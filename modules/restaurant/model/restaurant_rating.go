@@ -12,7 +12,7 @@ type RestaurantRating struct {
 	Point        float64   `gorm:"column:point"`
 	Comment      *string   `gorm:"column:comment"`
 	Status       string    `gorm:"column:status"`
-	sharedmodel.AbstractInfo
+	sharedmodel.DateDto
 }
 
 func (RestaurantRating) TableName() string {

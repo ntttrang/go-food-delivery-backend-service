@@ -8,7 +8,7 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
-func (r *CategoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *CategoryRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	if err := r.db.Table(categorymodel.Category{}.TableName()).
 		Where("id = ?", id).
 		Update("status", sharedModel.StatusDelete).

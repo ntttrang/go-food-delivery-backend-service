@@ -53,11 +53,11 @@ func NewCategoryHttpController(bulkCreateCmdHdl IBulkCreateCommandHandler, creat
 	}
 }
 
-func (ctl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup) {
-	g.POST("", ctl.CreateCategoryAPI)
-	g.POST("bulk-insert", ctl.CreateBulkCategoryAPI)
-	g.POST("list", ctl.ListCategoryAPI)
-	g.GET("/:id", ctl.GetCategoryByIdAPI)
-	g.PATCH("/:id", ctl.UpdateCategoryByIdAPI)
-	g.DELETE("/:id", ctl.DeleteCategoryByIdAPI)
+func (ctrl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup) {
+	g.POST("", ctrl.CreateCategoryAPI)
+	g.POST("bulk-insert", ctrl.CreateBulkCategoryAPI)
+	g.POST("list", ctrl.ListCategoryAPI)
+	g.GET("/:id", ctrl.GetCategoryByIdAPI)
+	g.PATCH("/:id", ctrl.UpdateCategoryByIdAPI)
+	g.DELETE("/:id", ctrl.DeleteCategoryByIdAPI)
 }
