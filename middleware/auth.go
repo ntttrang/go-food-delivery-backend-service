@@ -17,7 +17,7 @@ func extractToken(authorizationStr string) (string, error) {
 }
 
 type ITokenValidator interface {
-	Validate(token string) (string, error)
+	Validate(token string) (datatype.Requester, error)
 }
 
 func Auth(tokenValidator ITokenValidator) gin.HandlerFunc {
@@ -27,12 +27,12 @@ func Auth(tokenValidator ITokenValidator) gin.HandlerFunc {
 			panic(err)
 		}
 
-		userId, err := tokenValidator.Validate(token)
+		requester, err := tokenValidator.Validate(token)
 		if err != nil {
 			panic(err)
 		}
 
-		c.Set("requester", datatype.NewRequester(userId))
+		c.Set(datatype.KeyRequester, requester)
 		c.Next()
 	}
 }

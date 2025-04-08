@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	userHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/user/infras/controller/http-gin"
 	userRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/user/infras/repository"
 	userService "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
@@ -19,10 +20,12 @@ func SetupUserModule(db *gorm.DB, g *gin.RouterGroup) {
 	// service
 	registerCmdHdl := userService.NewRegisterUserCommandHandler(userRepo)
 	authCmdHdl := userService.NewAuthenticateCommandHandler(userRepo, jwtComp)
+	introspectCmdHdl := userService.NewIntrospectCommandHandler(jwtComp, userRepo)
+	introspectCmdHdlWrapper := userService.NewIntrospectCmdHdlWrapper(introspectCmdHdl)
 	// controller
 	userCtrl := userHttpgin.NewUserHttpController(registerCmdHdl, authCmdHdl)
 
 	// Setup router
 	users := g.Group("/users")
-	userCtrl.SetupRoutes(users)
+	userCtrl.SetupRoutes(users, middleware.Auth(introspectCmdHdlWrapper))
 }

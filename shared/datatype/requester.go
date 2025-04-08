@@ -1,24 +1,26 @@
 package datatype
 
+import "github.com/google/uuid"
+
 type Requester interface {
-	Subject() string
-	Role() string
+	Subject() uuid.UUID
+	GetRole() uuid.UUID
 }
 type requester struct {
-	userId string
+	userId uuid.UUID
 	role   string
 }
 
 func NewRequester(userId string) *requester {
 	return &requester{
-		userId: userId,
+		userId: uuid.MustParse(userId),
 	}
 }
 
-func (r *requester) Subject() string {
+func (r *requester) Subject() uuid.UUID {
 	return r.userId
 }
 
-func (r *requester) Role() string {
+func (r *requester) GetRole() string {
 	return r.role
 }
