@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/pkg/errors"
 )
 
 func (repo *RestaurantRepo) Insert(ctx context.Context, restaurant restaurantmodel.Restaurant, restaurantFoods []restaurantmodel.RestaurantFood) error {
@@ -12,16 +13,20 @@ func (repo *RestaurantRepo) Insert(ctx context.Context, restaurant restaurantmod
 	if err := tx.Create(&restaurant).Error; err != nil {
 		tx.Rollback()
 		fmt.Println("create restaurant failed")
-		return err
+		return errors.WithStack(err)
 	}
 
 	if len(restaurantFoods) > 0 {
 		if err := tx.Create(&restaurantFoods).Error; err != nil {
 			tx.Rollback()
 			fmt.Println("create restaurant foods failed")
-			return err
+			return errors.WithStack(err)
 		}
 	}
 
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

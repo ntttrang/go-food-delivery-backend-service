@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IInsertCommentRestaurantRepo interface {
@@ -21,12 +22,12 @@ func NewCommentRestaurantCommandHandler(repo IInsertCommentRestaurantRepo) *Crea
 
 func (hdl *CreateRestaurantCommentCommandHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantCommentCreateReq) error {
 	if err := req.Validate(); err != nil {
-		return err
+		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	req.Id, _ = uuid.NewV7()
 	if err := hdl.repo.Insert(ctx, &req); err != nil {
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 	return nil
 }

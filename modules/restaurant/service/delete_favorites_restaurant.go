@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IDeleteRestaurantLikeRepo interface {
@@ -24,11 +26,15 @@ func (hdl *DeleteRestaurantLikeCommandHandler) Execute(ctx context.Context, req 
 	_, err := hdl.repo.FindById(ctx, req.RestaurantID, req.UserID)
 
 	if err != nil {
-		return err
+		if errors.Is(err, restaurantmodel.ErrRestaurantNotFound) {
+			return datatype.ErrNotFound.WithDebug(restaurantmodel.ErrRestaurantNotFound.Error())
+		}
+
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if err := hdl.repo.Delete(ctx, req.RestaurantID, req.UserID); err != nil {
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	return nil

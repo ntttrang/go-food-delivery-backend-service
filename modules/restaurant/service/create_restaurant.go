@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
@@ -66,7 +67,7 @@ func NewCreateCommandHandler(createRestaurantRepo ICreateRestaurantRepository, b
 
 func (s *CreateCommandHandler) Execute(ctx context.Context, req *restaurantmodel.RestaurantInsertDto) error {
 	if err := req.Validate(); err != nil {
-		return err
+		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	// Validate data
@@ -86,7 +87,7 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, req *restaurantmodel
 	}
 
 	if err := s.createRestaurantRepo.Insert(ctx, *restaurant, restaurantFoods); err != nil {
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	// set data to response

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
@@ -26,16 +27,19 @@ func (hdl *GetDetailQueryHandler) Execute(ctx context.Context, req restaurantmod
 	restaurant, err := hdl.repo.FindById(ctx, req.Id)
 
 	if err != nil {
-		return restaurantmodel.RestaurantDetailRes{}, err
+		if errors.Is(err, restaurantmodel.ErrRestaurantNotFound) {
+			return restaurantmodel.RestaurantDetailRes{}, datatype.ErrNotFound.WithDebug(restaurantmodel.ErrRestaurantNotFound.Error())
+		}
+		return restaurantmodel.RestaurantDetailRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if restaurant.Status == sharedModel.StatusDelete {
-		return restaurantmodel.RestaurantDetailRes{}, restaurantmodel.ErrRestaurantIsDeleted
+		return restaurantmodel.RestaurantDetailRes{}, datatype.ErrDeleted.WithError(restaurantmodel.ErrRestaurantIsDeleted.Error())
 	}
 
 	var resp restaurantmodel.RestaurantDetailRes
 	if err := copier.Copy(&resp, &restaurant); err != nil {
-		return restaurantmodel.RestaurantDetailRes{}, errors.New("copier libraries failed")
+		return restaurantmodel.RestaurantDetailRes{}, datatype.ErrInternalServerError.WithWrap(errors.New("copier libraries failed"))
 	}
 	return resp, nil
 }

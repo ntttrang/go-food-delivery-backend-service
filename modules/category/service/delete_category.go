@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
@@ -25,15 +27,18 @@ func (hdl *DeleteByIdCommandHandler) Execute(ctx context.Context, req categorymo
 	category, err := hdl.repo.FindById(ctx, req.Id)
 
 	if err != nil {
-		return err
+		if errors.Is(err, categorymodel.ErrCategoryNotFound) {
+			return datatype.ErrNotFound.WithDebug(categorymodel.ErrCategoryNotFound.Error())
+		}
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if category.Status == sharedModel.StatusDelete {
-		return categorymodel.ErrCategoryIsDeleted
+		return datatype.ErrDeleted.WithError(categorymodel.ErrCategoryIsDeleted.Error())
 	}
 
 	if err := hdl.repo.Delete(ctx, req.Id); err != nil {
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	return nil

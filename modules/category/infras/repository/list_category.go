@@ -5,6 +5,7 @@ import (
 
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
+	"github.com/pkg/errors"
 )
 
 // Shouldn't use Goroutines here. It makes your code more complex and dificult to maintain
@@ -82,7 +83,7 @@ func (r *CategoryRepo) ListCategories(ctx context.Context, req categorymodel.Lis
 
 	rs := query.Count(&total).Limit(req.Paging.Limit).Offset(req.Paging.Page).Find(&categories)
 	if rs.Error != nil {
-		return nil, 0, rs.Error
+		return nil, 0, errors.WithStack(rs.Error)
 	}
 
 	return categories, total, nil

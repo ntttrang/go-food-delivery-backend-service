@@ -4,6 +4,7 @@ import (
 	"context"
 
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IListRep interface {
@@ -24,7 +25,7 @@ func (s *ListCommandHandler) Execute(ctx context.Context, req categorymodel.List
 	categories, total, err := s.catRepo.ListCategories(ctx, req)
 
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	return convertListCategoryRes(categories), total, nil

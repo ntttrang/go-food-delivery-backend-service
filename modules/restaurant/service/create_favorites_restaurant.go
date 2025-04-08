@@ -4,6 +4,7 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IRestaurantLikeRepo interface {
@@ -22,11 +23,11 @@ func NewAddFavoritesCommandHandler(repo IRestaurantLikeRepo) *AddFavoritesComman
 
 func (hdl *AddFavoritesCommandHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantLike) error {
 	if err := req.Validate(); err != nil {
-		return err
+		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if err := hdl.repo.Insert(ctx, req); err != nil {
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	return nil

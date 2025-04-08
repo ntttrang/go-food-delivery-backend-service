@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,14 +27,17 @@ func NewRegisterUserCommandHandler(repo IRegisterRepo) *RegisterUserCommandHandl
 	return &RegisterUserCommandHandler{repo: repo}
 }
 
-func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req usermodel.RegisterUserReq) error {
+func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *usermodel.RegisterUserReq) error {
 	if err := req.Validate(); err != nil {
-		return err
+		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	existUser, err := hdl.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
-		return err
+		if errors.Is(err, usermodel.ErrUserNotFound) {
+			return datatype.ErrNotFound.WithDebug(usermodel.ErrUserNotFound.Error())
+		}
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if existUser != nil {
@@ -47,7 +51,7 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req usermode
 	saltPass := fmt.Sprintf("%s.%s", salt, req.Password)
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(saltPass), bcrypt.DefaultCost)
 	if err != nil {
-		return errors.New("generate from password failed")
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	id, _ := uuid.NewV7()
@@ -55,8 +59,7 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req usermode
 
 	var user usermodel.User
 	if err = copier.Copy(&user, &req); err != nil {
-		fmt.Println(err)
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	user.Id = id

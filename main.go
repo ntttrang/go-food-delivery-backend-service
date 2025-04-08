@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
@@ -41,8 +42,9 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("/ping", func(c *gin.Context) {
+	r.Use(middleware.Recover())
 
+	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})

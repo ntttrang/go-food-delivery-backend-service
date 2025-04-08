@@ -4,6 +4,7 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/pkg/errors"
 )
 
 func (r *RestaurantRepo) List(ctx context.Context, req restaurantmodel.RestaurantListReq) ([]restaurantmodel.RestaurantSearchResDto, int64, error) {
@@ -28,7 +29,7 @@ func (r *RestaurantRepo) List(ctx context.Context, req restaurantmodel.Restauran
 	var result []restaurantmodel.RestaurantSearchResDto
 	var total int64
 	if err := db.Count(&total).Offset((req.Page - 1) * req.Limit).Limit(req.Limit).Order(sortStr).Find(&result).Error; err != nil {
-		return nil, 0, err
+		return nil, 0, errors.WithStack(err)
 	}
 	return result, total, nil
 }

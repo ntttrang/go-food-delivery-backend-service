@@ -7,21 +7,20 @@ import (
 	"github.com/google/uuid"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 func (ctrl *RestaurantHttpController) UpdateRestaurantByIdAPI(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
 	var requestBodyData restaurantmodel.RestaurantUpdateDto
 
 	if err := c.ShouldBindJSON(&requestBodyData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
 	cmd := restaurantmodel.RestaurantUpdateReq{
@@ -30,8 +29,7 @@ func (ctrl *RestaurantHttpController) UpdateRestaurantByIdAPI(c *gin.Context) {
 	}
 
 	if err := ctrl.updateCmdHdl.Execute(c.Request.Context(), cmd); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		panic(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": true})

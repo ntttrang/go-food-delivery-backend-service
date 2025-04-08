@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IAuthenticateRepo interface {
@@ -30,24 +31,27 @@ func NewAuthenticateCommandHandler(authRepo IAuthenticateRepo, tokenIssuer IToke
 
 func (hdl *AuthenticateCommandHandler) Execute(ctx context.Context, req usermodel.AuthenticateReq) (*usermodel.AuthenticateRes, error) {
 	if err := req.Validate(); err != nil {
-		return nil, err
+		return nil, datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	user, err := hdl.authRepo.FindByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, usermodel.ErrUserNotFound) {
+			return nil, datatype.ErrNotFound.WithDebug(usermodel.ErrUserNotFound.Error())
+		}
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if user != nil {
 		if user.Status == usermodel.StatusDeleted || user.Status == usermodel.StatusBanned {
-			return nil, errors.New("user is deleted or banned")
+			return nil, datatype.ErrDeleted.WithError(usermodel.ErrUserDeletedOrBanned.Error())
 		}
 	}
 
 	// JWT
 	token, err := hdl.tokenIssuer.IssueToken(ctx, user.Id.String())
 	if err != nil {
-		return nil, err
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	return &usermodel.AuthenticateRes{Token: token, ExpIn: hdl.tokenIssuer.ExpIn()}, nil

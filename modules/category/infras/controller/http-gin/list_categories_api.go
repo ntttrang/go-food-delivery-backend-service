@@ -5,23 +5,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 func (ctrl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
 	var dto categorymodel.ListCategoryReq
-
 	if err := c.ShouldBindJSON(&dto); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
 	dto.Paging.Process()
 
 	data, total, err := ctrl.listCmdHdl.Execute(c.Request.Context(), dto)
-
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		panic(err)
 	}
 
 	paging := &dto.Paging

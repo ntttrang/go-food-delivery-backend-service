@@ -9,6 +9,5 @@ import (
 
 func (ctrl *UserHttpController) GetProfileAPI(c *gin.Context) {
 	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
-
-	c.JSON(http.StatusOK, gin.H{"data": requester.Subject()})
+	c.JSON(http.StatusOK, datatype.ResponseSuccess(requester))
 }

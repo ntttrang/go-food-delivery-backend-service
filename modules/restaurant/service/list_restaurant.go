@@ -4,6 +4,7 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
@@ -30,7 +31,7 @@ func (hdl *ListQueryHandler) Execute(ctx context.Context, req restaurantmodel.Re
 	restaurants, total, err := hdl.restaurantRepo.List(ctx, req)
 
 	if err != nil {
-		return restaurantmodel.RestaurantSearchRes{}, err
+		return restaurantmodel.RestaurantSearchRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	var resp restaurantmodel.RestaurantSearchRes

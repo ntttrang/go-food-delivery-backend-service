@@ -11,7 +11,7 @@ import (
 )
 
 type IRegisterUserCommandHandler interface {
-	Execute(ctx context.Context, req usermodel.RegisterUserReq) error
+	Execute(ctx context.Context, req *usermodel.RegisterUserReq) error
 }
 
 type IAuthenticateCommandHandler interface {

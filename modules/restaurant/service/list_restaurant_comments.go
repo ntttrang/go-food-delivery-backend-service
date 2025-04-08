@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IListRestaurantCommentsRepo interface {
@@ -30,7 +32,11 @@ func NewListRestaurantCommentsQueryHandler(repo IListRestaurantCommentsRepo, res
 func (hdl *ListRestaurantCommentsQueryHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRatingListRes, error) {
 	restaurantRatings, err := hdl.repo.FindByRestaurantId(ctx, req.RestaurantId)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, restaurantmodel.ErrRestaurantNotFound) {
+			return nil, datatype.ErrNotFound.WithDebug(restaurantmodel.ErrRestaurantNotFound.Error())
+		}
+
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	var restaurantIds []uuid.UUID
@@ -42,7 +48,7 @@ func (hdl *ListRestaurantCommentsQueryHandler) Execute(ctx context.Context, req 
 
 	restaurants, err := hdl.reststRepo.FindRestaurantByIds(ctx, restaurantIds)
 	if err != nil {
-		return nil, err
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	restaurantMap := make(map[uuid.UUID]string, len(restaurants))

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +15,7 @@ func (repo *RestaurantRatingRepo) FindByRestaurantId(ctx context.Context, restau
 		if err == gorm.ErrRecordNotFound {
 			return nil, restaurantmodel.ErrRestaurantRatingNotFound
 		}
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return restaurantRating, nil

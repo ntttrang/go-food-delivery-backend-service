@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
@@ -26,7 +27,7 @@ func (s *BulkCreateCommandHandler) Execute(ctx context.Context, datas []category
 	var ids []uuid.UUID
 	for _, data := range datas {
 		if err := data.Validate(); err != nil {
-			return nil, err
+			return nil, datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 		}
 
 		category := data.ConvertToCategory()
@@ -38,7 +39,7 @@ func (s *BulkCreateCommandHandler) Execute(ctx context.Context, datas []category
 	}
 
 	if err := s.catRepo.BulkInsert(ctx, categories); err != nil {
-		return nil, err
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	// set data to response

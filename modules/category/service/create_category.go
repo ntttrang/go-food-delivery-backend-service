@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
@@ -22,7 +23,7 @@ func NewCreateCommandHandler(catRepo ICreateRepo) *CreateCommandHandler {
 
 func (s *CreateCommandHandler) Execute(ctx context.Context, data *categorymodel.CategoryInsertDto) error {
 	if err := data.Validate(); err != nil {
-		return err
+		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	category := data.ConvertToCategory()
@@ -30,7 +31,7 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *categorymodel.
 	category.Status = sharedModel.StatusActive // Always set Active Status when insert
 
 	if err := s.catRepo.Insert(ctx, category); err != nil {
-		return err
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	// set data to response
