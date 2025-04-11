@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -27,10 +28,12 @@ func Auth(tokenValidator ITokenValidator) gin.HandlerFunc {
 			panic(err)
 		}
 
+		fmt.Println("token: ", token)
 		requester, err := tokenValidator.Validate(token)
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("requester: ", requester)
 
 		c.Set(datatype.KeyRequester, requester)
 		c.Next()

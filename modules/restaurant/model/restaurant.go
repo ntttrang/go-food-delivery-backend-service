@@ -11,7 +11,7 @@ import (
 
 type Restaurant struct {
 	Id               uuid.UUID       `gorm:"column:id;"`
-	OwnerId          string          `gorm:"column:owner_id;"`
+	OwnerId          uuid.UUID       `gorm:"column:owner_id;"`
 	Name             string          `gorm:"column:name;"`
 	Addr             string          `gorm:"column:addr;"`
 	CityId           int             `gorm:"column:city_id;"`

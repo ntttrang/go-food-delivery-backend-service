@@ -9,13 +9,16 @@ import (
 )
 
 func (ctrl *RestaurantHttpController) CreateRestaurantAPI(c *gin.Context) {
-	var requestBodyData restaurantmodel.RestaurantInsertDto
+	var requestBodyData *restaurantmodel.RestaurantInsertDto
 
 	if err := c.ShouldBindJSON(&requestBodyData); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	if err := ctrl.createCmdHdl.Execute(c.Request.Context(), &requestBodyData); err != nil {
+	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
+	requestBodyData.OwnerId = requester.Subject()
+
+	if err := ctrl.createCmdHdl.Execute(c.Request.Context(), requestBodyData); err != nil {
 		panic(err)
 	}
 

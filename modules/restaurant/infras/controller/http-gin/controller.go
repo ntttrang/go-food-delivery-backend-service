@@ -2,9 +2,12 @@ package httpgin
 
 import (
 	"context"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	sharedrpc "github.com/ntttrang/go-food-delivery-backend-service/shared/infras/rpc"
 )
 
 type ICreateCommandHandler interface {
@@ -77,7 +80,9 @@ func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHd
 }
 
 func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
-	g.POST("", ctrl.CreateRestaurantAPI)
+	introspectRpcClient := sharedrpc.NewIntrospectRpcClient(os.Getenv("USER_SERVICE_URL"))
+	g.POST("", middleware.Auth(introspectRpcClient), ctrl.CreateRestaurantAPI)
+
 	g.GET("list", ctrl.ListRestaurantsAPI)     // Query params
 	g.GET("/:id", ctrl.GetRestaurantDetailAPI) // Path Variables
 	g.PATCH("/:id", ctrl.UpdateRestaurantByIdAPI)

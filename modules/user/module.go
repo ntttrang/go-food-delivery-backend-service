@@ -23,9 +23,8 @@ func SetupUserModule(db *gorm.DB, g *gin.RouterGroup) {
 	introspectCmdHdl := userService.NewIntrospectCommandHandler(jwtComp, userRepo)
 	introspectCmdHdlWrapper := userService.NewIntrospectCmdHdlWrapper(introspectCmdHdl)
 	// controller
-	userCtrl := userHttpgin.NewUserHttpController(registerCmdHdl, authCmdHdl)
+	userCtrl := userHttpgin.NewUserHttpController(registerCmdHdl, authCmdHdl, introspectCmdHdl)
 
 	// Setup router
-	users := g.Group("/users")
-	userCtrl.SetupRoutes(users, middleware.Auth(introspectCmdHdlWrapper))
+	userCtrl.SetupRoutes(g, middleware.Auth(introspectCmdHdlWrapper))
 }
