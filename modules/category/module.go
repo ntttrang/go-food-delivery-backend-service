@@ -5,12 +5,14 @@ import (
 	categoryHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/controller/http-gin"
 	categoryRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository"
 	categoryService "github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
-	"gorm.io/gorm"
+	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
-func SetupCategoryModule(db *gorm.DB, g *gin.RouterGroup) {
+func SetupCategoryModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
+	dbCtx := appCtx.DbContext()
+
 	// Setup controller
-	catRepo := categoryRepo.NewCategoryRepo(db)
+	catRepo := categoryRepo.NewCategoryRepo(dbCtx)
 	bulkCreateCmdHdl := categoryService.NewBulkCreateCommandHandler(catRepo)
 	createCmdHdl := categoryService.NewCreateCommandHandler(catRepo)
 	listCmdHdl := categoryService.NewListCommandHandler(catRepo)

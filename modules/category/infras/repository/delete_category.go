@@ -10,7 +10,9 @@ import (
 )
 
 func (r *CategoryRepo) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := r.db.Table(categorymodel.Category{}.TableName()).
+	db := r.dbCtx.GetMainConnection()
+
+	if err := db.Table(categorymodel.Category{}.TableName()).
 		Where("id = ?", id).
 		Update("status", sharedModel.StatusDelete).
 		Error; err != nil {

@@ -5,14 +5,16 @@ import (
 	restaurantHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/controller/http-gin"
 	restaurantgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/gorm-mysql"
 	restaurantService "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
-	"gorm.io/gorm"
+	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
-func SetupRestaurantModule(db *gorm.DB, g *gin.RouterGroup) {
-	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(db)
-	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(db)
-	restaurantLikeRepo := restaurantgormmysql.NewRestaurantLikeRepo(db)
-	restaurantRatingRepo := restaurantgormmysql.NewRestaurantRatingRepo(db)
+func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
+	dbCtx := appCtx.DbContext()
+
+	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(dbCtx)
+	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx)
+	restaurantLikeRepo := restaurantgormmysql.NewRestaurantLikeRepo(dbCtx)
+	restaurantRatingRepo := restaurantgormmysql.NewRestaurantRatingRepo(dbCtx)
 
 	// TODO
 	//categoryRPCClient := rpcclient.NewCategoryRPCClient(catServiceURL)

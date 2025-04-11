@@ -9,7 +9,7 @@ import (
 )
 
 func (r *CategoryRepo) Update(ctx context.Context, id uuid.UUID, dto categorymodel.CategoryUpdateReq) error {
-	db := r.db.Begin()
+	db := r.dbCtx.GetMainConnection().Begin()
 
 	if err := db.Table(dto.TableName()).Where("id = ?", id).Updates(dto).Error; err != nil {
 		db.Rollback()

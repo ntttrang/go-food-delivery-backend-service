@@ -7,8 +7,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (repo *RestaurantLikeRepo) Insert(ctx context.Context, data restaurantmodel.RestaurantLike) error {
-	if err := repo.db.Create(&data).Error; err != nil {
+func (r *RestaurantLikeRepo) Insert(ctx context.Context, data restaurantmodel.RestaurantLike) error {
+	db := r.dbCtx.GetMainConnection()
+	if err := db.Create(&data).Error; err != nil {
 		return errors.WithStack(err)
 	}
 

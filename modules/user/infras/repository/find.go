@@ -17,10 +17,10 @@ func (repo *UserRepo) FindById(ctx context.Context, id uuid.UUID) (*usermodel.Us
 	return repo.FindByCondition(ctx, map[string]interface{}{"id": id})
 }
 
-func (repo *UserRepo) FindByCondition(ctx context.Context, cond map[string]interface{}) (*usermodel.User, error) {
+func (r *UserRepo) FindByCondition(ctx context.Context, cond map[string]interface{}) (*usermodel.User, error) {
 	var user usermodel.User
-
-	if err := repo.db.Table(user.TableName()).Where(cond).First(&user).Error; err != nil {
+	db := r.dbCtx.GetMainConnection()
+	if err := db.Table(user.TableName()).Where(cond).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, usermodel.ErrUserNotFound
 		}

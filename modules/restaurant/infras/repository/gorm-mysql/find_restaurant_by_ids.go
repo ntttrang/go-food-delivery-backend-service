@@ -8,10 +8,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (repo *RestaurantRepo) FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]restaurantmodel.Restaurant, error) {
+func (r *RestaurantRepo) FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]restaurantmodel.Restaurant, error) {
 	var restaurants []restaurantmodel.Restaurant
 
-	if err := repo.db.Where("id IN (?)", ids).Find(&restaurants).Error; err != nil {
+	db := r.dbCtx.GetMainConnection()
+	if err := db.Where("id IN (?)", ids).Find(&restaurants).Error; err != nil {
 		return nil, errors.WithStack(err)
 	}
 

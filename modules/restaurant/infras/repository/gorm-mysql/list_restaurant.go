@@ -8,7 +8,7 @@ import (
 )
 
 func (r *RestaurantRepo) List(ctx context.Context, req restaurantmodel.RestaurantListReq) ([]restaurantmodel.RestaurantSearchResDto, int64, error) {
-	db := r.db.Table(restaurantmodel.Restaurant{}.TableName()).Select("id", "name", "addr", "logo", "shipping_fee_per_km", "status") // Use field name ( Struct) or gorm name is OK
+	db := r.dbCtx.GetMainConnection().Table(restaurantmodel.Restaurant{}.TableName()).Select("id", "name", "addr", "logo", "shipping_fee_per_km", "status") // Use field name ( Struct) or gorm name is OK
 	if req.OwnerId != nil {
 		db = db.Where("owner_id = ?", req.OwnerId)
 	}

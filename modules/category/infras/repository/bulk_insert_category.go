@@ -8,7 +8,8 @@ import (
 )
 
 func (r *CategoryRepo) BulkInsert(ctx context.Context, data []categorymodel.Category) error {
-	if err := r.db.Create(data).Error; err != nil {
+	db := r.dbCtx.GetMainConnection()
+	if err := db.Create(data).Error; err != nil {
 		return errors.WithStack(err)
 	}
 

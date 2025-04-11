@@ -1,11 +1,11 @@
 package repository
 
-import "gorm.io/gorm"
+import shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 
 type CategoryRepo struct {
-	db *gorm.DB
+	dbCtx shareinfras.IDbContext
 }
 
-func NewCategoryRepo(db *gorm.DB) *CategoryRepo {
-	return &CategoryRepo{db: db}
+func NewCategoryRepo(dbCtx shareinfras.IDbContext) *CategoryRepo {
+	return &CategoryRepo{dbCtx: dbCtx}
 }

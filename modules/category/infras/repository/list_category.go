@@ -70,7 +70,9 @@ func (r *CategoryRepo) ListCategories(ctx context.Context, req categorymodel.Lis
 	var categories []categorymodel.Category
 	var total int64
 
-	query := r.db.Model(&categorymodel.Category{})
+	db := r.dbCtx.GetMainConnection()
+
+	query := db.Model(&categorymodel.Category{})
 
 	if req.Name != "" {
 		query = query.Where("name LIKE ?", "%"+req.Name+"%")

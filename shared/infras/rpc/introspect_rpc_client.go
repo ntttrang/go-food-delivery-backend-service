@@ -56,7 +56,7 @@ func (c *IntrospectRpcClient) Validate(token string) (datatype.Requester, error)
 	fmt.Println(response)
 
 	return &dataRequester{
-		UserID:    uuid.MustParse(response.Data.UserId),
-		RoleValue: uuid.MustParse(response.Data.Role),
+		UserID: uuid.MustParse(response.Data.UserId),
+		//RoleValue: uuid.MustParse(response.Data.Role),
 	}, nil
 }

@@ -1,39 +1,41 @@
 package restaurantgormmysql
 
-import "gorm.io/gorm"
+import (
+	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
+)
 
 // Restaurant
 type RestaurantRepo struct {
-	db *gorm.DB
+	dbCtx shareinfras.IDbContext
 }
 
-func NewRestaurantRepo(db *gorm.DB) *RestaurantRepo {
-	return &RestaurantRepo{db: db}
+func NewRestaurantRepo(dbCtx shareinfras.IDbContext) *RestaurantRepo {
+	return &RestaurantRepo{dbCtx: dbCtx}
 }
 
 // Restaurant Food
 type RestaurantFoodRepo struct {
-	db *gorm.DB
+	dbCtx shareinfras.IDbContext
 }
 
-func NewRestaurantFoodRepo(db *gorm.DB) *RestaurantFoodRepo {
-	return &RestaurantFoodRepo{db: db}
+func NewRestaurantFoodRepo(dbCtx shareinfras.IDbContext) *RestaurantFoodRepo {
+	return &RestaurantFoodRepo{dbCtx: dbCtx}
 }
 
 // Restaurant Like
 type RestaurantLikeRepo struct {
-	db *gorm.DB
+	dbCtx shareinfras.IDbContext
 }
 
-func NewRestaurantLikeRepo(db *gorm.DB) *RestaurantLikeRepo {
-	return &RestaurantLikeRepo{db: db}
+func NewRestaurantLikeRepo(dbCtx shareinfras.IDbContext) *RestaurantLikeRepo {
+	return &RestaurantLikeRepo{dbCtx: dbCtx}
 }
 
 // Restaurant Rating
 type RestaurantRatingRepo struct {
-	db *gorm.DB
+	dbCtx shareinfras.IDbContext
 }
 
-func NewRestaurantRatingRepo(db *gorm.DB) *RestaurantRatingRepo {
-	return &RestaurantRatingRepo{db: db}
+func NewRestaurantRatingRepo(dbCtx shareinfras.IDbContext) *RestaurantRatingRepo {
+	return &RestaurantRatingRepo{dbCtx: dbCtx}
 }

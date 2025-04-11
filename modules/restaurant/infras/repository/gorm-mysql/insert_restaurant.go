@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (repo *RestaurantRepo) Insert(ctx context.Context, restaurant restaurantmodel.Restaurant, restaurantFoods []restaurantmodel.RestaurantFood) error {
-	tx := repo.db.Begin()
+func (r *RestaurantRepo) Insert(ctx context.Context, restaurant restaurantmodel.Restaurant, restaurantFoods []restaurantmodel.RestaurantFood) error {
+	tx := r.dbCtx.GetMainConnection().Begin()
 	if err := tx.Create(&restaurant).Error; err != nil {
 		tx.Rollback()
 		fmt.Println("create restaurant failed")

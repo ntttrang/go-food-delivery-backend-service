@@ -9,10 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func (repo *RestaurantRepo) FindById(ctx context.Context, id uuid.UUID) (*restaurantmodel.Restaurant, error) {
+func (r *RestaurantRepo) FindById(ctx context.Context, id uuid.UUID) (*restaurantmodel.Restaurant, error) {
 	var restaurant restaurantmodel.Restaurant
 
-	if err := repo.db.Where("id = ?", id.String()).First(&restaurant).Error; err != nil {
+	db := r.dbCtx.GetMainConnection()
+	if err := db.Where("id = ?", id.String()).First(&restaurant).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, restaurantmodel.ErrRestaurantNotFound
 		}

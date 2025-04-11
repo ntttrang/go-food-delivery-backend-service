@@ -1,11 +1,13 @@
 package userrepository
 
-import "gorm.io/gorm"
+import (
+	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
+)
 
 type UserRepo struct {
-	db *gorm.DB
+	dbCtx shareinfras.IDbContext
 }
 
-func NewUserRepo(db *gorm.DB) *UserRepo {
-	return &UserRepo{db: db}
+func NewUserRepo(dbCtx shareinfras.IDbContext) *UserRepo {
+	return &UserRepo{dbCtx: dbCtx}
 }
