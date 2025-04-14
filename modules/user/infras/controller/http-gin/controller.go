@@ -27,22 +27,47 @@ type IVerifyCode interface {
 	Execute(ctx context.Context, userId uuid.UUID, code string) (bool, error)
 }
 
+type IListQueryHandler interface {
+	Execute(ctx context.Context, req usermodel.UserListReq) (usermodel.UserListRes, error)
+}
+
+type IGetDetailQueryHandler interface {
+	Execute(ctx context.Context, req usermodel.UserDetailReq) (usermodel.UserSearchResDto, error)
+}
+
+type ICreateCommandHandler interface {
+	Execute(ctx context.Context, req *usermodel.CreateUserReq) error
+}
+
+type IUpdateCommandHandler interface {
+	Execute(ctx context.Context, req usermodel.UpdateUserReq) error
+}
+
 type UserHttpController struct {
 	registerUserCmdHdl IRegisterUserCommandHandler
 	authCmdHdl         IAuthenticateCommandHandler
 	introspectCmdHdl   IntrospectCommandHandler
 	generateCode       IGenerateCode
 	verifyCode         IVerifyCode
+	listQueryHdl       IListQueryHandler
+	getDetailQueryHdl  IGetDetailQueryHandler
+	createCmdHdl       ICreateCommandHandler
+	updateCmdHdl       IUpdateCommandHandler
 }
 
 func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, authCmdHdl IAuthenticateCommandHandler, introspectCmdHdl IntrospectCommandHandler,
-	generateCode IGenerateCode, verifyCode IVerifyCode) *UserHttpController {
+	generateCode IGenerateCode, verifyCode IVerifyCode,
+	listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler, createCmdHdl ICreateCommandHandler, updateCmdHdl IUpdateCommandHandler) *UserHttpController {
 	return &UserHttpController{
 		registerUserCmdHdl: registerUserCmdHdl,
 		authCmdHdl:         authCmdHdl,
 		introspectCmdHdl:   introspectCmdHdl,
 		generateCode:       generateCode,
 		verifyCode:         verifyCode,
+		listQueryHdl:       listQueryHdl,
+		getDetailQueryHdl:  getDetailQueryHdl,
+		createCmdHdl:       createCmdHdl,
+		updateCmdHdl:       updateCmdHdl,
 	}
 }
 
@@ -56,9 +81,11 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	g.GET("/verify/:code", authMld, ctrl.VerifyCodeAPI)
 
 	// User info group API
-	// users := g.Group("/users")
-	// users.GET("", ctrl.List)
-	// users.GET("/:id", ctrl.GetByID)
-	// users.PATCH("/:id", ctrl.Update)
-	// users.DELETE("/:id", ctrl.Delete)
+
+	users := g.Group("/users")
+	users.POST("", ctrl.CreateUserAPI)
+	users.GET("", ctrl.ListUsersAPI)
+	users.GET("/:id", ctrl.GetUserDetailAPI)
+	users.PATCH("/:id", ctrl.UpdateUseAPI)
+
 }

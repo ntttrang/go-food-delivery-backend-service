@@ -31,3 +31,10 @@ func RandomStr(length int) (string, error) {
 
 	return hex.EncodeToString(b), nil
 }
+
+func ValidatePhoneNumber(phoneNumber string) bool {
+	// This regex pattern matches the E.164 format
+	e164Regex := `^\+[1-9]\d{1,14}$`
+	re := regexp.MustCompile(e164Regex)
+	return re.MatchString(phoneNumber)
+}

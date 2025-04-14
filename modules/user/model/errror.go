@@ -11,4 +11,6 @@ var (
 	ErrLastNameRequired    = errors.New("last name is required")
 	ErrUserDeletedOrBanned = errors.New("user is deleted or banned")
 	ErrUserNotFound        = errors.New("user not found")
+	ErrIdRequired          = errors.New("id is required")
+	ErrInvalidPhoneNumber  = errors.New("phone number invalid")
 )

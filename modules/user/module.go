@@ -29,8 +29,17 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	email := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
 	generateCode := userService.NewGenerateCode(userRepo, redisCache, email)
 	verifyCode := userService.NewVerifyCode(userRepo, redisCache)
+
+	listQueryHdl := userService.NewListQueryHandler(userRepo)
+	getDetailQueryHdl := userService.NewGetDetailQueryHandler(userRepo)
+	createCmdHdl := userService.NewCreateCommandHandler(userRepo)
+	updateCmdHdl := userService.NewUpdateCommandHandler(userRepo)
 	// controller
-	userCtrl := userHttpgin.NewUserHttpController(registerCmdHdl, authCmdHdl, introspectCmdHdl, generateCode, verifyCode)
+	userCtrl := userHttpgin.NewUserHttpController(
+		registerCmdHdl, authCmdHdl, introspectCmdHdl,
+		generateCode, verifyCode,
+		listQueryHdl, getDetailQueryHdl, createCmdHdl, updateCmdHdl,
+	)
 
 	// Setup router
 	userCtrl.SetupRoutes(g, middleware.Auth(introspectCmdHdlWrapper))
