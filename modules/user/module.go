@@ -24,8 +24,13 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	authCmdHdl := userService.NewAuthenticateCommandHandler(userRepo, jwtComp)
 	introspectCmdHdl := userService.NewIntrospectCommandHandler(jwtComp, userRepo)
 	introspectCmdHdlWrapper := userService.NewIntrospectCmdHdlWrapper(introspectCmdHdl)
+
+	redisCache := shareinfras.NewRedisAdapter(appCtx.GetConfig().RedisConfig)
+	email := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
+	generateCode := userService.NewGenerateCode(userRepo, redisCache, email)
+	verifyCode := userService.NewVerifyCode(userRepo, redisCache)
 	// controller
-	userCtrl := userHttpgin.NewUserHttpController(registerCmdHdl, authCmdHdl, introspectCmdHdl)
+	userCtrl := userHttpgin.NewUserHttpController(registerCmdHdl, authCmdHdl, introspectCmdHdl, generateCode, verifyCode)
 
 	// Setup router
 	userCtrl.SetupRoutes(g, middleware.Auth(introspectCmdHdlWrapper))

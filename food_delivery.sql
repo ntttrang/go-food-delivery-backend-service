@@ -302,3 +302,16 @@ INSERT INTO `cities` (`id`, `title`, `status`, `created_at`, `updated_at`) VALUE
 (61, 'Vĩnh Long', 1, '2025-03-23 06:55:18', '2025-03-23 06:55:18'),
 (62, 'Vĩnh Phúc', 1, '2025-03-23 06:55:18', '2025-03-23 06:55:18'),
 (63, 'Yên Bái', 1, '2025-03-23 06:55:19', '2025-03-23 06:55:19');
+
+--- Additional table
+DROP TABLE IF EXISTS `verification`;
+CREATE TABLE verification (
+    `id` VARCHAR(36) NOT NULL,
+    `user_id` VARCHAR(36) NOT NULL,
+    `code` VARCHAR(6) NOT NULL,
+    `expires_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    `used` BOOLEAN NOT NULL,
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
