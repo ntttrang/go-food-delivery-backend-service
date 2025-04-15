@@ -43,8 +43,14 @@ type IUpdateCommandHandler interface {
 	Execute(ctx context.Context, req usermodel.UpdateUserReq) error
 }
 
+type ISignUpGoogleCommandHandler interface {
+	GetAuthCodeUrl(ctx context.Context) string
+	AuthenticateByGoogle(ctx context.Context, state string, code string) (*usermodel.AuthenticateRes, error)
+}
+
 type UserHttpController struct {
 	registerUserCmdHdl IRegisterUserCommandHandler
+	signUpGgCmdHdl     ISignUpGoogleCommandHandler
 	authCmdHdl         IAuthenticateCommandHandler
 	introspectCmdHdl   IntrospectCommandHandler
 	generateCode       IGenerateCode
@@ -55,11 +61,12 @@ type UserHttpController struct {
 	updateCmdHdl       IUpdateCommandHandler
 }
 
-func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, authCmdHdl IAuthenticateCommandHandler, introspectCmdHdl IntrospectCommandHandler,
+func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signUpGgCmdHdl ISignUpGoogleCommandHandler, authCmdHdl IAuthenticateCommandHandler, introspectCmdHdl IntrospectCommandHandler,
 	generateCode IGenerateCode, verifyCode IVerifyCode,
 	listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler, createCmdHdl ICreateCommandHandler, updateCmdHdl IUpdateCommandHandler) *UserHttpController {
 	return &UserHttpController{
 		registerUserCmdHdl: registerUserCmdHdl,
+		signUpGgCmdHdl:     signUpGgCmdHdl,
 		authCmdHdl:         authCmdHdl,
 		introspectCmdHdl:   introspectCmdHdl,
 		generateCode:       generateCode,
@@ -72,8 +79,12 @@ func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, authC
 }
 
 func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.HandlerFunc) {
-	// Authentication group API
+	// Signup by email
 	g.POST("/register", ctrl.RegisterAPI)
+	// Sign Up with Google
+	g.POST("/google/signup", ctrl.SignUpWithGoogleAPI)
+	g.GET("/google/callback", ctrl.CallbackAPI)
+
 	g.POST("/authenticate", ctrl.AuthenticateAPI) // Login
 	g.GET("/profile", authMld, ctrl.GetProfileAPI)
 	g.POST("/rpc/users/introspect-token", ctrl.IntrospectTokenRpcAPI) // RPC

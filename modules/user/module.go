@@ -19,13 +19,15 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	// repo
 	userRepo := userRepo.NewUserRepo(dbCtx)
 	jwtComp := shareComponent.NewJwtComp(os.Getenv("JWT_SECRET_KEY"), 3600*24*7)
+	ggOAuth := shareComponent.NewGoogleOauth(appCtx.GetConfig().GoogleConfig)
 	// service
 	registerCmdHdl := userService.NewRegisterUserCommandHandler(userRepo)
+	signUpGgCmdHdl := userService.NewSignUpGoogleCommandHandler(userRepo, jwtComp, ggOAuth)
 	authCmdHdl := userService.NewAuthenticateCommandHandler(userRepo, jwtComp)
 	introspectCmdHdl := userService.NewIntrospectCommandHandler(jwtComp, userRepo)
 	introspectCmdHdlWrapper := userService.NewIntrospectCmdHdlWrapper(introspectCmdHdl)
 
-	redisCache := shareinfras.NewRedisAdapter(appCtx.GetConfig().RedisConfig)
+	redisCache := shareComponent.NewRedisAdapter(appCtx.GetConfig().RedisConfig)
 	email := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
 	generateCode := userService.NewGenerateCode(userRepo, redisCache, email)
 	verifyCode := userService.NewVerifyCode(userRepo, redisCache)
@@ -36,7 +38,7 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	updateCmdHdl := userService.NewUpdateCommandHandler(userRepo)
 	// controller
 	userCtrl := userHttpgin.NewUserHttpController(
-		registerCmdHdl, authCmdHdl, introspectCmdHdl,
+		registerCmdHdl, signUpGgCmdHdl, authCmdHdl, introspectCmdHdl,
 		generateCode, verifyCode,
 		listQueryHdl, getDetailQueryHdl, createCmdHdl, updateCmdHdl,
 	)

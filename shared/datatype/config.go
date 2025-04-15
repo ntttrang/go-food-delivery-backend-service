@@ -2,6 +2,7 @@ package datatype
 
 import (
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -9,25 +10,17 @@ type Config struct {
 	CatServiceURL  string
 	EmailConfig    EmailConfig
 	RedisConfig    RedisConfig
+	GoogleConfig   GoogleConfig
 }
 
 var config *Config
 
 func NewConfig() *Config {
-	const defaultPort = 587
-	// portStr := os.Getenv("SMTP_PORT")
-	// if portStr == "" {
-	// 	fmt.Println("SMTP_PORT not set, using default")
-	// 	portStr = fmt.Sprintf("%d", defaultPort)
-	// }
-
-	// port, err := strconv.Atoi(portStr)
-	// if err != nil {
-	// 	fmt.Printf("Invalid SMTP_PORT value '%s', using default: %d\n", portStr, defaultPort)
-	// 	port = defaultPort
-	// }
-
-	port := defaultPort
+	var smtpPort int
+	portStr := os.Getenv("SMTP_PORT")
+	if portStr != "" {
+		smtpPort, _ = strconv.Atoi(portStr)
+	}
 
 	if config == nil {
 		config = &Config{
@@ -35,13 +28,18 @@ func NewConfig() *Config {
 			CatServiceURL:  os.Getenv("CAT_SERVICE_URL"),
 			EmailConfig: EmailConfig{
 				SMTPHost:     os.Getenv("SMTP_HOST"),
-				SMTPPort:     port,
+				SMTPPort:     smtpPort,
 				SMTPUsername: os.Getenv("SMTP_USERNAME"),
 				SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 			},
 			RedisConfig: RedisConfig{
 				Host:     os.Getenv("REDIS_ADDR"),
 				Password: os.Getenv("REDIS_PASSWORD"),
+			},
+			GoogleConfig: GoogleConfig{
+				ClientId:     os.Getenv("GG_CLIENT_ID"),
+				ClientSecret: os.Getenv("GG_CLIENT_SECRET"),
+				RedirectUrl:  os.Getenv("GG_REDIRECT_URL"),
 			},
 		}
 	}
@@ -62,4 +60,10 @@ type EmailConfig struct {
 type RedisConfig struct {
 	Host     string
 	Password string
+}
+
+type GoogleConfig struct {
+	ClientId     string
+	ClientSecret string
+	RedirectUrl  string
 }

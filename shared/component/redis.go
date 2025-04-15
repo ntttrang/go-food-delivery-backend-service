@@ -1,4 +1,4 @@
-package shareinfras
+package shareComponent
 
 import (
 	"context"
