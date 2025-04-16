@@ -6,5 +6,6 @@ import (
 
 type ListCategoryReq struct {
 	SearchCategoryDto
-	Paging sharedModel.PagingDto `json:"paging"`
+	sharedModel.PagingDto
+	sharedModel.SortingDto
 }

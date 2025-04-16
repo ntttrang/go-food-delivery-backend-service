@@ -56,7 +56,7 @@ func NewCategoryHttpController(bulkCreateCmdHdl IBulkCreateCommandHandler, creat
 func (ctrl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.POST("", ctrl.CreateCategoryAPI)
 	g.POST("bulk-insert", ctrl.CreateBulkCategoryAPI)
-	g.POST("list", ctrl.ListCategoryAPI)
+	g.GET("", ctrl.ListCategoryAPI)
 	g.GET("/:id", ctrl.GetCategoryByIdAPI)
 	g.PATCH("/:id", ctrl.UpdateCategoryByIdAPI)
 	g.DELETE("/:id", ctrl.DeleteCategoryByIdAPI)

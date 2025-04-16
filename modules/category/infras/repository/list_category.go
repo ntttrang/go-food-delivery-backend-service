@@ -70,23 +70,24 @@ func (r *CategoryRepo) ListCategories(ctx context.Context, req categorymodel.Lis
 	var categories []categorymodel.Category
 	var total int64
 
-	db := r.dbCtx.GetMainConnection()
-
-	query := db.Model(&categorymodel.Category{})
+	db := r.dbCtx.GetMainConnection().Table(categorymodel.Category{}.TableName())
 
 	if req.Name != "" {
-		query = query.Where("name LIKE ?", "%"+req.Name+"%")
+		db = db.Where("name LIKE ?", "%"+req.Name+"%")
 	}
 
 	if req.Description != "" {
-		query = query.Where("description LIKE ?", "%"+req.Description+"%")
+		db = db.Where("description LIKE ?", "%"+req.Description+"%")
 	}
-	query = query.Where("status in (?)", []string{sharedModel.StatusActive})
+	db = db.Where("status = ?", sharedModel.StatusActive)
 
-	rs := query.Count(&total).Limit(req.Paging.Limit).Offset(req.Paging.Page).Find(&categories)
-	if rs.Error != nil {
-		return nil, 0, errors.WithStack(rs.Error)
+	sortStr := "created_at DESC"
+	if req.SortBy != "" {
+		sortStr = req.SortBy + " " + req.Direction
 	}
 
+	if err := db.Count(&total).Offset((req.Page - 1) * req.Limit).Limit(req.Limit).Order(sortStr).Find(&categories).Error; err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
 	return categories, total, nil
 }

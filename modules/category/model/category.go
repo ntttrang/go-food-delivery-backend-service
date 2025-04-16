@@ -6,11 +6,11 @@ import (
 )
 
 type Category struct {
-	Id          uuid.UUID `gorm:"column:id;"`
-	Name        string    `gorm:"column:name;"`
-	Description string    `gorm:"column:description;"`
-	Icon        []byte    `gorm:"column:icon;"`
-	Status      string    `gorm:"column:status;"`
+	Id          uuid.UUID `gorm:"column:id;" json:"id"`
+	Name        string    `gorm:"column:name;" json:"name"`
+	Description string    `gorm:"column:description;" json:"description"`
+	Icon        []byte    `gorm:"column:icon;" json:"icon"`
+	Status      string    `gorm:"column:status;" json:"status"`
 	sharedModel.DateDto
 }
 

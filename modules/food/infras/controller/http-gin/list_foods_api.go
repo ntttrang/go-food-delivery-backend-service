@@ -38,10 +38,7 @@ func (ctrl *FoodHttpController) ListFoodAPI(c *gin.Context) {
 		panic(err)
 	}
 
-	paging := sharedModel.PagingDto{
-		Page:  req.Page,
-		Limit: req.Limit,
-		Total: total,
-	}
+	paging := &pagingDto
+	paging.Total = total
 	c.JSON(http.StatusOK, gin.H{"data": data, "paging": paging})
 }
