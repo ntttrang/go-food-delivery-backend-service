@@ -4,6 +4,7 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 	"github.com/pkg/errors"
 )
 
@@ -18,7 +19,7 @@ func (r *RestaurantRepo) List(ctx context.Context, req restaurantmodel.Restauran
 	}
 
 	if req.Status != nil {
-		db = db.Where("status = ?", req.Status)
+		db = db.Where("status = ?", usermodel.StatusActive)
 	}
 
 	sortStr := "created_at DESC"

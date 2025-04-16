@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
+	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
@@ -57,6 +58,7 @@ func main() {
 	categoryModule.SetupCategoryModule(appCtx, v1)
 	restaurantmodule.SetupRestaurantModule(appCtx, v1)
 	usermodule.SetupUserModule(appCtx, v1)
+	foodmodule.SetupFoodModule(appCtx, v1)
 
 	r.Run(fmt.Sprintf(":%s", port))
 

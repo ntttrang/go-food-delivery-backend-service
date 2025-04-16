@@ -34,7 +34,6 @@ func (g *GoogleOauth) GenerateState(ctx context.Context) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state = base64.URLEncoding.EncodeToString(b)
-	//state := "fooddelivery2025"
 	return state
 }
 

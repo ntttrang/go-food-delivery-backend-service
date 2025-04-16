@@ -60,11 +60,11 @@ DROP TABLE IF EXISTS `foods`;
 CREATE TABLE `foods` (
   `id` VARCHAR(36) NOT NULL,
   `restaurant_id` VARCHAR(36)  NOT NULL,
-  `category_id` int DEFAULT NULL,
+  `category_id` VARCHAR(36) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` text,
   `price` float NOT NULL,
-  `images` json NOT NULL,
+  `images` text,
   `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

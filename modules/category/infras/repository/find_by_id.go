@@ -12,8 +12,8 @@ import (
 func (r *CategoryRepo) FindById(ctx context.Context, id uuid.UUID) (categorymodel.Category, error) {
 	var category categorymodel.Category
 	db := r.dbCtx.GetMainConnection()
-	if err := db.Where("id = ?", id).Find(&category).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	if err := db.Where("id = ?", id).First(&category).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return categorymodel.Category{}, categorymodel.ErrCategoryNotFound
 		}
 		return categorymodel.Category{}, errors.WithStack(err)

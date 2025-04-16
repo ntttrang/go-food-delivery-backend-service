@@ -88,15 +88,19 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	g.POST("/authenticate", ctrl.AuthenticateAPI) // Login
 	g.GET("/profile", authMld, ctrl.GetProfileAPI)
 	g.POST("/rpc/users/introspect-token", ctrl.IntrospectTokenRpcAPI) // RPC
-	g.GET("/generateCode", authMld, ctrl.GenerateCodeAPI)
+	g.GET("/generate-code", authMld, ctrl.GenerateCodeAPI)
 	g.GET("/verify/:code", authMld, ctrl.VerifyCodeAPI)
+	//g.GET("/reset-password", ctrl.VerifyCodeAPI)
 
 	// User info group API
-
 	users := g.Group("/users")
 	users.POST("", ctrl.CreateUserAPI)
 	users.GET("", ctrl.ListUsersAPI)
 	users.GET("/:id", ctrl.GetUserDetailAPI)
 	users.PATCH("/:id", ctrl.UpdateUseAPI)
 
+	// users.POST("/address", ctrl.CreateAddressAPI)
+	// users.GET("/address", ctrl.ListAddresssAPI)
+	// users.GET("/address/:id", ctrl.GetAddresssDetailAPI)
+	// users.PATCH("/address/:id", ctrl.UpdateAddressAPI)
 }
