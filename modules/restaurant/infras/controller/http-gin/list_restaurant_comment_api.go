@@ -8,7 +8,8 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
-func (ctrl *RestaurantHttpController) ListRestaurantCommentCommandHandler(c *gin.Context) {
+// ListRestaurantCommentAPI: List all comments belong to restaurant or user input
+func (ctrl *RestaurantHttpController) ListRestaurantCommentAPI(c *gin.Context) {
 	var req restaurantmodel.RestaurantRatingListReq
 	if err := c.ShouldBind(&req); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
@@ -17,7 +18,7 @@ func (ctrl *RestaurantHttpController) ListRestaurantCommentCommandHandler(c *gin
 	pagingDto.Process()
 	req.PagingDto = pagingDto
 
-	result, err := ctrl.listRestaurantCommentQueryCmdHandler.Execute(c.Request.Context(), req)
+	result, err := ctrl.listRestaurantCommentQueryHandler.Execute(c.Request.Context(), req)
 
 	if err != nil {
 		panic(err)

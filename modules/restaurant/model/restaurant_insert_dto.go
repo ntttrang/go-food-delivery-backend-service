@@ -8,16 +8,13 @@ import (
 )
 
 type RestaurantInsertDto struct {
-	OwnerId uuid.UUID `json:"-"`
-	Name    string    `json:"name"`
-	Addr    string    `json:"addr"`
-	CityId  int       `json:"cityId"`
-	Lat     float64   `json:"lat"`
-	Lng     float64   `json:"lng"`
-	//Cover            string  `json:"cover"` // json
-	//Logo             string  `json:"logo"`  // json
-	ShippingFeePerKm float64             `json:"shippingFeePerKm"`
-	Foods            []RestaurantFoodDto `json:"foods"`
+	OwnerId          uuid.UUID `json:"-"`
+	Name             string    `json:"name"`
+	Addr             string    `json:"addr"`
+	CityId           int       `json:"cityId"`
+	Lat              float64   `json:"lat"`
+	Lng              float64   `json:"lng"`
+	ShippingFeePerKm float64   `json:"shippingFeePerKm"`
 
 	Id uuid.UUID `json:"-"` // Internal BE
 }

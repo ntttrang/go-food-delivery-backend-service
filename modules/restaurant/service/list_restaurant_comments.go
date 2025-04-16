@@ -7,30 +7,31 @@ import (
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 type IListRestaurantCommentsRepo interface {
-	FindByRestaurantId(ctx context.Context, restaurantId string) ([]restaurantmodel.RestaurantRating, error)
+	FindByRestaurantIdOrUserId(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRating, int64, error)
 }
 
-type IRestaurantRepo interface {
-	FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]restaurantmodel.Restaurant, error)
+type IUserRPCClientRepo interface {
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantmodel.User, error)
 }
 
 type ListRestaurantCommentsQueryHandler struct {
-	repo       IListRestaurantCommentsRepo
-	reststRepo IRestaurantRepo
+	restrepo IListRestaurantCommentsRepo
+	userRepo IUserRPCClientRepo
 }
 
-func NewListRestaurantCommentsQueryHandler(repo IListRestaurantCommentsRepo, reststRepo IRestaurantRepo) *ListRestaurantCommentsQueryHandler {
+func NewListRestaurantCommentsQueryHandler(restrepo IListRestaurantCommentsRepo, userRepo IUserRPCClientRepo) *ListRestaurantCommentsQueryHandler {
 	return &ListRestaurantCommentsQueryHandler{
-		repo:       repo,
-		reststRepo: reststRepo,
+		restrepo: restrepo,
+		userRepo: userRepo,
 	}
 }
 
-func (hdl *ListRestaurantCommentsQueryHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRatingListRes, error) {
-	restaurantRatings, err := hdl.repo.FindByRestaurantId(ctx, req.RestaurantId)
+func (hdl *ListRestaurantCommentsQueryHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) (*restaurantmodel.RestaurantRatingListRes, error) {
+	restaurantRatings, total, err := hdl.restrepo.FindByRestaurantIdOrUserId(ctx, req)
 	if err != nil {
 		if errors.Is(err, restaurantmodel.ErrRestaurantNotFound) {
 			return nil, datatype.ErrNotFound.WithDebug(restaurantmodel.ErrRestaurantNotFound.Error())
@@ -39,29 +40,36 @@ func (hdl *ListRestaurantCommentsQueryHandler) Execute(ctx context.Context, req 
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	var restaurantIds []uuid.UUID
 	var userIds []uuid.UUID
 	for _, rr := range restaurantRatings {
-		restaurantIds = append(restaurantIds, rr.RestaurantID)
 		userIds = append(userIds, rr.UserID)
 	}
 
-	restaurants, err := hdl.reststRepo.FindRestaurantByIds(ctx, restaurantIds)
+	userMap, err := hdl.userRepo.FindByIds(ctx, userIds)
 	if err != nil {
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	restaurantMap := make(map[uuid.UUID]string, len(restaurants))
-	for _, r := range restaurants {
-		restaurantMap[r.Id] = r.Name
+	var rsratings []restaurantmodel.RestaurantRatingListDto
+	for _, rr := range restaurantRatings {
+		var rs restaurantmodel.RestaurantRatingListDto
+		rs.Id = rr.ID
+		rs.UserId = rr.UserID
+		rs.FirstName = userMap[rr.UserID].FirstName
+		rs.LastName = userMap[rr.UserID].LastName
+		rs.RestaurantId = rr.RestaurantID
+		rs.Comment = rr.Comment
+		rs.Rating = rr.Point
+		rs.CreatedAt = rr.CreatedAt
+		rsratings = append(rsratings, rs)
 	}
 
-	var resp []restaurantmodel.RestaurantRatingListRes
-	for _, rr := range restaurantRatings {
-		var rs restaurantmodel.RestaurantRatingListRes
-		rs.RestaurantId = rr.RestaurantID
-		rs.RestaurantName = restaurantMap[rr.RestaurantID]
-		resp = append(resp, rs)
+	var resp restaurantmodel.RestaurantRatingListRes
+	resp.Items = rsratings
+	resp.Pagination = sharedModel.PagingDto{
+		Page:  req.Page,
+		Limit: req.Limit,
+		Total: total,
 	}
-	return resp, nil
+	return &resp, nil
 }

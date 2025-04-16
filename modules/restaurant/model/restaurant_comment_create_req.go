@@ -3,19 +3,19 @@ package restaurantmodel
 import "github.com/google/uuid"
 
 type RestaurantCommentCreateReq struct {
-	UserID       string   `json:"userId"`
-	RestaurantID string   `json:"restaurantId"`
-	Point        *float64 `json:"point"`
-	Comment      *string  `json:"comment"`
+	UserID       uuid.UUID `json:"-"` // Get from Token
+	RestaurantID uuid.UUID `json:"restaurantId"`
+	Point        *float64  `json:"point"`
+	Comment      *string   `json:"comment"`
 
 	Id uuid.UUID `json:"-"` // Internal BE
 }
 
 func (r RestaurantCommentCreateReq) Validate() error {
-	if r.UserID == "" {
+	if r.UserID.String() == "" {
 		return ErrUserIdRequired
 	}
-	if r.RestaurantID == "" {
+	if r.RestaurantID.String() == "" {
 		return ErrRestaurantIdRequired
 	}
 	if r.Point == nil && (r.Comment == nil || *r.Comment == "") {

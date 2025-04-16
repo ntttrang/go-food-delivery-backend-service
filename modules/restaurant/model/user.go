@@ -1,5 +1,9 @@
 package restaurantmodel
 
+import "github.com/google/uuid"
+
 type User struct {
-	Id string
+	Id        uuid.UUID
+	FirstName string
+	LastName  string
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	restaurantHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/controller/http-gin"
 	restaurantgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/gorm-mysql"
+	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/rpc-client"
 	restaurantService "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
@@ -26,15 +27,18 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	deleteCmdHdl := restaurantService.NewDeleteCommandHandler(restaurantRepo)
 
 	createRestaurantFavoriteCmdl := restaurantService.NewAddFavoritesCommandHandler(restaurantLikeRepo)
-	deleteRestaurantFavoriteCmdl := restaurantService.NewDeleteRestaurantLikeCommandHandler(restaurantLikeRepo)
+	favoriteRestaurantQueryHdl := restaurantService.NewGetFavoritesRestaurantQueryHandler(restaurantRepo)
+
+	userRPCClient := rpcclient.NewUserRPCClient(appCtx.GetConfig().UserServiceURL)
 
 	createCommentRestaurantCmdl := restaurantService.NewCommentRestaurantCommandHandler(restaurantRatingRepo)
-	listCommentRestaurantCmdl := restaurantService.NewListRestaurantCommentsQueryHandler(restaurantRatingRepo, restaurantRepo)
+	listCommentRestaurantCmdl := restaurantService.NewListRestaurantCommentsQueryHandler(restaurantRatingRepo, userRPCClient)
+	deleteCommentRestaurantCmdl := restaurantService.NewDeleteCommentCommandHandler(restaurantRatingRepo)
 
 	resCtl := restaurantHttpgin.NewRestaurantHttpController(
 		createCmdHdl, listQueryHdl, getDetailQueryHdl, updateCmdHdl, deleteCmdHdl,
-		createRestaurantFavoriteCmdl, deleteRestaurantFavoriteCmdl,
-		createCommentRestaurantCmdl, listCommentRestaurantCmdl)
+		createRestaurantFavoriteCmdl, favoriteRestaurantQueryHdl,
+		createCommentRestaurantCmdl, listCommentRestaurantCmdl, deleteCommentRestaurantCmdl)
 
 	restaurants := g.Group("/restaurants")
 	resCtl.SetupRoutes(restaurants)

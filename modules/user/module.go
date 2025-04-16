@@ -41,6 +41,7 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		registerCmdHdl, signUpGgCmdHdl, authCmdHdl, introspectCmdHdl,
 		generateCode, verifyCode,
 		listQueryHdl, getDetailQueryHdl, createCmdHdl, updateCmdHdl,
+		userRepo, // user RPC
 	)
 
 	// Setup router

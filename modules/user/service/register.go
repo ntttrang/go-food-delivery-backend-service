@@ -34,10 +34,11 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *usermod
 
 	existUser, err := hdl.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
-		if errors.Is(err, usermodel.ErrUserNotFound) {
-			return datatype.ErrNotFound.WithDebug(usermodel.ErrUserNotFound.Error())
+		if !errors.Is(err, usermodel.ErrUserNotFound) {
+			//return datatype.ErrNotFound.WithDebug(usermodel.ErrUserNotFound.Error())
+			return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 		}
-		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+
 	}
 
 	if existUser != nil {

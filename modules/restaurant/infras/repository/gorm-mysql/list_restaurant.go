@@ -17,10 +17,7 @@ func (r *RestaurantRepo) List(ctx context.Context, req restaurantmodel.Restauran
 	if req.CityId != nil {
 		db = db.Where("city_id = ?", req.CityId)
 	}
-
-	if req.Status != nil {
-		db = db.Where("status = ?", usermodel.StatusActive)
-	}
+	db = db.Where("status = ?", usermodel.StatusActive)
 
 	sortStr := "created_at DESC"
 	if req.SortBy != "" {

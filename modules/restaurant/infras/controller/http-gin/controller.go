@@ -31,19 +31,22 @@ type IDeleteCommandHandler interface {
 }
 
 type IAddFavoritesCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantLike) error
+	Execute(ctx context.Context, req restaurantmodel.RestaurantLike) (*string, error)
 }
-
-type IDeleteFavoritesCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantLike) error
+type IListFavoritesQueryHandler interface {
+	Execute(ctx context.Context, req restaurantmodel.FavoriteRestaurantListReq) (restaurantmodel.RestaurantSearchRes, error)
 }
 
 type ICreateRestaurantCommentCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantCommentCreateReq) error
+	Execute(ctx context.Context, req *restaurantmodel.RestaurantCommentCreateReq) error
 }
 
 type IListRestaurantCommentsQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRatingListRes, error)
+	Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) (*restaurantmodel.RestaurantRatingListRes, error)
+}
+
+type IDeleteCommentCommandHandler interface {
+	Execute(ctx context.Context, req restaurantmodel.RestaurantDeleteCommentReq) error
 }
 
 type RestaurantHttpController struct {
@@ -53,17 +56,18 @@ type RestaurantHttpController struct {
 	updateCmdHdl      IUpdateRestaurantCommandHandler
 	deleteCmdHdl      IDeleteCommandHandler
 
-	addFavoritesCmdHdl    IAddFavoritesCommandHandler
-	deleteFavoritesCmdHdl IDeleteFavoritesCommandHandler
+	addFavoritesCmdHdl         IAddFavoritesCommandHandler
+	favoriteRestaurantQueryHdl IListFavoritesQueryHandler
 
-	createCommentRestaurantCmdHandler    ICreateRestaurantCommentCommandHandler
-	listRestaurantCommentQueryCmdHandler IListRestaurantCommentsQueryHandler
+	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler
+	listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler
+	deleteRestaurantCmdHdl            IDeleteCommentCommandHandler
 }
 
 func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler,
 	updateCmdHdl IUpdateRestaurantCommandHandler, deleteCmdHdl IDeleteCommandHandler,
-	addFavoritesCmdHdl IAddFavoritesCommandHandler, deleteFavoritesCmdHdl IDeleteFavoritesCommandHandler,
-	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler, listRestaurantCommentQueryCmdHandler IListRestaurantCommentsQueryHandler) *RestaurantHttpController {
+	addFavoritesCmdHdl IAddFavoritesCommandHandler, favoriteRestaurantQueryHdl IListFavoritesQueryHandler,
+	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler, listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler, deleteRestaurantCmdHdl IDeleteCommentCommandHandler) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
 		listQueryHdl:      listQueryHdl,
@@ -71,27 +75,30 @@ func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHd
 		updateCmdHdl:      updateCmdHdl,
 		deleteCmdHdl:      deleteCmdHdl,
 
-		addFavoritesCmdHdl:    addFavoritesCmdHdl,
-		deleteFavoritesCmdHdl: deleteFavoritesCmdHdl,
+		addFavoritesCmdHdl:         addFavoritesCmdHdl,
+		favoriteRestaurantQueryHdl: favoriteRestaurantQueryHdl,
 
-		createCommentRestaurantCmdHandler:    createCommentRestaurantCmdHandler,
-		listRestaurantCommentQueryCmdHandler: listRestaurantCommentQueryCmdHandler,
+		createCommentRestaurantCmdHandler: createCommentRestaurantCmdHandler,
+		listRestaurantCommentQueryHandler: listRestaurantCommentQueryHandler,
+		deleteRestaurantCmdHdl:            deleteRestaurantCmdHdl,
 	}
 }
 
 func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
 	introspectRpcClient := sharedrpc.NewIntrospectRpcClient(os.Getenv("USER_SERVICE_URL"))
 	g.POST("", middleware.Auth(introspectRpcClient), ctrl.CreateRestaurantAPI)
-
-	g.GET("list", ctrl.ListRestaurantsAPI)     // Query params
+	g.GET("", ctrl.ListRestaurantsAPI)         // Query params
 	g.GET("/:id", ctrl.GetRestaurantDetailAPI) // Path Variables
 	g.PATCH("/:id", ctrl.UpdateRestaurantByIdAPI)
 	g.DELETE("/:id", ctrl.DeleteRestaurantByIdAPI)
 
-	g.POST("/favorites/add", ctrl.CreateFavoritesRestaurantAPI)
-	g.DELETE("/favorites/delete", ctrl.DeleteFavoritesRestaurantAPI)
+	g.POST("/favorites", middleware.Auth(introspectRpcClient), ctrl.UpdateFavoritesRestaurantAPI)
+	g.GET("/favorites", middleware.Auth(introspectRpcClient), ctrl.ListFavoriteRestaurantsAPI)
 
-	g.POST("/comments/add", ctrl.CreateRestaurantCommentCommandHandler)
-	g.GET("/comments/list", ctrl.ListRestaurantCommentCommandHandler)
-	g.DELETE("/comments/delete", ctrl.DeleteFavoritesRestaurantAPI)
+	g.POST("/comments", middleware.Auth(introspectRpcClient), ctrl.CreateRestaurantCommentAPI)
+	g.GET("/comments", ctrl.ListRestaurantCommentAPI) // Get comment of comment/ Get userId's comment
+	g.DELETE("/comments/:id", ctrl.DeleteRestaurantCommentAPI)
+
+	// Setup menu
+
 }

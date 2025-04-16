@@ -14,7 +14,7 @@ type IUserRepo interface {
 }
 
 type ICreateRestaurantRepository interface {
-	Insert(ctx context.Context, restaurant restaurantmodel.Restaurant, restaurantFoods []restaurantmodel.RestaurantFood) error
+	Insert(ctx context.Context, restaurant restaurantmodel.Restaurant) error
 }
 
 type IBulkCreateRestaurantFoodRepository interface {
@@ -69,24 +69,11 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, req *restaurantmodel
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
-
-	// Validate data
-
 	restaurant := req.ConvertToRestaurant()
 	restaurant.Id, _ = uuid.NewV7()
 	restaurant.Status = sharedModel.StatusActive // Always set Active Status when insert
 
-	foods := req.Foods
-	var restaurantFoods []restaurantmodel.RestaurantFood
-	if len(foods) > 0 {
-		for _, f := range foods {
-			restaurantFood := f.ConvertToRestaurantFood()
-			restaurantFood.RestaurantID = restaurant.Id
-			restaurantFoods = append(restaurantFoods, *restaurantFood)
-		}
-	}
-
-	if err := s.createRestaurantRepo.Insert(ctx, *restaurant, restaurantFoods); err != nil {
+	if err := s.createRestaurantRepo.Insert(ctx, *restaurant); err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 

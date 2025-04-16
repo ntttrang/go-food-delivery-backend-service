@@ -4,19 +4,31 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 )
 
-func (r *RestaurantRatingRepo) FindByRestaurantId(ctx context.Context, restaurantId string) ([]restaurantmodel.RestaurantRating, error) {
-	var restaurantRating []restaurantmodel.RestaurantRating
-	db := r.dbCtx.GetMainConnection()
-	if err := db.Where("restaurant_id = ?", restaurantId).Find(&restaurantRating).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, restaurantmodel.ErrRestaurantRatingNotFound
-		}
-		return nil, errors.WithStack(err)
+func (r *RestaurantRatingRepo) FindByRestaurantIdOrUserId(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRating, int64, error) {
+	var restaurantRatings []restaurantmodel.RestaurantRating
+
+	tx := r.dbCtx.GetMainConnection().
+		Model(&restaurantmodel.RestaurantRating{}).
+		Select("id, comment, point, created_at, user_id, restaurant_id").
+		Where("status = ?", sharedModel.StatusActive)
+
+	if req.RestaurantId != "" {
+		tx = tx.Where("restaurant_id = ?", req.RestaurantId)
+	}
+	if req.UserId != "" {
+		tx = tx.Where("user_id = ?", req.UserId)
 	}
 
-	return restaurantRating, nil
+	sortStr := "created_at DESC"
+
+	var total int64
+	if err := tx.Count(&total).Offset((req.Page - 1) * req.Limit).Limit(req.Limit).Order(sortStr).Find(&restaurantRatings).Error; err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
+
+	return restaurantRatings, total, nil
 }

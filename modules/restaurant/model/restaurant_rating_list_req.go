@@ -1,15 +1,19 @@
 package restaurantmodel
 
 import (
-	"github.com/google/uuid"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 type RestaurantRatingListReq struct {
 	RestaurantId string `json:"restaurantId" form:"restaurantId"`
+	UserId       string `json:"userId" form:"userId"`
 	sharedModel.PagingDto
 }
 
-type RestaurantRatingSearchDto struct {
-	RestaurantId uuid.UUID `json:"restaurantId" form:"restaurantId"`
+func (r *RestaurantRatingListReq) Validate() error {
+	if r.RestaurantId == "" && r.UserId == "" {
+		return ErrFieldRequired
+	}
+
+	return nil
 }

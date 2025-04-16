@@ -48,6 +48,10 @@ type ISignUpGoogleCommandHandler interface {
 	AuthenticateByGoogle(ctx context.Context, state string, code string) (*usermodel.AuthenticateRes, error)
 }
 
+type IRepoRPCUser interface {
+	FindByIds(ctx context.Context, ids []uuid.UUID) ([]usermodel.User, error)
+}
+
 type UserHttpController struct {
 	registerUserCmdHdl IRegisterUserCommandHandler
 	signUpGgCmdHdl     ISignUpGoogleCommandHandler
@@ -59,11 +63,13 @@ type UserHttpController struct {
 	getDetailQueryHdl  IGetDetailQueryHandler
 	createCmdHdl       ICreateCommandHandler
 	updateCmdHdl       IUpdateCommandHandler
+	rpcUser            IRepoRPCUser
 }
 
 func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signUpGgCmdHdl ISignUpGoogleCommandHandler, authCmdHdl IAuthenticateCommandHandler, introspectCmdHdl IntrospectCommandHandler,
 	generateCode IGenerateCode, verifyCode IVerifyCode,
-	listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler, createCmdHdl ICreateCommandHandler, updateCmdHdl IUpdateCommandHandler) *UserHttpController {
+	listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler, createCmdHdl ICreateCommandHandler, updateCmdHdl IUpdateCommandHandler,
+	rpcUser IRepoRPCUser) *UserHttpController {
 	return &UserHttpController{
 		registerUserCmdHdl: registerUserCmdHdl,
 		signUpGgCmdHdl:     signUpGgCmdHdl,
@@ -75,6 +81,7 @@ func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signU
 		getDetailQueryHdl:  getDetailQueryHdl,
 		createCmdHdl:       createCmdHdl,
 		updateCmdHdl:       updateCmdHdl,
+		rpcUser:            rpcUser,
 	}
 }
 
@@ -92,6 +99,9 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	g.GET("/verify/:code", authMld, ctrl.VerifyCodeAPI)
 	//g.GET("/reset-password", ctrl.VerifyCodeAPI)
 
+	// RPC
+	g.POST("/rpc/users/find-by-ids", ctrl.RPCGetByIds)
+
 	// User info group API
 	users := g.Group("/users")
 	users.POST("", ctrl.CreateUserAPI)
@@ -99,8 +109,10 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	users.GET("/:id", ctrl.GetUserDetailAPI)
 	users.PATCH("/:id", ctrl.UpdateUseAPI)
 
+	// Address
 	// users.POST("/address", ctrl.CreateAddressAPI)
 	// users.GET("/address", ctrl.ListAddresssAPI)
 	// users.GET("/address/:id", ctrl.GetAddresssDetailAPI)
 	// users.PATCH("/address/:id", ctrl.UpdateAddressAPI)
+
 }

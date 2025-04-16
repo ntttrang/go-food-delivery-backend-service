@@ -20,13 +20,13 @@ func NewCommentRestaurantCommandHandler(repo IInsertCommentRestaurantRepo) *Crea
 	return &CreateRestaurantCommentCommandHandler{repo: repo}
 }
 
-func (hdl *CreateRestaurantCommentCommandHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantCommentCreateReq) error {
+func (hdl *CreateRestaurantCommentCommandHandler) Execute(ctx context.Context, req *restaurantmodel.RestaurantCommentCreateReq) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 
 	req.Id, _ = uuid.NewV7()
-	if err := hdl.repo.Insert(ctx, &req); err != nil {
+	if err := hdl.repo.Insert(ctx, req); err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 	return nil
