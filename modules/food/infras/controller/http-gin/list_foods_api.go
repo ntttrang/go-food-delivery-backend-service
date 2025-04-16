@@ -38,6 +38,10 @@ func (ctrl *FoodHttpController) ListFoodAPI(c *gin.Context) {
 		panic(err)
 	}
 
+	if data == nil {
+		data = make([]foodmodel.ListFoodRes, 0)
+	}
+
 	paging := &pagingDto
 	paging.Total = total
 	c.JSON(http.StatusOK, gin.H{"data": data, "paging": paging})
