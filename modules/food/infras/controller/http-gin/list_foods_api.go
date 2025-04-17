@@ -33,16 +33,10 @@ func (ctrl *FoodHttpController) ListFoodAPI(c *gin.Context) {
 		SortingDto:    sortingDto,
 	}
 
-	data, total, err := ctrl.listCmdHdl.Execute(c.Request.Context(), req)
+	data, err := ctrl.listCmdHdl.Execute(c.Request.Context(), req)
 	if err != nil {
 		panic(err)
 	}
 
-	if data == nil {
-		data = make([]foodmodel.ListFoodRes, 0)
-	}
-
-	paging := &pagingDto
-	paging.Total = total
-	c.JSON(http.StatusOK, gin.H{"data": data, "paging": paging})
+	c.JSON(http.StatusOK, gin.H{"data": data})
 }

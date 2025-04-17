@@ -115,7 +115,7 @@ func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.PATCH("/:id", ctrl.UpdateRestaurantByIdAPI)
 	g.DELETE("/:id", ctrl.DeleteRestaurantByIdAPI)
 
-	// Restaurant Favorites
+	// Favorites Restaurant
 	g.POST("/favorites", middleware.Auth(introspectRpcClient), ctrl.UpdateFavoritesRestaurantAPI)
 	g.GET("/favorites", middleware.Auth(introspectRpcClient), ctrl.ListFavoriteRestaurantsAPI)
 

@@ -5,6 +5,7 @@ import (
 
 	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 type IListRep interface {
@@ -21,25 +22,33 @@ func NewListCommandHandler(repo IListRep) *ListCommandHandler {
 	}
 }
 
-func (s *ListCommandHandler) Execute(ctx context.Context, req foodmodel.ListFoodReq) ([]foodmodel.ListFoodRes, int64, error) {
-	categories, total, err := s.repo.ListFoods(ctx, req)
+func (s *ListCommandHandler) Execute(ctx context.Context, req foodmodel.ListFoodReq) (*foodmodel.ListFoodRes, error) {
+	foods, total, err := s.repo.ListFoods(ctx, req)
 
 	if err != nil {
-		return nil, 0, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	return convertListCategoryRes(categories), total, nil
+	foodDtos := convertListCategoryRes(foods)
+	var resp foodmodel.ListFoodRes
+	resp.Items = foodDtos
+	resp.Pagination = sharedModel.PagingDto{
+		Page:  req.Page,
+		Limit: req.Limit,
+		Total: total,
+	}
+	return &resp, nil
 }
 
-func convertListCategoryRes(cats []foodmodel.Food) []foodmodel.ListFoodRes {
-	var listCategoryRes []foodmodel.ListFoodRes
-	for _, cat := range cats {
-		var listCatsDto foodmodel.ListFoodRes
-		listCatsDto.Id = cat.Id
-		listCatsDto.Name = cat.Name
-		listCatsDto.Description = cat.Description
-		listCatsDto.Status = cat.Status
-		listCatsDto.UpdatedAt = cat.UpdatedAt
+func convertListCategoryRes(foods []foodmodel.Food) []foodmodel.FoodSearchResDto {
+	var listCategoryRes []foodmodel.FoodSearchResDto
+	for _, f := range foods {
+		var listCatsDto foodmodel.FoodSearchResDto
+		listCatsDto.Id = f.Id
+		listCatsDto.Name = f.Name
+		listCatsDto.Description = f.Description
+		listCatsDto.Status = f.Status
+		listCatsDto.UpdatedAt = f.UpdatedAt
 		listCategoryRes = append(listCategoryRes, listCatsDto)
 	}
 	return listCategoryRes

@@ -9,3 +9,21 @@ type FoodRepo struct {
 func NewFoodRepo(dbCtx shareinfras.IDbContext) *FoodRepo {
 	return &FoodRepo{dbCtx: dbCtx}
 }
+
+// Food Like
+type FoodLikeRepo struct {
+	dbCtx shareinfras.IDbContext
+}
+
+func NewFoodLikeRepo(dbCtx shareinfras.IDbContext) *FoodLikeRepo {
+	return &FoodLikeRepo{dbCtx: dbCtx}
+}
+
+// Food Rating
+type FoodRatingRepo struct {
+	dbCtx shareinfras.IDbContext
+}
+
+func NewFoodRatingRepo(dbCtx shareinfras.IDbContext) *FoodRatingRepo {
+	return &FoodRatingRepo{dbCtx: dbCtx}
+}

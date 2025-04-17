@@ -6,6 +6,11 @@ import (
 )
 
 type ListFoodRes struct {
+	Items      []FoodSearchResDto    `json:"items"`
+	Pagination sharedModel.PagingDto `json:"pagination"`
+}
+
+type FoodSearchResDto struct {
 	Id          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
