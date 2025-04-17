@@ -13,4 +13,7 @@ var (
 	ErrUserNotFound        = errors.New("user not found")
 	ErrIdRequired          = errors.New("id is required")
 	ErrInvalidPhoneNumber  = errors.New("phone number invalid")
+	ErrAddrRequired        = errors.New("addr is required")
+	ErrDuplicated          = errors.New("addr is duplicated")
+	ErrUserAddrNotFound    = errors.New("user address not found")
 )

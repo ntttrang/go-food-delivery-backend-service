@@ -11,3 +11,11 @@ type UserRepo struct {
 func NewUserRepo(dbCtx shareinfras.IDbContext) *UserRepo {
 	return &UserRepo{dbCtx: dbCtx}
 }
+
+type UserAddressRepo struct {
+	dbCtx shareinfras.IDbContext
+}
+
+func NewUserAddressRepo(dbCtx shareinfras.IDbContext) *UserAddressRepo {
+	return &UserAddressRepo{dbCtx: dbCtx}
+}

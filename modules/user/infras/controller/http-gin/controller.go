@@ -52,6 +52,14 @@ type IRepoRPCUser interface {
 	FindByIds(ctx context.Context, ids []uuid.UUID) ([]usermodel.User, error)
 }
 
+type IListAddrQueryHandler interface {
+	Execute(ctx context.Context, req usermodel.UserAddrListReq) (usermodel.UserAddrListRes, error)
+}
+
+type ICreateAddrCommandHandler interface {
+	Execute(ctx context.Context, req *usermodel.CreateUserAddrReq) error
+}
+
 type UserHttpController struct {
 	registerUserCmdHdl IRegisterUserCommandHandler
 	signUpGgCmdHdl     ISignUpGoogleCommandHandler
@@ -59,17 +67,23 @@ type UserHttpController struct {
 	introspectCmdHdl   IntrospectCommandHandler
 	generateCode       IGenerateCode
 	verifyCode         IVerifyCode
-	listQueryHdl       IListQueryHandler
-	getDetailQueryHdl  IGetDetailQueryHandler
-	createCmdHdl       ICreateCommandHandler
-	updateCmdHdl       IUpdateCommandHandler
-	rpcUser            IRepoRPCUser
+
+	listQueryHdl      IListQueryHandler
+	getDetailQueryHdl IGetDetailQueryHandler
+	createCmdHdl      ICreateCommandHandler
+	updateCmdHdl      IUpdateCommandHandler
+
+	rpcUser IRepoRPCUser
+
+	listAddrQueryHdl IListAddrQueryHandler
+	createAddrCmdHdl ICreateAddrCommandHandler
 }
 
 func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signUpGgCmdHdl ISignUpGoogleCommandHandler, authCmdHdl IAuthenticateCommandHandler, introspectCmdHdl IntrospectCommandHandler,
 	generateCode IGenerateCode, verifyCode IVerifyCode,
 	listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler, createCmdHdl ICreateCommandHandler, updateCmdHdl IUpdateCommandHandler,
-	rpcUser IRepoRPCUser) *UserHttpController {
+	rpcUser IRepoRPCUser,
+	listAddrQueryHdl IListAddrQueryHandler, createAddrCmdHdl ICreateAddrCommandHandler) *UserHttpController {
 	return &UserHttpController{
 		registerUserCmdHdl: registerUserCmdHdl,
 		signUpGgCmdHdl:     signUpGgCmdHdl,
@@ -82,6 +96,8 @@ func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signU
 		createCmdHdl:       createCmdHdl,
 		updateCmdHdl:       updateCmdHdl,
 		rpcUser:            rpcUser,
+		listAddrQueryHdl:   listAddrQueryHdl,
+		createAddrCmdHdl:   createAddrCmdHdl,
 	}
 }
 
@@ -110,9 +126,10 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	users.PATCH("/:id", ctrl.UpdateUseAPI)
 
 	// Address
-	// users.POST("/address", ctrl.CreateAddressAPI)
-	// users.GET("/address", ctrl.ListAddresssAPI)
-	// users.GET("/address/:id", ctrl.GetAddresssDetailAPI)
-	// users.PATCH("/address/:id", ctrl.UpdateAddressAPI)
+	users.POST("/address", authMld, ctrl.CreateUserAddrAPI)
+	users.GET("/address", ctrl.ListUserAddrAPI)
+	//users.GET("/address/:id", ctrl.GetUserAddrDetailAPI)
+	//users.PATCH("/address/:id", ctrl.UpdateUserAddrAPI)
+	//users.DELETE("/address/:id", ctrl.DeleteAddrAPI)
 
 }
