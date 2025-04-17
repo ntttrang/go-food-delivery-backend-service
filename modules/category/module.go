@@ -19,12 +19,13 @@ func SetupCategoryModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	getDetailCmdHdl := categoryService.NewGetDetailQueryHandler(catRepo)
 	updateCmdHdl := categoryService.NewUpdateCommandHandler(catRepo)
 	deleteCmdHdl := categoryService.NewDeleteByIdCommandHandler(catRepo)
-	catCtl := categoryHttpgin.NewCategoryHttpController(bulkCreateCmdHdl, createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl)
+
+	catCtl := categoryHttpgin.NewCategoryHttpController(bulkCreateCmdHdl, createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl, catRepo)
 
 	// Setup router
 	categories := g.Group("/categories")
 	catCtl.SetupRoutes(categories)
 
 	// Setup router ( internal)
-	//catCtl.SetupRoutesRPC(g)
+	catCtl.SetupRoutesRPC(g)
 }

@@ -1,6 +1,7 @@
 package restaurantgormmysql
 
 import (
+	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/rpc-client"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
@@ -15,11 +16,15 @@ func NewRestaurantRepo(dbCtx shareinfras.IDbContext) *RestaurantRepo {
 
 // Restaurant Food
 type RestaurantFoodRepo struct {
-	dbCtx shareinfras.IDbContext
+	dbCtx         shareinfras.IDbContext
+	foodRPCClient rpcclient.FoodRPCClient
 }
 
-func NewRestaurantFoodRepo(dbCtx shareinfras.IDbContext) *RestaurantFoodRepo {
-	return &RestaurantFoodRepo{dbCtx: dbCtx}
+func NewRestaurantFoodRepo(dbCtx shareinfras.IDbContext, foodRPCClient rpcclient.FoodRPCClient) *RestaurantFoodRepo {
+	return &RestaurantFoodRepo{
+		dbCtx:         dbCtx,
+		foodRPCClient: foodRPCClient,
+	}
 }
 
 // Restaurant Like

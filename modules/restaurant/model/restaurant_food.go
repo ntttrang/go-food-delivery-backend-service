@@ -6,15 +6,12 @@ import (
 )
 
 type RestaurantFood struct {
-	RestaurantID uuid.UUID `gorm:"column:restaurant_id"`
-	FoodID       uuid.UUID `gorm:"column:food_id"`
+	RestaurantId uuid.UUID `gorm:"column:restaurant_id"`
+	FoodId       uuid.UUID `gorm:"column:food_id"`
 	Status       string    `gorm:"column:status"`
 	sharedmodel.DateDto
 }
 
-func (r RestaurantFoodDto) ConvertToRestaurantFood() *RestaurantFood {
-	return &RestaurantFood{
-		FoodID: r.FoodID,
-		Status: r.Status,
-	}
+func (RestaurantFood) TableName() string {
+	return "restaurant_foods"
 }

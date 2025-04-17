@@ -32,6 +32,10 @@ type IDeleteCommandHandler interface {
 	Execute(ctx context.Context, req categorymodel.CategoryDeleteReq) error
 }
 
+type IRepoRPCCategory interface {
+	FindByIds(ctx context.Context, ids []uuid.UUID) ([]categorymodel.Category, error)
+}
+
 type CategoryHttpController struct {
 	bulkCreateCmdHdl         IBulkCreateCommandHandler
 	createCmdHdl             ICreateCommandHandler
@@ -39,10 +43,12 @@ type CategoryHttpController struct {
 	getDetailCmdHdl          IGetDetailCommandHandler
 	updateByIdCommandHandler IUpdateByIdCommandHandler
 	deleteCmdHdl             IDeleteCommandHandler
+	repoRPCCategory          IRepoRPCCategory
 }
 
 func NewCategoryHttpController(bulkCreateCmdHdl IBulkCreateCommandHandler, createCmdHdl ICreateCommandHandler, listCmdHdl IListCommandHandler, getDetailCmdHdl IGetDetailCommandHandler,
-	updateByIdCommandHandler IUpdateByIdCommandHandler, deleteCmdHdl IDeleteCommandHandler) *CategoryHttpController {
+	updateByIdCommandHandler IUpdateByIdCommandHandler, deleteCmdHdl IDeleteCommandHandler,
+	repoRPCCategory IRepoRPCCategory) *CategoryHttpController {
 	return &CategoryHttpController{
 		bulkCreateCmdHdl:         bulkCreateCmdHdl,
 		createCmdHdl:             createCmdHdl,
@@ -50,6 +56,8 @@ func NewCategoryHttpController(bulkCreateCmdHdl IBulkCreateCommandHandler, creat
 		getDetailCmdHdl:          getDetailCmdHdl,
 		updateByIdCommandHandler: updateByIdCommandHandler,
 		deleteCmdHdl:             deleteCmdHdl,
+
+		repoRPCCategory: repoRPCCategory,
 	}
 }
 
@@ -60,4 +68,8 @@ func (ctrl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.GET("/:id", ctrl.GetCategoryByIdAPI)
 	g.PATCH("/:id", ctrl.UpdateCategoryByIdAPI)
 	g.DELETE("/:id", ctrl.DeleteCategoryByIdAPI)
+}
+
+func (ctrl *CategoryHttpController) SetupRoutesRPC(g *gin.RouterGroup) {
+	g.POST("/rpc/categories/find-by-ids", ctrl.RPCGetByIds)
 }

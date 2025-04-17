@@ -12,8 +12,11 @@ import (
 func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	dbCtx := appCtx.DbContext()
 
+	foodRPCClient := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
+	catRPCClient := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().CatServiceURL)
+
 	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(dbCtx)
-	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx)
+	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx, *foodRPCClient)
 	restaurantLikeRepo := restaurantgormmysql.NewRestaurantLikeRepo(dbCtx)
 	restaurantRatingRepo := restaurantgormmysql.NewRestaurantRatingRepo(dbCtx)
 
@@ -35,10 +38,15 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	listCommentRestaurantCmdl := restaurantService.NewListRestaurantCommentsQueryHandler(restaurantRatingRepo, userRPCClient)
 	deleteCommentRestaurantCmdl := restaurantService.NewDeleteCommentCommandHandler(restaurantRatingRepo)
 
+	createMenuItemCmdHdl := restaurantService.NewCreateMenuItemCommandHandler(restaurantFoodRepo)
+	listMenuItemCmdHdl := restaurantService.NewListMenuItemQueryHandler(restaurantFoodRepo, foodRPCClient, catRPCClient)
+
 	resCtl := restaurantHttpgin.NewRestaurantHttpController(
 		createCmdHdl, listQueryHdl, getDetailQueryHdl, updateCmdHdl, deleteCmdHdl,
 		createRestaurantFavoriteCmdl, favoriteRestaurantQueryHdl,
-		createCommentRestaurantCmdl, listCommentRestaurantCmdl, deleteCommentRestaurantCmdl)
+		createCommentRestaurantCmdl, listCommentRestaurantCmdl, deleteCommentRestaurantCmdl,
+		createMenuItemCmdHdl, listMenuItemCmdHdl,
+	)
 
 	restaurants := g.Group("/restaurants")
 	resCtl.SetupRoutes(restaurants)

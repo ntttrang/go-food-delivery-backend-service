@@ -8,6 +8,7 @@ import (
 type Config struct {
 	UserServiceURL string
 	CatServiceURL  string
+	FoodServiceURL string
 	EmailConfig    EmailConfig
 	RedisConfig    RedisConfig
 	GoogleConfig   GoogleConfig
@@ -26,6 +27,7 @@ func NewConfig() *Config {
 		config = &Config{
 			UserServiceURL: os.Getenv("USER_SERVICE_URL"),
 			CatServiceURL:  os.Getenv("CAT_SERVICE_URL"),
+			FoodServiceURL: os.Getenv("FOOD_SERVICE_URL"),
 			EmailConfig: EmailConfig{
 				SMTPHost:     os.Getenv("SMTP_HOST"),
 				SMTPPort:     smtpPort,

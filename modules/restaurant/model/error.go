@@ -15,4 +15,6 @@ var (
 	ErrFieldRequired             = errors.New("restaurant id or user id is required")
 	ErrRestaurantRatingIsDeleted = errors.New("restaurant rating is deleted")
 	ErrRestaurantLikeNotFound    = errors.New("restaurant like not found")
+	ErrFoodIdRequired            = errors.New("food id is required")
+	ErrCategoryIdRequired        = errors.New("category id is required")
 )

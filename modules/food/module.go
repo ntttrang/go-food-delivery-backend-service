@@ -18,9 +18,15 @@ func SetupFoodModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	getDetailCmdHdl := foodService.NewGetDetailQueryHandler(repo)
 	updateCmdHdl := foodService.NewUpdateCommandHandler(repo)
 	deleteCmdHdl := foodService.NewDeleteByIdCommandHandler(repo)
-	catCtl := foodHttpgin.NewFoodHttpController(createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl)
+
+	foodCtrl := foodHttpgin.NewFoodHttpController(createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl, repo)
 
 	// Setup router
-	categories := g.Group("/foods")
-	catCtl.SetupRoutes(categories)
+	// RPC
+	g.POST("/rpc/foods/find-by-ids", foodCtrl.RPCGetByIds)
+	g.POST("/rpc/foods/update", foodCtrl.RPCUpdateFoodByIdAPI)
+
+	// Foods
+	foods := g.Group("/foods")
+	foodCtrl.SetupRoutes(foods)
 }
