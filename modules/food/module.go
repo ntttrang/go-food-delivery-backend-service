@@ -24,7 +24,7 @@ func SetupFoodModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	// Setup router
 	// RPC
 	g.POST("/rpc/foods/find-by-ids", foodCtrl.RPCGetByIds)
-	g.POST("/rpc/foods/update", foodCtrl.RPCUpdateFoodByIdAPI)
+	g.PATCH("/rpc/foods/update/:id", foodCtrl.RPCUpdateFoodByIdAPI)
 
 	// Foods
 	foods := g.Group("/foods")

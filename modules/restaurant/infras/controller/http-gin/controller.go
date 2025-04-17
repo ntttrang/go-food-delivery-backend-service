@@ -58,6 +58,10 @@ type IListMenuItemQueryHandler interface {
 	Execute(ctx context.Context, restaurantId uuid.UUID) (*restaurantmodel.MenuItemListRes, error)
 }
 
+type IDeleteMenuItemCommandHandler interface {
+	Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
+}
+
 type RestaurantHttpController struct {
 	createCmdHdl      ICreateCommandHandler
 	listQueryHdl      IListQueryHandler
@@ -74,13 +78,14 @@ type RestaurantHttpController struct {
 
 	createMenuItemCmdHdl     ICreateMenuItemCommandHandler
 	listMenuItemQueryHandler IListMenuItemQueryHandler
+	deleteMenuItemCmdHdl     IDeleteMenuItemCommandHandler
 }
 
 func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler,
 	updateCmdHdl IUpdateRestaurantCommandHandler, deleteCmdHdl IDeleteCommandHandler,
 	addFavoritesCmdHdl IAddFavoritesCommandHandler, favoriteRestaurantQueryHdl IListFavoritesQueryHandler,
 	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler, listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler, deleteRestaurantCmdHdl IDeleteCommentCommandHandler,
-	createMenuItemCmdHdl ICreateMenuItemCommandHandler, listMenuItemQueryHandler IListMenuItemQueryHandler) *RestaurantHttpController {
+	createMenuItemCmdHdl ICreateMenuItemCommandHandler, listMenuItemQueryHandler IListMenuItemQueryHandler, deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
 		listQueryHdl:      listQueryHdl,
@@ -97,6 +102,7 @@ func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHd
 
 		createMenuItemCmdHdl:     createMenuItemCmdHdl,
 		listMenuItemQueryHandler: listMenuItemQueryHandler,
+		deleteMenuItemCmdHdl:     deleteMenuItemCmdHdl,
 	}
 }
 
@@ -121,7 +127,7 @@ func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
 	// Menu item (restaurant-food)
 	g.POST("/menu-item", ctrl.CreateMenuItemAPI)
 	g.GET("/menu-item/:restaurantId", ctrl.ListMenuItemAPI)
-	// g.DELETE("/:restaurantId/:foodId", ctrl.DeleteMenuItemAPI)
+	g.DELETE("/menu-item", ctrl.DeleteMenuItemAPI)
 
 	// Save restaurant_foods ->  update foods
 }

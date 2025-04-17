@@ -8,8 +8,8 @@ import (
 
 type Food struct {
 	Id           uuid.UUID  `json:"id"`
-	RestaurantID uuid.UUID  `json:"restaurant_id"`
-	CategoryID   uuid.UUID  `json:"category_id,omitempty"`
+	RestaurantId uuid.UUID  `json:"restaurant_id"`
+	CategoryId   uuid.UUID  `json:"category_id,omitempty"`
 	Name         string     `json:"name"`
 	Description  string     `json:"description,omitempty"`
 	Price        float64    `json:"price"`

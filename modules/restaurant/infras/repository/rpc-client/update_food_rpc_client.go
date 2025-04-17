@@ -8,8 +8,8 @@ import (
 )
 
 type FoodUpdateReq struct {
-	RestaurantId string `json:"restaurant_id"` // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
-	CategoryId   string `json:"category_id"`   // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
+	RestaurantId string `json:"restaurantId"` // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
+	CategoryId   string `json:"categoryId"`   // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
 	FoodId       string
 }
 

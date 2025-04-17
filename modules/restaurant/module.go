@@ -40,12 +40,13 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 
 	createMenuItemCmdHdl := restaurantService.NewCreateMenuItemCommandHandler(restaurantFoodRepo)
 	listMenuItemCmdHdl := restaurantService.NewListMenuItemQueryHandler(restaurantFoodRepo, foodRPCClient, catRPCClient)
+	deleteMenuItemCmdHdl := restaurantService.NewDeleteMenuItemCommandHandler(restaurantFoodRepo)
 
 	resCtl := restaurantHttpgin.NewRestaurantHttpController(
 		createCmdHdl, listQueryHdl, getDetailQueryHdl, updateCmdHdl, deleteCmdHdl,
 		createRestaurantFavoriteCmdl, favoriteRestaurantQueryHdl,
 		createCommentRestaurantCmdl, listCommentRestaurantCmdl, deleteCommentRestaurantCmdl,
-		createMenuItemCmdHdl, listMenuItemCmdHdl,
+		createMenuItemCmdHdl, listMenuItemCmdHdl, deleteMenuItemCmdHdl,
 	)
 
 	restaurants := g.Group("/restaurants")

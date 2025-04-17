@@ -7,11 +7,11 @@ import (
 
 type FoodUpdateReq struct {
 	// Use pointer to accept empty string
-	Name         *string `json:"name"`
-	Description  *string `json:"description"`
+	Name         string  `json:"name"`
+	Description  string  `json:"description"`
 	Status       *string `json:"status"`
-	RestaurantID string  `json:"restaurant_id"` // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
-	CategoryID   string  `json:"category_id"`   // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
+	RestaurantId *string `json:"restaurantId"` // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
+	CategoryId   *string `json:"categoryId"`   // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
 
 	Id uuid.UUID `json:"-"`
 }
