@@ -12,6 +12,7 @@ type Config struct {
 	EmailConfig    EmailConfig
 	RedisConfig    RedisConfig
 	GoogleConfig   GoogleConfig
+	MinioS3        MinioS3Config
 }
 
 var config *Config
@@ -43,6 +44,14 @@ func NewConfig() *Config {
 				ClientSecret: os.Getenv("GG_CLIENT_SECRET"),
 				RedirectUrl:  os.Getenv("GG_REDIRECT_URL"),
 			},
+			MinioS3: MinioS3Config{
+				AccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
+				BucketName: os.Getenv("MINIO_BUCKET_NAME"),
+				Domain:     os.Getenv("MINIO_DOMAIN"),
+				Region:     os.Getenv("MINIO_REGION"),
+				SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
+				UseSSL:     false,
+			},
 		}
 	}
 	return config
@@ -68,4 +77,13 @@ type GoogleConfig struct {
 	ClientId     string
 	ClientSecret string
 	RedirectUrl  string
+}
+
+type MinioS3Config struct {
+	AccessKey  string
+	BucketName string
+	Domain     string
+	Region     string
+	SecretKey  string
+	UseSSL     bool
 }

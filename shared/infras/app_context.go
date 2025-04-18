@@ -1,6 +1,9 @@
 package shareinfras
 
 import (
+	"context"
+
+	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
 	sharerpc "github.com/ntttrang/go-food-delivery-backend-service/shared/infras/rpc"
 
 	"github.com/gin-gonic/gin"
@@ -17,16 +20,23 @@ type IDbContext interface {
 	GetMainConnection() *gorm.DB
 }
 
+type IUploader interface {
+	SaveFileUpload(ctx context.Context, filename string, filePath string, contentType string) error
+	GetDomain() string
+}
+
 type IAppContext interface {
 	MiddlewareProvider() IMiddlewareProvider
 	DbContext() IDbContext
 	GetConfig() *datatype.Config
+	Uploader() IUploader
 }
 
 type appContext struct {
 	mldProvider IMiddlewareProvider
 	dbContext   IDbContext
 	config      *datatype.Config
+	uploader    IUploader
 }
 
 func NewAppContext(db *gorm.DB) IAppContext {
@@ -37,10 +47,17 @@ func NewAppContext(db *gorm.DB) IAppContext {
 
 	provider := middleware.NewMiddlewareProvider(introspectRpcClient)
 
+	uploader, err := shareComponent.NewS3Uploader(config.MinioS3.AccessKey, config.MinioS3.BucketName, config.MinioS3.Domain, config.MinioS3.Region, config.MinioS3.SecretKey, config.MinioS3.UseSSL)
+
+	if err != nil {
+		panic(err)
+	}
+
 	return &appContext{
 		mldProvider: provider,
 		dbContext:   dbCtx,
 		config:      config,
+		uploader:    uploader,
 	}
 }
 
@@ -54,4 +71,8 @@ func (c *appContext) DbContext() IDbContext {
 
 func (c *appContext) GetConfig() *datatype.Config {
 	return datatype.GetConfig()
+}
+
+func (c *appContext) Uploader() IUploader {
+	return c.uploader
 }

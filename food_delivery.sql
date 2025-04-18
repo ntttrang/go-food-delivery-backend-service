@@ -77,9 +77,10 @@ CREATE TABLE `foods` (
 DROP TABLE IF EXISTS `images`;
 CREATE TABLE `images` (
   `id` VARCHAR(36) NOT NULL,
-  `file_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `width` int NOT NULL,
-  `height` int NOT NULL,
+  `filename` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `cloud_name` VARCHAR(255) NOT NULL,
+  `size` BIGINT NOT NULL,
+  `ext` VARCHAR(50) NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

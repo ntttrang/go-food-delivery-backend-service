@@ -11,6 +11,7 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
+	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
@@ -52,6 +53,8 @@ func main() {
 		})
 	})
 
+	r.Static("/uploads", "./uploads")
+
 	v1 := r.Group("/v1")
 	appCtx := shareinfras.NewAppContext(db)
 
@@ -59,6 +62,7 @@ func main() {
 	restaurantmodule.SetupRestaurantModule(appCtx, v1)
 	usermodule.SetupUserModule(appCtx, v1)
 	foodmodule.SetupFoodModule(appCtx, v1)
+	mediamodule.SetupMediaModule(appCtx, v1)
 
 	r.Run(fmt.Sprintf(":%s", port))
 
