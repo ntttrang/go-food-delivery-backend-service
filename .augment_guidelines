@@ -1,0 +1,78 @@
+# .augment_guidelines
+
+## Architecture
+- Follow Hexagonal Architecture (Ports and Adapters) pattern for all services
+- Maintain monorepo structure with each module representing a separate microservice
+- Ensure clear separation between domain models, application services, and infrastructure
+- Domain models must be free from infrastructure dependencies
+- Application services should depend on interfaces (ports) not implementations
+
+## Project Structure
+- Organize code by modules (microservices): `/modules/[module-name]`
+- Each module follows a consistent internal structure:
+  - `/model` - Domain models and DTOs
+  - `/service` - Application services (command/query handlers)
+  - `/infras` - Infrastructure implementations
+    - `/controller` - HTTP controllers (primary adapters)
+    - `/repository` - Database repositories (secondary adapters)
+    - `/rpc-client` - RPC clients for inter-service communication
+- Shared code in `/shared` directory:
+  - `/component` - Shared infrastructure components
+  - `/datatype` - Common data types and error handling
+  - `/infras` - Shared infrastructure interfaces
+  - `/model` - Shared domain models
+
+## Coding Patterns
+- Use Command/Query Responsibility Segregation (CQRS) pattern
+- Implement dependency injection for all components
+- Define clear interfaces for all dependencies
+- Use repository pattern for data access
+- Implement RPC clients for inter-service communication
+- Follow consistent error handling patterns using custom error types
+
+## Service Communication
+- Services communicate via HTTP RPC calls
+- Service URLs configured via environment variables
+- Use shared DTOs for request/response data
+- Implement proper error handling and retries for RPC calls
+
+## Data Access
+- Use GORM as the ORM for database access
+- Implement repository interfaces in the infrastructure layer
+- Keep database-specific code isolated in repository implementations
+- Use transactions for operations that modify multiple entities
+
+## Authentication & Authorization
+- JWT-based authentication
+- Role-based access control
+- Token introspection for service-to-service authentication
+- Middleware for authentication in HTTP controllers
+
+## Error Handling
+- Use custom error types with proper context
+- Implement consistent error responses across all services
+- Proper error wrapping and propagation
+- Panic recovery middleware for HTTP requests
+
+## Configuration
+- Environment-based configuration
+- Configuration values loaded from environment variables
+- Centralized configuration management in shared package
+
+## Testing
+- Unit tests for domain logic and application services
+- Integration tests for repositories and controllers
+- Mock implementations for external dependencies in tests
+
+## Deployment
+- Each module deployable as a separate service
+- Environment-specific configuration
+- Support for containerization
+
+## Naming Conventions
+- Use consistent naming patterns:
+  - Interfaces prefixed with 'I' (e.g., IUserRepo)
+  - Command handlers suffixed with 'CommandHandler'
+  - Query handlers suffixed with 'QueryHandler'
+  - Repository implementations suffixed with 'Repo'
+  - HTTP controllers suffixed with 'HttpController'
