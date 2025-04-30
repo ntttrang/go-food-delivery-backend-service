@@ -47,10 +47,14 @@ func NewAppContext(db *gorm.DB) IAppContext {
 
 	provider := middleware.NewMiddlewareProvider(introspectRpcClient)
 
-	uploader, err := shareComponent.NewS3Uploader(config.MinioS3.AccessKey, config.MinioS3.BucketName, config.MinioS3.Domain, config.MinioS3.Region, config.MinioS3.SecretKey, config.MinioS3.UseSSL)
-
-	if err != nil {
-		panic(err)
+	var uploader IUploader
+	// Only initialize MinioS3 uploader if the required environment variables are set
+	if config.MinioS3.Domain != "" && config.MinioS3.AccessKey != "" && config.MinioS3.SecretKey != "" {
+		var err error
+		uploader, err = shareComponent.NewS3Uploader(config.MinioS3.AccessKey, config.MinioS3.BucketName, config.MinioS3.Domain, config.MinioS3.Region, config.MinioS3.SecretKey, config.MinioS3.UseSSL)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return &appContext{
