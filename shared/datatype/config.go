@@ -13,6 +13,7 @@ type Config struct {
 	RedisConfig    RedisConfig
 	GoogleConfig   GoogleConfig
 	MinioS3        MinioS3Config
+	ElasticSearch  ElasticSearchConfig
 }
 
 var config *Config
@@ -51,6 +52,14 @@ func NewConfig() *Config {
 				Region:     os.Getenv("MINIO_REGION"),
 				SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
 				UseSSL:     false,
+			},
+			ElasticSearch: ElasticSearchConfig{
+				Addresses: []string{os.Getenv("ES_ADDRESS")},
+				Username:  os.Getenv("ES_USERNAME"),
+				Password:  os.Getenv("ES_PASSWORD"),
+				CloudID:   os.Getenv("ES_CLOUD_ID"),
+				APIKey:    os.Getenv("ES_API_KEY"),
+				IndexName: os.Getenv("ES_INDEX_NAME"),
 			},
 		}
 	}

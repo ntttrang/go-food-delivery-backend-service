@@ -54,6 +54,14 @@ type IDeleteCommentCommandHandler interface {
 	Execute(ctx context.Context, req foodmodel.FoodDeleteCommentReq) error
 }
 
+type ISearchFoodQueryHandler interface {
+	Execute(ctx context.Context, req foodmodel.FoodSearchReq) (*foodmodel.FoodSearchRes, error)
+}
+
+type ISyncFoodIndexCommandHandler interface {
+	ReindexAll(ctx context.Context) error
+}
+
 type FoodHttpController struct {
 	createCmdHdl             ICreateCommandHandler
 	listCmdHdl               IListCommandHandler
@@ -68,13 +76,17 @@ type FoodHttpController struct {
 	createCommentFoodCmdHandler ICreateFoodCommentCommandHandler
 	listFoodCommentQueryHandler IListFoodCommentsQueryHandler
 	deleteFoodCmdHdl            IDeleteCommentCommandHandler
+
+	searchFoodQueryHandler      ISearchFoodQueryHandler
+	syncFoodIndexCommandHandler ISyncFoodIndexCommandHandler
 }
 
 func NewFoodHttpController(createCmdHdl ICreateCommandHandler, listCmdHdl IListCommandHandler, getDetailCmdHdl IGetDetailCommandHandler,
 	updateByIdCommandHandler IUpdateByIdCommandHandler, deleteCmdHdl IDeleteCommandHandler,
 	rpcRepo IRepoRPCFood,
 	addFavoritesCmdHdl IAddFavoritesCommandHandler, favoriteFoodQueryHdl IListFavoritesQueryHandler,
-	createCommentFoodCmdHandler ICreateFoodCommentCommandHandler, listFoodCommentQueryHandler IListFoodCommentsQueryHandler, deleteFoodCmdHdl IDeleteCommentCommandHandler) *FoodHttpController {
+	createCommentFoodCmdHandler ICreateFoodCommentCommandHandler, listFoodCommentQueryHandler IListFoodCommentsQueryHandler, deleteFoodCmdHdl IDeleteCommentCommandHandler,
+	searchFoodQueryHandler ISearchFoodQueryHandler, syncFoodIndexCommandHandler ISyncFoodIndexCommandHandler) *FoodHttpController {
 	return &FoodHttpController{
 		createCmdHdl:             createCmdHdl,
 		listCmdHdl:               listCmdHdl,
@@ -89,6 +101,9 @@ func NewFoodHttpController(createCmdHdl ICreateCommandHandler, listCmdHdl IListC
 		createCommentFoodCmdHandler: createCommentFoodCmdHandler,
 		listFoodCommentQueryHandler: listFoodCommentQueryHandler,
 		deleteFoodCmdHdl:            deleteFoodCmdHdl,
+
+		searchFoodQueryHandler:      searchFoodQueryHandler,
+		syncFoodIndexCommandHandler: syncFoodIndexCommandHandler,
 	}
 }
 
@@ -108,4 +123,8 @@ func (ctrl *FoodHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.POST("/comments", middleware.Auth(introspectRpcClient), ctrl.CreateFoodCommentAPI)
 	g.GET("/comments", ctrl.ListFoodCommentAPI)
 	g.DELETE("/comments/:id", ctrl.DeleteFoodCommentAPI)
+
+	// Search
+	g.POST("/search", ctrl.SearchFoodAPI)
+	g.POST("/reindex", middleware.Auth(introspectRpcClient), ctrl.ReindexFoodAPI) // Protected endpoint
 }

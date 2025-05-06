@@ -193,3 +193,9 @@ Integration: Google Maps API for tracking
 Note:
 - Verify by email ( Don't use mobile phone)
 - Login: Email, Google, Facebook ( Don't use mobile phone)
+
+SMTP
+https://myaccount.google.com/apppasswords
+
+OAuth2
+https://console.cloud.google.com/apis/dashboard?project=fooddeliveryapp-456910
