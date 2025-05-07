@@ -1,4 +1,4 @@
-package repository
+package categorygormmysql
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (r *CategoryRepo) Insert(ctx context.Context, data *categorymodel.Category) error {
+func (r *CategoryRepo) BulkInsert(ctx context.Context, data []categorymodel.Category) error {
 	db := r.dbCtx.GetMainConnection()
 	if err := db.Create(data).Error; err != nil {
 		return errors.WithStack(err)

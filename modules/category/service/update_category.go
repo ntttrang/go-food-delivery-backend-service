@@ -10,9 +10,31 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type CategoryUpdateReq struct {
+	// Use pointer to accept empty string
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	Status      *string `json:"status"`
+
+	Id uuid.UUID `json:"-"`
+}
+
+func (CategoryUpdateReq) TableName() string {
+	return categorymodel.Category{}.TableName()
+}
+
+func (c CategoryUpdateReq) validate() error {
+	if c.Status != nil && *c.Status != sharedModel.StatusActive && *c.Status != sharedModel.StatusDelete && *c.Status != sharedModel.StatusInactive {
+		return categorymodel.ErrCategoryStatusInvalid
+	}
+	return nil
+}
+
+// Initilize service
 type IUpdateByIdRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (categorymodel.Category, error)
-	Update(ctx context.Context, id uuid.UUID, dto categorymodel.CategoryUpdateReq) error
+	Update(ctx context.Context, id uuid.UUID, dto CategoryUpdateReq) error
 }
 
 type UpdateCommandHandler struct {
@@ -23,8 +45,9 @@ func NewUpdateCommandHandler(repo IUpdateByIdRepo) *UpdateCommandHandler {
 	return &UpdateCommandHandler{repo: repo}
 }
 
-func (hdl *UpdateCommandHandler) Execute(ctx context.Context, req categorymodel.CategoryUpdateReq) error {
-	if err := req.Validate(); err != nil {
+// Implement
+func (hdl *UpdateCommandHandler) Execute(ctx context.Context, req CategoryUpdateReq) error {
+	if err := req.validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
 

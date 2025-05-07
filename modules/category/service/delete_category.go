@@ -10,6 +10,12 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type CategoryDeleteReq struct {
+	Id uuid.UUID
+}
+
+// Initilize service
 type IDeleteByIdRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (categorymodel.Category, error)
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -23,7 +29,8 @@ func NewDeleteByIdCommandHandler(repo IDeleteByIdRepo) *DeleteByIdCommandHandler
 	return &DeleteByIdCommandHandler{repo: repo}
 }
 
-func (hdl *DeleteByIdCommandHandler) Execute(ctx context.Context, req categorymodel.CategoryDeleteReq) error {
+// Implement
+func (hdl *DeleteByIdCommandHandler) Execute(ctx context.Context, req CategoryDeleteReq) error {
 	category, err := hdl.repo.FindById(ctx, req.Id)
 
 	if err != nil {

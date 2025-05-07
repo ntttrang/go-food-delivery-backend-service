@@ -1,4 +1,4 @@
-package repository
+package categorygormmysql
 
 import shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 

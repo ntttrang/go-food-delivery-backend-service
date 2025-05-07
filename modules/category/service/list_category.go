@@ -3,12 +3,35 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type ListCategoryReq struct {
+	SearchCategoryDto
+	sharedModel.PagingDto
+	sharedModel.SortingDto
+}
+
+type ListCategoryRes struct {
+	Id          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	sharedModel.DateDto
+}
+
+type SearchCategoryDto struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// Initilize service
 type IListRep interface {
-	ListCategories(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.Category, int64, error)
+	ListCategories(ctx context.Context, req ListCategoryReq) ([]categorymodel.Category, int64, error)
 }
 
 type ListCommandHandler struct {
@@ -21,7 +44,8 @@ func NewListCommandHandler(catRepo IListRep) *ListCommandHandler {
 	}
 }
 
-func (s *ListCommandHandler) Execute(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.ListCategoryRes, int64, error) {
+// Implement
+func (s *ListCommandHandler) Execute(ctx context.Context, req ListCategoryReq) ([]ListCategoryRes, int64, error) {
 	categories, total, err := s.catRepo.ListCategories(ctx, req)
 
 	if err != nil {
@@ -31,10 +55,10 @@ func (s *ListCommandHandler) Execute(ctx context.Context, req categorymodel.List
 	return convertListCategoryRes(categories), total, nil
 }
 
-func convertListCategoryRes(cats []categorymodel.Category) []categorymodel.ListCategoryRes {
-	var listCategoryRes []categorymodel.ListCategoryRes
+func convertListCategoryRes(cats []categorymodel.Category) []ListCategoryRes {
+	var listCategoryRes []ListCategoryRes
 	for _, cat := range cats {
-		var listCatsDto categorymodel.ListCategoryRes
+		var listCatsDto ListCategoryRes
 		listCatsDto.Id = cat.Id
 		listCatsDto.Name = cat.Name
 		listCatsDto.Description = cat.Description
