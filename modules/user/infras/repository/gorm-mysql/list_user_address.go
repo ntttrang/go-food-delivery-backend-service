@@ -1,15 +1,16 @@
-package userrepository
+package usergormmysql
 
 import (
 	"context"
 
 	"github.com/google/uuid"
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 )
 
-func (r *UserAddressRepo) ListUserAddresses(ctx context.Context, userId uuid.UUID) ([]usermodel.UserAddrSearchResDto, error) {
+func (r *UserAddressRepo) ListUserAddresses(ctx context.Context, userId uuid.UUID) ([]service.UserAddrSearchResDto, error) {
 	db := r.dbCtx.GetMainConnection()
-	var userAddresses []usermodel.UserAddrSearchResDto
+	var userAddresses []service.UserAddrSearchResDto
 	if err := db.Raw(`SELECT 
 						ua.id,
 						ua.user_id,

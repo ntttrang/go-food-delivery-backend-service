@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 func (ctrl *UserHttpController) ListUsersAPI(c *gin.Context) {
-	var searchDto usermodel.UserSearchDto
+	var searchDto service.UserSearchDto
 	var pagingDto sharedModel.PagingDto
 	var sortingDto sharedModel.SortingDto
 	if err := c.ShouldBind(&pagingDto); err != nil {
@@ -27,7 +27,7 @@ func (ctrl *UserHttpController) ListUsersAPI(c *gin.Context) {
 
 	pagingDto.Process()
 
-	req := usermodel.UserListReq{
+	req := service.UserListReq{
 		UserSearchDto: searchDto,
 		PagingDto:     pagingDto,
 		SortingDto:    sortingDto,

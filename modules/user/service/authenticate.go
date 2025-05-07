@@ -3,11 +3,48 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type AuthenticateReq struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (r *AuthenticateReq) Validate() error {
+	r.Email = strings.TrimSpace(r.Email)
+	r.Password = strings.TrimSpace(r.Password)
+
+	if r.Email == "" {
+		return usermodel.ErrEmailRequired
+	}
+
+	if r.Password == "" {
+		return usermodel.ErrPasswordInvalid
+	}
+
+	if !sharedModel.ValidateEmail(r.Email) {
+		return usermodel.ErrEmailInvalid
+	}
+
+	if len(r.Password) <= 6 {
+		return usermodel.ErrPasswordInvalid
+	}
+
+	return nil
+}
+
+type AuthenticateRes struct {
+	Token string `json:"token"`
+	ExpIn int    `json:"expIn"`
+}
+
+// Initilize service
 type IAuthenticateRepo interface {
 	FindByEmail(ctx context.Context, email string) (*usermodel.User, error)
 }
@@ -29,7 +66,8 @@ func NewAuthenticateCommandHandler(authRepo IAuthenticateRepo, tokenIssuer IToke
 	}
 }
 
-func (hdl *AuthenticateCommandHandler) Execute(ctx context.Context, req usermodel.AuthenticateReq) (*usermodel.AuthenticateRes, error) {
+// Implement
+func (hdl *AuthenticateCommandHandler) Execute(ctx context.Context, req AuthenticateReq) (*AuthenticateRes, error) {
 	if err := req.Validate(); err != nil {
 		return nil, datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
@@ -54,5 +92,5 @@ func (hdl *AuthenticateCommandHandler) Execute(ctx context.Context, req usermode
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	return &usermodel.AuthenticateRes{Token: token, ExpIn: hdl.tokenIssuer.ExpIn()}, nil
+	return &AuthenticateRes{Token: token, ExpIn: hdl.tokenIssuer.ExpIn()}, nil
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	userHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/user/infras/controller/http-gin"
-	repo "github.com/ntttrang/go-food-delivery-backend-service/modules/user/infras/repository"
+	repo "github.com/ntttrang/go-food-delivery-backend-service/modules/user/infras/repository/gorm-mysql"
 	userService "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"

@@ -1,4 +1,4 @@
-package userrepository
+package usergormmysql
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (r *UserRepo) Update(ctx context.Context, req *usermodel.UpdateUserReq) error {
+func (r *UserRepo) Insert(ctx context.Context, user *usermodel.User) error {
 	db := r.dbCtx.GetMainConnection()
-	if err := db.Table(req.TableName()).Where("id = ?", req.Id).Updates(req).Error; err != nil {
+	if err := db.Table(user.TableName()).Create(user).Error; err != nil {
 		return errors.WithStack(err)
 	}
 	return nil

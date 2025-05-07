@@ -1,4 +1,4 @@
-package userrepository
+package usergormmysql
 
 import usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 

@@ -50,7 +50,7 @@ func (hdl *SignUpGoogleCommandHandler) GetAuthCodeUrl(ctx context.Context) strin
 	return url
 }
 
-func (hdl *SignUpGoogleCommandHandler) AuthenticateByGoogle(ctx context.Context, state string, code string) (*usermodel.AuthenticateRes, error) {
+func (hdl *SignUpGoogleCommandHandler) AuthenticateByGoogle(ctx context.Context, state string, code string) (*AuthenticateRes, error) {
 	ggUserInfo, err := hdl.ggOAuth.GetGGUserInfo(ctx, state, code)
 	if err != nil {
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
@@ -107,5 +107,5 @@ func (hdl *SignUpGoogleCommandHandler) AuthenticateByGoogle(ctx context.Context,
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	return &usermodel.AuthenticateRes{Token: token, ExpIn: hdl.tokenIssuer.ExpIn()}, nil
+	return &AuthenticateRes{Token: token, ExpIn: hdl.tokenIssuer.ExpIn()}, nil
 }

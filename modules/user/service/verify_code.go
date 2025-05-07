@@ -9,6 +9,10 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
+// Define DTOs & validate
+// No specific DTOs for this service
+
+// Initilize service
 type IGetUserRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (*usermodel.User, error)
 }
@@ -29,6 +33,7 @@ func NewVerifyCode(userRepo IGetUserRepo, redisCache IGetRedisCache) *VerifyCode
 	}
 }
 
+// Implement
 func (v *VerifyCode) Execute(ctx context.Context, userId uuid.UUID, code string) (bool, error) {
 	user, err := v.userRepo.FindById(ctx, userId)
 	if err != nil {

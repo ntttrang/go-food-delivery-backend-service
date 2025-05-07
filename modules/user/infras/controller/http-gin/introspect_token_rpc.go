@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 func (ctrl *UserHttpController) IntrospectTokenRpcAPI(c *gin.Context) {
-	var req usermodel.IntrospectReq
+	var req service.IntrospectReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		panic(datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error()))
 	}

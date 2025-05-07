@@ -1,13 +1,14 @@
-package userrepository
+package usergormmysql
 
 import (
 	"context"
 
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 	"github.com/pkg/errors"
 )
 
-func (r *UserRepo) FindUsers(ctx context.Context, req usermodel.UserListReq) ([]usermodel.UserSearchResDto, int64, error) {
+func (r *UserRepo) FindUsers(ctx context.Context, req service.UserListReq) ([]service.UserSearchResDto, int64, error) {
 	db := r.dbCtx.GetMainConnection().Table(usermodel.User{}.TableName()).Select("id", "first_name", "last_name", "role", "email", "phone", "created_at", "updated_at") // Use field name ( Struct) or gorm name is OK
 	if req.Name != "" {
 		db = db.Where("first_name LIKE ? OR last_name LIKE ?", `%`+req.Name+`%`)
@@ -30,7 +31,7 @@ func (r *UserRepo) FindUsers(ctx context.Context, req usermodel.UserListReq) ([]
 		sortStr = req.SortBy + " " + req.Direction
 	}
 
-	var result []usermodel.UserSearchResDto
+	var result []service.UserSearchResDto
 	var total int64
 	if err := db.Count(&total).Offset((req.Page - 1) * req.Limit).Limit(req.Limit).Order(sortStr).Find(&result).Error; err != nil {
 		return nil, 0, errors.WithStack(err)

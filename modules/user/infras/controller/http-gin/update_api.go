@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -16,7 +16,7 @@ func (ctrl *UserHttpController) UpdateUseAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	var req usermodel.UpdateUserReq
+	var req service.UpdateUserReq
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
