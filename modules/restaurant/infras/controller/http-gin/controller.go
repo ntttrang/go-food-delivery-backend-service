@@ -68,9 +68,12 @@ type ISearchRestaurantQueryHandler interface {
 }
 
 // ISyncRestaurantIndexCommandHandler defines the interface for restaurant index sync operations
+type ISyncRestaurantByIdCommandHandler interface {
+	SyncRestaurant(ctx context.Context, id uuid.UUID) error
+}
+
 type ISyncRestaurantIndexCommandHandler interface {
 	SyncAll(ctx context.Context) error
-	SyncRestaurant(ctx context.Context, id uuid.UUID) error
 }
 
 type RestaurantHttpController struct {
@@ -93,6 +96,7 @@ type RestaurantHttpController struct {
 
 	// Elasticsearch search handlers
 	searchRestaurantQueryHandler      ISearchRestaurantQueryHandler
+	syncRestaurantByIdCommandHandler  ISyncRestaurantByIdCommandHandler
 	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler
 }
 
@@ -111,6 +115,7 @@ func NewRestaurantHttpController(
 	listMenuItemQueryHandler IListMenuItemQueryHandler,
 	deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler,
 	searchRestaurantQueryHandler ISearchRestaurantQueryHandler,
+	syncRestaurantByIdCommandHandler ISyncRestaurantByIdCommandHandler,
 	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
@@ -131,6 +136,7 @@ func NewRestaurantHttpController(
 		deleteMenuItemCmdHdl:     deleteMenuItemCmdHdl,
 
 		searchRestaurantQueryHandler:      searchRestaurantQueryHandler,
+		syncRestaurantByIdCommandHandler:  syncRestaurantByIdCommandHandler,
 		syncRestaurantIndexCommandHandler: syncRestaurantIndexCommandHandler,
 	}
 }

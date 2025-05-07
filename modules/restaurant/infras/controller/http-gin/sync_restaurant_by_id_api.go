@@ -10,14 +10,6 @@ import (
 
 // SyncRestaurantByIdAPI handles the sync restaurant by ID API endpoint
 func (ctrl *RestaurantHttpController) SyncRestaurantByIdAPI(c *gin.Context) {
-	// Check if search functionality is available
-	if ctrl.syncRestaurantIndexCommandHandler == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"error": "Sync functionality is not available. Elasticsearch is not configured.",
-		})
-		return
-	}
-
 	// Get restaurant ID from path
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -25,7 +17,7 @@ func (ctrl *RestaurantHttpController) SyncRestaurantByIdAPI(c *gin.Context) {
 	}
 
 	// Sync restaurant
-	err = ctrl.syncRestaurantIndexCommandHandler.SyncRestaurant(c.Request.Context(), id)
+	err = ctrl.syncRestaurantByIdCommandHandler.SyncRestaurant(c.Request.Context(), id)
 	if err != nil {
 		panic(err)
 	}

@@ -20,11 +20,6 @@ type ElasticsearchClient struct {
 }
 
 func NewElasticsearchClient(cfg datatype.ElasticSearchConfig) (*ElasticsearchClient, error) {
-	if len(cfg.Addresses) == 0 && cfg.CloudID == "" {
-		log.Println("Elasticsearch configuration not provided. Elasticsearch features will be disabled.")
-		return nil, errors.New("Elasticsearch configuration not provided")
-	}
-
 	// Configure the Elasticsearch client
 	esCfg := elasticsearch.Config{
 		Addresses: cfg.Addresses,
@@ -39,13 +34,6 @@ func NewElasticsearchClient(cfg datatype.ElasticSearchConfig) (*ElasticsearchCli
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
-	// Check connection
-	// res, err := client.Info()
-	// if err != nil {
-	// 	return nil, errors.WithStack(err)
-	// }
-	// defer res.Body.Close()
 
 	// Set default index name if not provided
 	indexName := cfg.IndexName
