@@ -59,7 +59,8 @@ type ISearchFoodQueryHandler interface {
 }
 
 type ISyncFoodIndexCommandHandler interface {
-	ReindexAll(ctx context.Context) error
+	SyncAll(ctx context.Context) error
+	SyncFood(ctx context.Context, id uuid.UUID) error
 }
 
 type FoodHttpController struct {
@@ -126,5 +127,9 @@ func (ctrl *FoodHttpController) SetupRoutes(g *gin.RouterGroup) {
 
 	// Search
 	g.POST("/search", ctrl.SearchFoodAPI)
-	g.POST("/reindex", middleware.Auth(introspectRpcClient), ctrl.ReindexFoodAPI) // Protected endpoint
+
+	// Admin endpoints for Elasticsearch index management
+	adminGroup := g.Group("/admin")
+	adminGroup.POST("/sync-index", middleware.Auth(introspectRpcClient), ctrl.SyncFoodIndexAPI)
+	adminGroup.POST("/sync-index/:id", middleware.Auth(introspectRpcClient), ctrl.SyncFoodByIdAPI)
 }

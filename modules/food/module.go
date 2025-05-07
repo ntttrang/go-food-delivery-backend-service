@@ -48,8 +48,17 @@ func SetupFoodModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 
 	// If Elasticsearch client was successfully created, set up search functionality
 	if esClient != nil {
+		// Create a new client with the food index name
+		foodIndexName := "foods"
+		if appCtx.GetConfig().ElasticSearch.IndexName != "" {
+			foodIndexName = appCtx.GetConfig().ElasticSearch.IndexName
+		}
+
+		// Use the client with the food index
+		foodEsClient := esClient.WithIndex(foodIndexName)
+
 		// Setup search repository
-		foodSearchRepo := elasticsearch.NewFoodSearchRepo(esClient)
+		foodSearchRepo := elasticsearch.NewFoodSearchRepo(foodEsClient)
 
 		// Setup search handlers
 		searchFoodQueryHandler = foodService.NewSearchFoodQueryHandler(foodSearchRepo)

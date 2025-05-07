@@ -62,6 +62,17 @@ type IDeleteMenuItemCommandHandler interface {
 	Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
 }
 
+// ISearchRestaurantQueryHandler defines the interface for restaurant search operations
+type ISearchRestaurantQueryHandler interface {
+	Execute(ctx context.Context, req restaurantmodel.RestaurantSearchReq) (*restaurantmodel.RestaurantSearchRes, error)
+}
+
+// ISyncRestaurantIndexCommandHandler defines the interface for restaurant index sync operations
+type ISyncRestaurantIndexCommandHandler interface {
+	SyncAll(ctx context.Context) error
+	SyncRestaurant(ctx context.Context, id uuid.UUID) error
+}
+
 type RestaurantHttpController struct {
 	createCmdHdl      ICreateCommandHandler
 	listQueryHdl      IListQueryHandler
@@ -79,13 +90,28 @@ type RestaurantHttpController struct {
 	createMenuItemCmdHdl     ICreateMenuItemCommandHandler
 	listMenuItemQueryHandler IListMenuItemQueryHandler
 	deleteMenuItemCmdHdl     IDeleteMenuItemCommandHandler
+
+	// Elasticsearch search handlers
+	searchRestaurantQueryHandler      ISearchRestaurantQueryHandler
+	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler
 }
 
-func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler,
-	updateCmdHdl IUpdateRestaurantCommandHandler, deleteCmdHdl IDeleteCommandHandler,
-	addFavoritesCmdHdl IAddFavoritesCommandHandler, favoriteRestaurantQueryHdl IListFavoritesQueryHandler,
-	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler, listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler, deleteRestaurantCmdHdl IDeleteCommentCommandHandler,
-	createMenuItemCmdHdl ICreateMenuItemCommandHandler, listMenuItemQueryHandler IListMenuItemQueryHandler, deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler) *RestaurantHttpController {
+func NewRestaurantHttpController(
+	createCmdHdl ICreateCommandHandler,
+	listQueryHdl IListQueryHandler,
+	getDetailQueryHdl IGetDetailQueryHandler,
+	updateCmdHdl IUpdateRestaurantCommandHandler,
+	deleteCmdHdl IDeleteCommandHandler,
+	addFavoritesCmdHdl IAddFavoritesCommandHandler,
+	favoriteRestaurantQueryHdl IListFavoritesQueryHandler,
+	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler,
+	listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler,
+	deleteRestaurantCmdHdl IDeleteCommentCommandHandler,
+	createMenuItemCmdHdl ICreateMenuItemCommandHandler,
+	listMenuItemQueryHandler IListMenuItemQueryHandler,
+	deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler,
+	searchRestaurantQueryHandler ISearchRestaurantQueryHandler,
+	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
 		listQueryHdl:      listQueryHdl,
@@ -103,6 +129,9 @@ func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHd
 		createMenuItemCmdHdl:     createMenuItemCmdHdl,
 		listMenuItemQueryHandler: listMenuItemQueryHandler,
 		deleteMenuItemCmdHdl:     deleteMenuItemCmdHdl,
+
+		searchRestaurantQueryHandler:      searchRestaurantQueryHandler,
+		syncRestaurantIndexCommandHandler: syncRestaurantIndexCommandHandler,
 	}
 }
 
@@ -129,5 +158,11 @@ func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.GET("/menu-item/:restaurantId", ctrl.ListMenuItemAPI)
 	g.DELETE("/menu-item", ctrl.DeleteMenuItemAPI)
 
-	// Save restaurant_foods ->  update foods
+	// Search endpoints
+	g.POST("/search", ctrl.SearchRestaurantsAPI)
+
+	// Admin endpoints for Elasticsearch index management
+	adminGroup := g.Group("/admin")
+	adminGroup.POST("/sync-index", ctrl.SyncRestaurantIndexAPI)
+	adminGroup.POST("/sync-index/:id", ctrl.SyncRestaurantByIdAPI)
 }

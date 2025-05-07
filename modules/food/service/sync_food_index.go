@@ -78,11 +78,11 @@ func (s *SyncFoodIndexCommandHandler) DeleteFood(ctx context.Context, id uuid.UU
 	return nil
 }
 
-// ReindexAll reindexes all foods from the database
-func (s *SyncFoodIndexCommandHandler) ReindexAll(ctx context.Context) error {
+// SyncAll synchronizes all foods with Elasticsearch
+func (s *SyncFoodIndexCommandHandler) SyncAll(ctx context.Context) error {
 	// Check if repositories are available
 	if s.indexRepo == nil || s.foodRepo == nil {
-		return datatype.ErrInternalServerError.WithDebug("Reindex functionality is not available. Elasticsearch is not configured.")
+		return datatype.ErrInternalServerError.WithDebug("Sync functionality is not available. Elasticsearch is not configured.")
 	}
 
 	// Initialize the index first

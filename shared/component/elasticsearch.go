@@ -127,11 +127,11 @@ func (es *ElasticsearchClient) DeleteDocument(ctx context.Context, id string) er
 }
 
 // Search performs a search in Elasticsearch
-func (es *ElasticsearchClient) Search(ctx context.Context, query map[string]interface{}, from, size int) ([]map[string]interface{}, int64, error) {
+func (es *ElasticsearchClient) Search(ctx context.Context, query map[string]interface{}, from, size int) ([]map[string]interface{}, int64, map[string]interface{}, error) {
 	// Convert query to JSON
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		return nil, 0, errors.WithStack(err)
+		return nil, 0, nil, errors.WithStack(err)
 	}
 
 	// Perform the search request
@@ -144,24 +144,24 @@ func (es *ElasticsearchClient) Search(ctx context.Context, query map[string]inte
 		es.client.Search.WithSize(size),
 	)
 	if err != nil {
-		return nil, 0, errors.WithStack(err)
+		return nil, 0, nil, errors.WithStack(err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		var e map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return nil, 0, errors.Errorf("error parsing the response body: %s", err)
+			return nil, 0, nil, errors.Errorf("error parsing the response body: %s", err)
 		}
 		// Print the response status and error information
-		return nil, 0, errors.Errorf("[%s] %s: %s", res.Status(),
+		return nil, 0, nil, errors.Errorf("[%s] %s: %s", res.Status(),
 			e["error"].(map[string]interface{})["type"],
 			e["error"].(map[string]interface{})["reason"])
 	}
 
 	var r map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-		return nil, 0, errors.WithStack(err)
+		return nil, 0, nil, errors.WithStack(err)
 	}
 
 	// Extract total hits
@@ -178,7 +178,13 @@ func (es *ElasticsearchClient) Search(ctx context.Context, query map[string]inte
 		results[i] = source
 	}
 
-	return results, total, nil
+	// Extract aggregations if present
+	var aggregations map[string]interface{}
+	if aggs, ok := r["aggregations"].(map[string]interface{}); ok {
+		aggregations = aggs
+	}
+
+	return results, total, aggregations, nil
 }
 
 // CreateIndex creates an index with the specified mapping
@@ -329,4 +335,12 @@ func (es *ElasticsearchClient) GetDocument(ctx context.Context, id string) (map[
 	source["id"] = id
 
 	return source, nil
+}
+
+// WithIndex returns a new ElasticsearchClient with the specified index name
+func (es *ElasticsearchClient) WithIndex(indexName string) *ElasticsearchClient {
+	return &ElasticsearchClient{
+		client:    es.client,
+		indexName: indexName,
+	}
 }
