@@ -114,7 +114,7 @@ func FromFoodDocument(doc map[string]interface{}) FoodSearchResDto {
 		Status:      doc["status"].(string),
 		Price:       doc["price"].(float64),
 		AvgRating:   doc["avg_rating"].(float64),
-		Images:      doc["images"].(string),
+		//Images:      doc["images"].(string),
 	}
 }
 
