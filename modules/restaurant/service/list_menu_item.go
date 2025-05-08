@@ -2,12 +2,37 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
+
+type CategoryDto struct {
+	Id   uuid.UUID
+	Name string
+}
+
+type MenuItemListRes struct {
+	Items []MenuItemListDto `json:"items"`
+}
+
+type MenuItemListDto struct {
+	FoodId       uuid.UUID  `json:"foodId"` // fooods.id
+	Name         string     `json:"name"`   // foods.name
+	Description  string     `json:"description"`
+	ImageURL     string     `json:"imageUrl"`     // foods.images
+	Price        float64    `json:"price"`        // foods.price
+	Point        float64    `json:"point"`        // food_ratings.point
+	CommentQty   int        `json:"commentQty"`   // food_ratings.comment
+	CategoryId   uuid.UUID  `json:"categoryId"`   // food.category_id
+	CategoryName string     `json:"categoryName"` // category.name
+	RestaurantId uuid.UUID  `json:"restaurantId"`
+	CreatedAt    *time.Time `json:"createdAt"`
+	UpdatedAt    *time.Time `json:"updatedAt"`
+}
 
 type IRestaurantFoodRepo interface {
 	FindByRestaurantId(ctx context.Context, id uuid.UUID) ([]restaurantmodel.RestaurantFood, error)
@@ -17,7 +42,7 @@ type IRPCFoodRepo interface {
 }
 
 type IRPCCategoryRepo interface {
-	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantmodel.CategoryDto, error)
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]CategoryDto, error)
 }
 
 type ListMenuItemQueryHandler struct {
@@ -34,9 +59,9 @@ func NewListMenuItemQueryHandler(restaurantFoodRepo IRestaurantFoodRepo, rpcFood
 	}
 }
 
-func (hdl *ListMenuItemQueryHandler) Execute(ctx context.Context, restaurantId uuid.UUID) (*restaurantmodel.MenuItemListRes, error) {
-	var resp restaurantmodel.MenuItemListRes
-	var menuItems []restaurantmodel.MenuItemListDto
+func (hdl *ListMenuItemQueryHandler) Execute(ctx context.Context, restaurantId uuid.UUID) (*MenuItemListRes, error) {
+	var resp MenuItemListRes
+	var menuItems []MenuItemListDto
 
 	restaurantFoods, err := hdl.restaurantFoodRepo.FindByRestaurantId(ctx, restaurantId)
 	if err != nil {
@@ -47,7 +72,7 @@ func (hdl *ListMenuItemQueryHandler) Execute(ctx context.Context, restaurantId u
 	for _, f := range restaurantFoods {
 		if f.Status == sharedModel.StatusActive {
 			foodIds = append(foodIds, f.FoodId)
-			mi := restaurantmodel.MenuItemListDto{
+			mi := MenuItemListDto{
 				FoodId:       f.FoodId,
 				RestaurantId: f.RestaurantId,
 				CreatedAt:    f.CreatedAt,

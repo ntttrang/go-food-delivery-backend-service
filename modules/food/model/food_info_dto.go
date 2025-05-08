@@ -1,8 +1,6 @@
 package foodmodel
 
-import (
-	"github.com/google/uuid"
-)
+import "github.com/google/uuid"
 
 type FoodInfoDto struct {
 	Id          uuid.UUID `json:"id"`

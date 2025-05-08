@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
@@ -18,7 +18,7 @@ func (ctrl *RestaurantHttpController) ListFavoriteRestaurantsAPI(c *gin.Context)
 	pagingDto.Process()
 
 	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
-	req := restaurantmodel.FavoriteRestaurantListReq{
+	req := restaurantservice.FavoriteRestaurantListReq{
 		UserId:    requester.Subject(),
 		PagingDto: pagingDto,
 	}

@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 func (ctrl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
-	var searchDto categorymodel.SearchCategoryDto
+	var searchDto service.SearchCategoryDto
 	var pagingDto sharedModel.PagingDto
 	var sortingDto sharedModel.SortingDto
 	if err := c.ShouldBind(&pagingDto); err != nil {
@@ -26,7 +26,7 @@ func (ctrl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
 	}
 
 	pagingDto.Process()
-	req := categorymodel.ListCategoryReq{
+	req := service.ListCategoryReq{
 		SearchCategoryDto: searchDto,
 		PagingDto:         pagingDto,
 		SortingDto:        sortingDto,
@@ -37,7 +37,7 @@ func (ctrl *CategoryHttpController) ListCategoryAPI(c *gin.Context) {
 		panic(err)
 	}
 	if data == nil {
-		data = make([]categorymodel.ListCategoryRes, 0)
+		data = make([]service.ListCategoryRes, 0)
 	}
 
 	paging := &pagingDto

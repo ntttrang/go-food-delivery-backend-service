@@ -3,13 +3,32 @@ package service
 import (
 	"context"
 
-	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type UserListReq struct {
+	UserSearchDto
+	sharedModel.PagingDto
+	sharedModel.SortingDto
+}
+
+type UserSearchDto struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+	Role  string `json:"role"`
+}
+
+type UserListRes struct {
+	Items      []UserSearchResDto    `json:"items"`
+	Pagination sharedModel.PagingDto `json:"pagination"`
+}
+
+// Initilize service
 type IListUserRepo interface {
-	FindUsers(ctx context.Context, req usermodel.UserListReq) ([]usermodel.UserSearchResDto, int64, error)
+	FindUsers(ctx context.Context, req UserListReq) ([]UserSearchResDto, int64, error)
 }
 
 type ListQueryHandler struct {
@@ -22,14 +41,15 @@ func NewListQueryHandler(userRepo IListUserRepo) *ListQueryHandler {
 	}
 }
 
-func (hdl *ListQueryHandler) Execute(ctx context.Context, req usermodel.UserListReq) (usermodel.UserListRes, error) {
+// Implement
+func (hdl *ListQueryHandler) Execute(ctx context.Context, req UserListReq) (UserListRes, error) {
 	users, total, err := hdl.userRepo.FindUsers(ctx, req)
 
 	if err != nil {
-		return usermodel.UserListRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		return UserListRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	var resp usermodel.UserListRes
+	var resp UserListRes
 	resp.Items = users
 	resp.Pagination = sharedModel.PagingDto{
 		Page:  req.Page,

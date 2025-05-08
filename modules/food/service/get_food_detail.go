@@ -10,6 +10,16 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type FoodDetailReq struct {
+	Id uuid.UUID
+}
+
+type FoodDetailRes struct {
+	foodmodel.Food
+}
+
+// Initilize service
 type IGetDetailRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (foodmodel.Food, error)
 }
@@ -22,19 +32,20 @@ func NewGetDetailQueryHandler(repo IGetDetailRepo) *GetDetailQueryHandler {
 	return &GetDetailQueryHandler{repo: repo}
 }
 
-func (hdl *GetDetailQueryHandler) Execute(ctx context.Context, req foodmodel.FoodDetailReq) (foodmodel.FoodDetailRes, error) {
+// Implement
+func (hdl *GetDetailQueryHandler) Execute(ctx context.Context, req FoodDetailReq) (*FoodDetailRes, error) {
 	food, err := hdl.repo.FindById(ctx, req.Id)
 
 	if err != nil {
 		if errors.Is(err, foodmodel.ErrFoodNotFound) {
-			return foodmodel.FoodDetailRes{}, datatype.ErrNotFound.WithDebug(foodmodel.ErrFoodNotFound.Error())
+			return nil, datatype.ErrNotFound.WithDebug(foodmodel.ErrFoodNotFound.Error())
 		}
-		return foodmodel.FoodDetailRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
 	if food.Status == sharedModel.StatusDelete {
-		return foodmodel.FoodDetailRes{}, datatype.ErrDeleted.WithError(foodmodel.ErrFoodIsDeleted.Error())
+		return nil, datatype.ErrDeleted.WithError(foodmodel.ErrFoodIsDeleted.Error())
 	}
 
-	return foodmodel.FoodDetailRes{Food: food}, nil
+	return &FoodDetailRes{Food: food}, nil
 }

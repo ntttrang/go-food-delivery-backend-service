@@ -6,17 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 )
 
 type IRegisterUserCommandHandler interface {
-	Execute(ctx context.Context, req *usermodel.RegisterUserReq) error
+	Execute(ctx context.Context, req *service.RegisterUserReq) error
 }
 
 type IAuthenticateCommandHandler interface {
-	Execute(ctx context.Context, req usermodel.AuthenticateReq) (*usermodel.AuthenticateRes, error)
+	Execute(ctx context.Context, req service.AuthenticateReq) (*service.AuthenticateRes, error)
 }
 type IntrospectCommandHandler interface {
-	Execute(ctx context.Context, req usermodel.IntrospectReq) (*usermodel.IntrospectRes, error)
+	Execute(ctx context.Context, req service.IntrospectReq) (*service.IntrospectRes, error)
 }
 
 type IGenerateCode interface {
@@ -28,24 +29,24 @@ type IVerifyCode interface {
 }
 
 type IListQueryHandler interface {
-	Execute(ctx context.Context, req usermodel.UserListReq) (usermodel.UserListRes, error)
+	Execute(ctx context.Context, req service.UserListReq) (service.UserListRes, error)
 }
 
 type IGetDetailQueryHandler interface {
-	Execute(ctx context.Context, req usermodel.UserDetailReq) (usermodel.UserSearchResDto, error)
+	Execute(ctx context.Context, req service.UserDetailReq) (service.UserSearchResDto, error)
 }
 
 type ICreateCommandHandler interface {
-	Execute(ctx context.Context, req *usermodel.CreateUserReq) error
+	Execute(ctx context.Context, req *service.CreateUserReq) error
 }
 
 type IUpdateCommandHandler interface {
-	Execute(ctx context.Context, req usermodel.UpdateUserReq) error
+	Execute(ctx context.Context, req service.UpdateUserReq) error
 }
 
 type ISignUpGoogleCommandHandler interface {
 	GetAuthCodeUrl(ctx context.Context) string
-	AuthenticateByGoogle(ctx context.Context, state string, code string) (*usermodel.AuthenticateRes, error)
+	AuthenticateByGoogle(ctx context.Context, state string, code string) (*service.AuthenticateRes, error)
 }
 
 type IRepoRPCUser interface {
@@ -53,11 +54,11 @@ type IRepoRPCUser interface {
 }
 
 type IListAddrQueryHandler interface {
-	Execute(ctx context.Context, req usermodel.UserAddrListReq) (usermodel.UserAddrListRes, error)
+	Execute(ctx context.Context, req service.UserAddrListReq) (service.UserAddrListRes, error)
 }
 
 type ICreateAddrCommandHandler interface {
-	Execute(ctx context.Context, req *usermodel.CreateUserAddrReq) error
+	Execute(ctx context.Context, req *service.CreateUserAddrReq) error
 }
 
 type UserHttpController struct {

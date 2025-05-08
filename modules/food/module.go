@@ -3,9 +3,11 @@ package foodmodule
 import (
 	"github.com/gin-gonic/gin"
 	foodHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/controller/http-gin"
-	repo "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository"
+	elasticsearch "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/elasticsearch"
+	repo "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/rpc-client"
 	foodService "github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
+	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
@@ -32,10 +34,22 @@ func SetupFoodModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	listCommentFoodCmdl := foodService.NewListFoodCommentsQueryHandler(foodRatingRepo, userRPCClient)
 	deleteCommentFoodCmdl := foodService.NewDeleteCommentCommandHandler(foodRatingRepo)
 
+	// Setup Elasticsearch
+	// Try to initialize Elasticsearch client
+	esClient, err := shareComponent.NewElasticsearchClient(appCtx.GetConfig().ElasticSearch)
+	if err != nil {
+		panic(err)
+	}
+	foodSearchRepo := elasticsearch.NewFoodSearchRepo(esClient)
+	searchFoodQueryHdl := foodService.NewSearchFoodQueryHandler(foodSearchRepo)
+	syncFoodByIdCmdHdl := foodService.NewSyncFoodByIdCommandHandler(foodRepo, foodSearchRepo)
+	syncFoodIndexCmdHdl := foodService.NewSyncFoodIndexCommandHandler(foodRepo, foodSearchRepo)
+
 	foodCtrl := foodHttpgin.NewFoodHttpController(
 		createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl, foodRepo,
 		createFoodFavoriteCmdl, favoriteFoodQueryHdl,
 		createCommentFoodCmdl, listCommentFoodCmdl, deleteCommentFoodCmdl,
+		searchFoodQueryHdl, syncFoodByIdCmdHdl, syncFoodIndexCmdHdl,
 	)
 
 	// Setup router

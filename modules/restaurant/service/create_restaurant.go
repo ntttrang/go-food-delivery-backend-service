@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 
 	"github.com/google/uuid"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
@@ -9,6 +11,46 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type RestaurantInsertDto struct {
+	OwnerId          uuid.UUID `json:"-"`
+	Name             string    `json:"name"`
+	Addr             string    `json:"addr"`
+	CityId           int       `json:"cityId"`
+	Lat              float64   `json:"lat"`
+	Lng              float64   `json:"lng"`
+	ShippingFeePerKm float64   `json:"shippingFeePerKm"`
+
+	Id uuid.UUID `json:"-"` // Internal BE
+}
+
+func (r RestaurantInsertDto) Validate() error {
+	r.Name = strings.TrimSpace(r.Name)
+
+	if r.Name == "" {
+		return restaurantmodel.ErrNameRequired
+	}
+
+	return nil
+}
+
+func (r RestaurantInsertDto) ConvertToRestaurant() *restaurantmodel.Restaurant {
+	return &restaurantmodel.Restaurant{
+		OwnerId:          r.OwnerId,
+		Name:             r.Name,
+		Addr:             r.Addr,
+		CityId:           r.CityId,
+		Lat:              r.Lat,
+		Lng:              r.Lng,
+		ShippingFeePerKm: r.ShippingFeePerKm,
+
+		// TODO: Hard code
+		Cover: json.RawMessage(`{"key": "value"}`),
+		Logo:  json.RawMessage(`{"key": "value"}`),
+	}
+}
+
+// Initialize service
 type IUserRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (*restaurantmodel.User, error)
 }
@@ -33,39 +75,8 @@ func NewCreateCommandHandler(createRestaurantRepo ICreateRestaurantRepository, b
 	}
 }
 
-// func (s *CreateCommandHandler) Execute(ctx context.Context, req *restaurantmodel.RestaurantInsertDto) error {
-// 	if err := req.Validate(); err != nil {
-// 		return err
-// 	}
-
-// 	restaurant := req.ConvertToRestaurant()
-// 	restaurant.Id, _ = uuid.NewV7()
-// 	restaurant.Status = sharedModel.StatusActive // Always set Active Status when insert
-
-// 	if err := s.createRestaurantRepo.Insert(ctx, *restaurant); err != nil {
-// 		return err
-// 	}
-
-// 	foods := req.Foods
-// 	if len(foods) > 0 {
-// 		var restaurantFoods []restaurantmodel.RestaurantFood
-// 		for _, f := range foods {
-// 			restaurantFood := f.ConvertToRestaurantFood()
-// 			restaurantFood.RestaurantID = restaurant.Id
-// 			restaurantFoods = append(restaurantFoods, *restaurantFood)
-// 		}
-// 		if err := s.bulkRestaurantFoodRepo.BulkInsert(ctx, restaurantFoods); err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	// set data to response
-// 	req.Id = restaurant.Id
-
-// 	return nil
-// }
-
-func (s *CreateCommandHandler) Execute(ctx context.Context, req *restaurantmodel.RestaurantInsertDto) error {
+// Implement
+func (s *CreateCommandHandler) Execute(ctx context.Context, req *RestaurantInsertDto) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}

@@ -8,8 +8,39 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
+// Define DTOs & validate
+type RestaurantCommentCreateReq struct {
+	UserID       uuid.UUID `json:"-"` // Get from Token
+	RestaurantID uuid.UUID `json:"restaurantId"`
+	Point        *float64  `json:"point"`
+	Comment      *string   `json:"comment"`
+
+	Id uuid.UUID `json:"-"` // Internal BE
+}
+
+func (r RestaurantCommentCreateReq) Validate() error {
+	if r.UserID.String() == "" {
+		return restaurantmodel.ErrUserIdRequired
+	}
+	if r.RestaurantID.String() == "" {
+		return restaurantmodel.ErrRestaurantIdRequired
+	}
+	if r.Point == nil && (r.Comment == nil || *r.Comment == "") {
+		return restaurantmodel.ErrPointOrCommentRequired
+	}
+	if r.Point != nil && *r.Point > 5.0 {
+		return restaurantmodel.ErrPointInvalid
+	}
+	return nil
+}
+
+func (RestaurantCommentCreateReq) TableName() string {
+	return restaurantmodel.RestaurantRating{}.TableName()
+}
+
+// Initialize service
 type IInsertCommentRestaurantRepo interface {
-	Insert(ctx context.Context, req *restaurantmodel.RestaurantCommentCreateReq) error
+	Insert(ctx context.Context, req *RestaurantCommentCreateReq) error
 }
 
 type CreateRestaurantCommentCommandHandler struct {
@@ -20,7 +51,8 @@ func NewCommentRestaurantCommandHandler(repo IInsertCommentRestaurantRepo) *Crea
 	return &CreateRestaurantCommentCommandHandler{repo: repo}
 }
 
-func (hdl *CreateRestaurantCommentCommandHandler) Execute(ctx context.Context, req *restaurantmodel.RestaurantCommentCreateReq) error {
+// Implement
+func (hdl *CreateRestaurantCommentCommandHandler) Execute(ctx context.Context, req *RestaurantCommentCreateReq) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}

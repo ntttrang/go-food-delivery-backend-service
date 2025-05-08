@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -16,7 +16,7 @@ func (ctrl *CategoryHttpController) GetCategoryByIdAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	category, err := ctrl.getDetailCmdHdl.Execute(c.Request.Context(), categorymodel.CategoryDetailReq{Id: id})
+	category, err := ctrl.getDetailCmdHdl.Execute(c.Request.Context(), service.CategoryDetailReq{Id: id})
 	if err != nil {
 		panic(err)
 	}

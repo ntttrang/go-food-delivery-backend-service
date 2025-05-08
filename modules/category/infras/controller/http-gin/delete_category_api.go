@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -15,7 +15,7 @@ func (ctrl *CategoryHttpController) DeleteCategoryByIdAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	if err := ctrl.deleteCmdHdl.Execute(c.Request.Context(), categorymodel.CategoryDeleteReq{Id: id}); err != nil {
+	if err := ctrl.deleteCmdHdl.Execute(c.Request.Context(), service.CategoryDeleteReq{Id: id}); err != nil {
 		panic(err)
 	}
 

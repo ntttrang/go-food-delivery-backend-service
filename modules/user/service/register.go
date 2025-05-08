@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,55 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Define DTOs & validate
+type RegisterUserReq struct {
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+
+	Id uuid.UUID `json:"-"`
+}
+
+func (r *RegisterUserReq) Validate() error {
+	r.Email = strings.TrimSpace(r.Email)
+	r.Password = strings.TrimSpace(r.Password)
+	r.FirstName = strings.TrimSpace(r.FirstName)
+	r.LastName = strings.TrimSpace(r.LastName)
+
+	if r.Email == "" {
+		return usermodel.ErrEmailRequired
+	}
+
+	if !sharedModel.ValidateEmail(r.Email) {
+		return usermodel.ErrEmailInvalid
+	}
+
+	if len(r.Password) <= 6 {
+		return usermodel.ErrPasswordInvalid
+	}
+
+	if r.FirstName == "" {
+		return usermodel.ErrFirstNameRequired
+	}
+
+	if r.LastName == "" {
+		return usermodel.ErrLastNameRequired
+	}
+
+	return nil
+}
+
+func (r RegisterUserReq) ConvertToUser() *usermodel.User {
+	return &usermodel.User{
+		Email:     r.Email,
+		Password:  r.Password,
+		FirstName: r.FirstName,
+		LastName:  r.LastName,
+	}
+}
+
+// Initilize service
 type IRegisterRepo interface {
 	FindByEmail(ctx context.Context, email string) (*usermodel.User, error)
 	Insert(ctx context.Context, user *usermodel.User) error
@@ -27,7 +77,8 @@ func NewRegisterUserCommandHandler(repo IRegisterRepo) *RegisterUserCommandHandl
 	return &RegisterUserCommandHandler{repo: repo}
 }
 
-func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *usermodel.RegisterUserReq) error {
+// Implement
+func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *RegisterUserReq) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}
@@ -35,7 +86,7 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *usermod
 	existUser, err := hdl.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
 		if !errors.Is(err, usermodel.ErrUserNotFound) {
-			//return datatype.ErrNotFound.WithDebug(usermodel.ErrUserNotFound.Error())
+			//return datatype.ErrNotFound.WithDebug(ErrUserNotFound.Error())
 			return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 		}
 

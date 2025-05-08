@@ -7,59 +7,74 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	model "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	sharedrpc "github.com/ntttrang/go-food-delivery-backend-service/shared/infras/rpc"
 )
 
 type ICreateCommandHandler interface {
-	Execute(ctx context.Context, data *restaurantmodel.RestaurantInsertDto) error
+	Execute(ctx context.Context, req *restaurantservice.RestaurantInsertDto) error
 }
 
 type IListQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantListReq) (restaurantmodel.RestaurantSearchRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantListReq) (*restaurantservice.RestaurantSearchRes, error)
 }
 
 type IGetDetailQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantDetailReq) (restaurantmodel.RestaurantDetailRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantDetailReq) (*restaurantservice.RestaurantDetailRes, error)
 }
 
 type IUpdateRestaurantCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantUpdateReq) error
+	Execute(ctx context.Context, req restaurantservice.RestaurantUpdateReq) error
 }
 
 type IDeleteCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantDeleteReq) error
+	Execute(ctx context.Context, req restaurantservice.RestaurantDeleteReq) error
 }
 
 type IAddFavoritesCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantLike) (*string, error)
+	Execute(ctx context.Context, req model.RestaurantLike) (*string, error)
 }
 type IListFavoritesQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.FavoriteRestaurantListReq) (restaurantmodel.RestaurantSearchRes, error)
+	Execute(ctx context.Context, req restaurantservice.FavoriteRestaurantListReq) (*restaurantservice.RestaurantSearchRes, error)
 }
 
 type ICreateRestaurantCommentCommandHandler interface {
-	Execute(ctx context.Context, req *restaurantmodel.RestaurantCommentCreateReq) error
+	Execute(ctx context.Context, req *restaurantservice.RestaurantCommentCreateReq) error
 }
 
 type IListRestaurantCommentsQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) (*restaurantmodel.RestaurantRatingListRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantRatingListReq) (*restaurantservice.RestaurantRatingListRes, error)
 }
 
 type IDeleteCommentCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantDeleteCommentReq) error
+	Execute(ctx context.Context, req restaurantservice.RestaurantDeleteCommentReq) error
 }
 
 type ICreateMenuItemCommandHandler interface {
-	Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
+	Execute(ctx context.Context, req *restaurantservice.MenuItemCreateReq) error
 }
 
 type IListMenuItemQueryHandler interface {
-	Execute(ctx context.Context, restaurantId uuid.UUID) (*restaurantmodel.MenuItemListRes, error)
+	Execute(ctx context.Context, restaurantId uuid.UUID) (*restaurantservice.MenuItemListRes, error)
 }
 
 type IDeleteMenuItemCommandHandler interface {
-	Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
+	Execute(ctx context.Context, req *restaurantservice.MenuItemCreateReq) error
+}
+
+// ISearchRestaurantQueryHandler defines the interface for restaurant search operations
+type ISearchRestaurantQueryHandler interface {
+	Execute(ctx context.Context, req restaurantservice.RestaurantSearchReq) (*restaurantservice.RestaurantSearchRes, error)
+}
+
+// ISyncRestaurantIndexCommandHandler defines the interface for restaurant index sync operations
+type ISyncRestaurantByIdCommandHandler interface {
+	SyncRestaurant(ctx context.Context, id uuid.UUID) error
+}
+
+type ISyncRestaurantIndexCommandHandler interface {
+	SyncAll(ctx context.Context) error
 }
 
 type RestaurantHttpController struct {
@@ -79,13 +94,30 @@ type RestaurantHttpController struct {
 	createMenuItemCmdHdl     ICreateMenuItemCommandHandler
 	listMenuItemQueryHandler IListMenuItemQueryHandler
 	deleteMenuItemCmdHdl     IDeleteMenuItemCommandHandler
+
+	// Elasticsearch search handlers
+	searchRestaurantQueryHandler      ISearchRestaurantQueryHandler
+	syncRestaurantByIdCommandHandler  ISyncRestaurantByIdCommandHandler
+	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler
 }
 
-func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler,
-	updateCmdHdl IUpdateRestaurantCommandHandler, deleteCmdHdl IDeleteCommandHandler,
-	addFavoritesCmdHdl IAddFavoritesCommandHandler, favoriteRestaurantQueryHdl IListFavoritesQueryHandler,
-	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler, listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler, deleteRestaurantCmdHdl IDeleteCommentCommandHandler,
-	createMenuItemCmdHdl ICreateMenuItemCommandHandler, listMenuItemQueryHandler IListMenuItemQueryHandler, deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler) *RestaurantHttpController {
+func NewRestaurantHttpController(
+	createCmdHdl ICreateCommandHandler,
+	listQueryHdl IListQueryHandler,
+	getDetailQueryHdl IGetDetailQueryHandler,
+	updateCmdHdl IUpdateRestaurantCommandHandler,
+	deleteCmdHdl IDeleteCommandHandler,
+	addFavoritesCmdHdl IAddFavoritesCommandHandler,
+	favoriteRestaurantQueryHdl IListFavoritesQueryHandler,
+	createCommentRestaurantCmdHandler ICreateRestaurantCommentCommandHandler,
+	listRestaurantCommentQueryHandler IListRestaurantCommentsQueryHandler,
+	deleteRestaurantCmdHdl IDeleteCommentCommandHandler,
+	createMenuItemCmdHdl ICreateMenuItemCommandHandler,
+	listMenuItemQueryHandler IListMenuItemQueryHandler,
+	deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler,
+	searchRestaurantQueryHandler ISearchRestaurantQueryHandler,
+	syncRestaurantByIdCommandHandler ISyncRestaurantByIdCommandHandler,
+	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
 		listQueryHdl:      listQueryHdl,
@@ -103,6 +135,10 @@ func NewRestaurantHttpController(createCmdHdl ICreateCommandHandler, listQueryHd
 		createMenuItemCmdHdl:     createMenuItemCmdHdl,
 		listMenuItemQueryHandler: listMenuItemQueryHandler,
 		deleteMenuItemCmdHdl:     deleteMenuItemCmdHdl,
+
+		searchRestaurantQueryHandler:      searchRestaurantQueryHandler,
+		syncRestaurantByIdCommandHandler:  syncRestaurantByIdCommandHandler,
+		syncRestaurantIndexCommandHandler: syncRestaurantIndexCommandHandler,
 	}
 }
 
@@ -129,5 +165,11 @@ func (ctrl *RestaurantHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.GET("/menu-item/:restaurantId", ctrl.ListMenuItemAPI)
 	g.DELETE("/menu-item", ctrl.DeleteMenuItemAPI)
 
-	// Save restaurant_foods ->  update foods
+	// Search endpoints
+	g.POST("/search", ctrl.SearchRestaurantsAPI)
+
+	// Admin endpoints for Elasticsearch index management
+	adminGroup := g.Group("/admin")
+	adminGroup.POST("/sync-index", ctrl.SyncRestaurantIndexAPI)
+	adminGroup.POST("/sync-index/:id", ctrl.SyncRestaurantByIdAPI)
 }

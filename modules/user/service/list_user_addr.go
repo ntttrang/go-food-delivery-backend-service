@@ -4,13 +4,40 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type UserAddrListReq struct {
+	UserAddrSearchDto
+	sharedModel.PagingDto
+	sharedModel.SortingDto
+}
+
+type UserAddrSearchDto struct {
+	UserId string `json:"userId" form:"userId"`
+	Status string
+}
+
+type UserAddrListRes struct {
+	Items      []UserAddrSearchResDto `json:"items"`
+	Pagination sharedModel.PagingDto  `json:"pagination"`
+}
+
+type UserAddrSearchResDto struct {
+	Id       uuid.UUID `json:"id"`
+	UserId   uuid.UUID `json:"userId"`
+	CityId   int       `json:"cityId"`
+	CityName string    `json:"cityName"`
+	Addr     string    `json:"addr"`
+	Lat      *float64  `json:"lat"`
+	Lng      *float64  `json:"lng"`
+}
+
+// Initilize service
 type IListUserAddrRepo interface {
-	ListUserAddresses(ctx context.Context, userId uuid.UUID) ([]usermodel.UserAddrSearchResDto, error)
+	ListUserAddresses(ctx context.Context, userId uuid.UUID) ([]UserAddrSearchResDto, error)
 }
 
 type ListAddrQueryHandler struct {
@@ -23,14 +50,15 @@ func NewListAddrQueryHandler(userAddrRepo IListUserAddrRepo) *ListAddrQueryHandl
 	}
 }
 
-func (hdl *ListAddrQueryHandler) Execute(ctx context.Context, req usermodel.UserAddrListReq) (usermodel.UserAddrListRes, error) {
+// Implement
+func (hdl *ListAddrQueryHandler) Execute(ctx context.Context, req UserAddrListReq) (UserAddrListRes, error) {
 	userAddrs, err := hdl.userAddrRepo.ListUserAddresses(ctx, uuid.MustParse(req.UserId))
 
 	if err != nil {
-		return usermodel.UserAddrListRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		return UserAddrListRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	var resp usermodel.UserAddrListRes
+	var resp UserAddrListRes
 	resp.Items = userAddrs
 	resp.Pagination = sharedModel.PagingDto{
 		Page:  req.Page,

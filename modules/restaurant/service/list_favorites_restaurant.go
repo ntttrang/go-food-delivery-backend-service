@@ -3,13 +3,18 @@ package service
 import (
 	"context"
 
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	"github.com/google/uuid"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+type FavoriteRestaurantListReq struct {
+	UserId uuid.UUID `json:"-" form:"-"`
+	sharedModel.PagingDto
+}
+
 type IListFavoritesRestaurantRepo interface {
-	FindFavRestaurant(ctx context.Context, req restaurantmodel.FavoriteRestaurantListReq) ([]restaurantmodel.RestaurantSearchResDto, int64, error)
+	FindFavRestaurant(ctx context.Context, req FavoriteRestaurantListReq) ([]RestaurantSearchResDto, int64, error)
 }
 
 type ListFavoritesRestaurantQueryHandler struct {
@@ -20,17 +25,17 @@ func NewGetFavoritesRestaurantQueryHandler(repo IListFavoritesRestaurantRepo) *L
 	return &ListFavoritesRestaurantQueryHandler{repo: repo}
 }
 
-func (hdl *ListFavoritesRestaurantQueryHandler) Execute(ctx context.Context, req restaurantmodel.FavoriteRestaurantListReq) (restaurantmodel.RestaurantSearchRes, error) {
+func (hdl *ListFavoritesRestaurantQueryHandler) Execute(ctx context.Context, req FavoriteRestaurantListReq) (*RestaurantSearchRes, error) {
 	restaurants, total, err := hdl.repo.FindFavRestaurant(ctx, req)
 
 	if err != nil {
-		return restaurantmodel.RestaurantSearchRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	var resp restaurantmodel.RestaurantSearchRes
+	var resp RestaurantSearchRes
 	resp.Items = restaurants
 	if restaurants == nil {
-		resp.Items = make([]restaurantmodel.RestaurantSearchResDto, 0)
+		resp.Items = make([]RestaurantSearchResDto, 0)
 	}
 
 	resp.Pagination = sharedModel.PagingDto{
@@ -38,5 +43,5 @@ func (hdl *ListFavoritesRestaurantQueryHandler) Execute(ctx context.Context, req
 		Limit: req.Limit,
 		Total: total,
 	}
-	return resp, nil
+	return &resp, nil
 }

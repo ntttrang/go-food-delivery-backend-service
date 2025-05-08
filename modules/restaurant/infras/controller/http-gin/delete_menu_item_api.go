@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 func (ctrl *RestaurantHttpController) DeleteMenuItemAPI(c *gin.Context) {
-	var req restaurantmodel.MenuItemCreateReq
+	var req restaurantservice.MenuItemCreateReq
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))

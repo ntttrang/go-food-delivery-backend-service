@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
@@ -9,6 +10,34 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type FoodInsertDto struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+
+	Id uuid.UUID `json:"-"`
+}
+
+func (c *FoodInsertDto) Validate() error {
+	c.Name = strings.TrimSpace(c.Name)
+
+	if c.Name == "" {
+		return foodmodel.ErrNameRequired
+	}
+
+	return nil
+}
+
+func (c FoodInsertDto) ConvertToFood() *foodmodel.Food {
+	return &foodmodel.Food{
+		Name:        c.Name,
+		Description: c.Description,
+		Price:       c.Price,
+	}
+}
+
+// Initilize service
 type ICreateRepo interface {
 	Insert(ctx context.Context, data *foodmodel.Food) error
 }
@@ -21,7 +50,8 @@ func NewCreateCommandHandler(repo ICreateRepo) *CreateCommandHandler {
 	return &CreateCommandHandler{repo: repo}
 }
 
-func (s *CreateCommandHandler) Execute(ctx context.Context, data *foodmodel.FoodInsertDto) error {
+// Implement
+func (s *CreateCommandHandler) Execute(ctx context.Context, data *FoodInsertDto) error {
 	if err := data.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}

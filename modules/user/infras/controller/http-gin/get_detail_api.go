@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
+	service "github.com/ntttrang/go-food-delivery-backend-service/modules/user/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -16,7 +16,7 @@ func (ctrl *UserHttpController) GetUserDetailAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	restaurant, err := ctrl.getDetailQueryHdl.Execute(c.Request.Context(), usermodel.UserDetailReq{Id: id})
+	restaurant, err := ctrl.getDetailQueryHdl.Execute(c.Request.Context(), service.UserDetailReq{Id: id})
 
 	if err != nil {
 		// c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

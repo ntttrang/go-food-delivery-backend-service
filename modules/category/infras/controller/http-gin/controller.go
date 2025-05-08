@@ -6,30 +6,27 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
 )
 
-type IBulkCreateCommandHandler interface {
-	Execute(ctx context.Context, datas []categorymodel.CategoryInsertDto) ([]uuid.UUID, error)
-}
-
 type ICreateCommandHandler interface {
-	Execute(ctx context.Context, data *categorymodel.CategoryInsertDto) error
+	Execute(ctx context.Context, data *service.CategoryInsertDto) error
 }
 
 type IListCommandHandler interface {
-	Execute(ctx context.Context, req categorymodel.ListCategoryReq) ([]categorymodel.ListCategoryRes, int64, error)
+	Execute(ctx context.Context, req service.ListCategoryReq) ([]service.ListCategoryRes, int64, error)
 }
 
 type IGetDetailCommandHandler interface {
-	Execute(ctx context.Context, req categorymodel.CategoryDetailReq) (categorymodel.CategoryDetailRes, error)
+	Execute(ctx context.Context, req service.CategoryDetailReq) (*service.CategoryDetailRes, error)
 }
 
 type IUpdateByIdCommandHandler interface {
-	Execute(ctx context.Context, req categorymodel.CategoryUpdateReq) error
+	Execute(ctx context.Context, req service.CategoryUpdateReq) error
 }
 
 type IDeleteCommandHandler interface {
-	Execute(ctx context.Context, req categorymodel.CategoryDeleteReq) error
+	Execute(ctx context.Context, req service.CategoryDeleteReq) error
 }
 
 type IRepoRPCCategory interface {
@@ -37,7 +34,6 @@ type IRepoRPCCategory interface {
 }
 
 type CategoryHttpController struct {
-	bulkCreateCmdHdl         IBulkCreateCommandHandler
 	createCmdHdl             ICreateCommandHandler
 	listCmdHdl               IListCommandHandler
 	getDetailCmdHdl          IGetDetailCommandHandler
@@ -46,11 +42,10 @@ type CategoryHttpController struct {
 	repoRPCCategory          IRepoRPCCategory
 }
 
-func NewCategoryHttpController(bulkCreateCmdHdl IBulkCreateCommandHandler, createCmdHdl ICreateCommandHandler, listCmdHdl IListCommandHandler, getDetailCmdHdl IGetDetailCommandHandler,
+func NewCategoryHttpController(createCmdHdl ICreateCommandHandler, listCmdHdl IListCommandHandler, getDetailCmdHdl IGetDetailCommandHandler,
 	updateByIdCommandHandler IUpdateByIdCommandHandler, deleteCmdHdl IDeleteCommandHandler,
 	repoRPCCategory IRepoRPCCategory) *CategoryHttpController {
 	return &CategoryHttpController{
-		bulkCreateCmdHdl:         bulkCreateCmdHdl,
 		createCmdHdl:             createCmdHdl,
 		listCmdHdl:               listCmdHdl,
 		getDetailCmdHdl:          getDetailCmdHdl,
@@ -63,7 +58,6 @@ func NewCategoryHttpController(bulkCreateCmdHdl IBulkCreateCommandHandler, creat
 
 func (ctrl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.POST("", ctrl.CreateCategoryAPI)
-	g.POST("bulk-insert", ctrl.CreateBulkCategoryAPI)
 	g.GET("", ctrl.ListCategoryAPI)
 	g.GET("/:id", ctrl.GetCategoryByIdAPI)
 	g.PATCH("/:id", ctrl.UpdateCategoryByIdAPI)

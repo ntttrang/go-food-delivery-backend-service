@@ -10,6 +10,10 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+type RestaurantDeleteCommentReq struct {
+	Id uuid.UUID // restaurant_ratings.id
+}
+
 type IDeleteCommentRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (*restaurantmodel.RestaurantRating, error)
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -23,7 +27,7 @@ func NewDeleteCommentCommandHandler(repo IDeleteCommentRepo) *DeleteCommentComma
 	return &DeleteCommentCommandHandler{repo: repo}
 }
 
-func (hdl *DeleteCommentCommandHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantDeleteCommentReq) error {
+func (hdl *DeleteCommentCommandHandler) Execute(ctx context.Context, req RestaurantDeleteCommentReq) error {
 	existRestaurantRating, err := hdl.repo.FindById(ctx, req.Id)
 
 	if err != nil {

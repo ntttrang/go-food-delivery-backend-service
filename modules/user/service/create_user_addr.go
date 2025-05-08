@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,32 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type CreateUserAddrReq struct {
+	CityId int         `json:"cityId"`
+	Title  *string     `json:"title"`
+	Icon   interface{} `json:"icon"`
+	Addr   string      `json:"addr"`
+	Lat    *float64    `json:"lat"`
+	Lng    *float64    `json:"lng"`
+
+	UserId uuid.UUID `json:"-"`
+	Id     uuid.UUID `json:"-"`
+}
+
+func (r CreateUserAddrReq) TableName() string {
+	return usermodel.UserAddress{}.TableName()
+}
+
+func (r *CreateUserAddrReq) Validate() error {
+	r.Addr = strings.TrimSpace(r.Addr)
+	if r.Addr == "" {
+		return usermodel.ErrAddrRequired
+	}
+	return nil
+}
+
+// Initilize service
 type ICreateUserAddrRepo interface {
 	FindUsrAddrByCityIdAndAddr(ctx context.Context, cityId int, addr string) (*usermodel.UserAddress, error)
 	InsertUserAddress(ctx context.Context, ua usermodel.UserAddress) error
@@ -25,7 +52,8 @@ func NewCreateUserAddrCommandHandler(userAddrRepo ICreateUserAddrRepo) *CreateUs
 	return &CreateUserAddrCommandHandler{userAddrRepo: userAddrRepo}
 }
 
-func (s *CreateUserAddrCommandHandler) Execute(ctx context.Context, req *usermodel.CreateUserAddrReq) error {
+// Implement
+func (s *CreateUserAddrCommandHandler) Execute(ctx context.Context, req *CreateUserAddrReq) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}

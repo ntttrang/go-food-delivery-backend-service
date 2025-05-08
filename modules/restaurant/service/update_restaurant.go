@@ -10,9 +10,26 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type RestaurantUpdateDto struct {
+	Name             *string  `json:"name"`
+	Addr             *string  `json:"addr"`
+	CityId           *int     `json:"cityId"`
+	Lat              *float64 `json:"lat"`
+	Lng              *float64 `json:"lng"`
+	ShippingFeePerKm *float64 `json:"shippingFeePerKm"`
+	Status           *string  `json:"status"`
+}
+
+type RestaurantUpdateReq struct {
+	Id  uuid.UUID
+	Dto RestaurantUpdateDto
+}
+
+// Initialize service
 type IUpdateRestaurantRepo interface {
 	FindById(ctx context.Context, id uuid.UUID) (*restaurantmodel.Restaurant, error)
-	Update(ctx context.Context, req restaurantmodel.RestaurantUpdateReq) error
+	Update(ctx context.Context, req RestaurantUpdateReq) error
 }
 
 type UpdateRestaurantCommandHandler struct {
@@ -23,7 +40,8 @@ func NewUpdateRestaurantCommandHandler(restaurantRepo IUpdateRestaurantRepo) *Up
 	return &UpdateRestaurantCommandHandler{restaurantRepo: restaurantRepo}
 }
 
-func (hdl *UpdateRestaurantCommandHandler) Execute(ctx context.Context, req restaurantmodel.RestaurantUpdateReq) error {
+// Implement
+func (hdl *UpdateRestaurantCommandHandler) Execute(ctx context.Context, req RestaurantUpdateReq) error {
 	// if err := req.Dto.Validate(); err != nil {
 	// 	return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	// }
