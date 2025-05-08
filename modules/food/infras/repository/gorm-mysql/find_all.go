@@ -1,4 +1,4 @@
-package repository
+package foodgormmysql
 
 import (
 	"context"
@@ -12,7 +12,7 @@ func (r *FoodRepo) FindAll(ctx context.Context) ([]foodmodel.Food, error) {
 	var result []foodmodel.Food
 
 	db := r.dbCtx.GetMainConnection().Table(foodmodel.Food{}.TableName())
-	
+
 	// Only get active foods
 	db = db.Where("status = ?", sharedModel.StatusActive)
 

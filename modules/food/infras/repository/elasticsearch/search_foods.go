@@ -4,11 +4,12 @@ import (
 	"context"
 
 	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	"github.com/pkg/errors"
 )
 
 // SearchFoods searches for foods based on the provided query
-func (r *FoodSearchRepo) SearchFoods(ctx context.Context, req foodmodel.FoodSearchReq) (*foodmodel.FoodSearchRes, error) {
+func (r *FoodSearchRepo) SearchFoods(ctx context.Context, req service.FoodSearchReq) (*service.FoodSearchRes, error) {
 	// Build the Elasticsearch query
 	query := buildFoodSearchQuery(req)
 
@@ -28,7 +29,7 @@ func (r *FoodSearchRepo) SearchFoods(ctx context.Context, req foodmodel.FoodSear
 	}
 
 	// Create response
-	res := &foodmodel.FoodSearchRes{
+	res := &service.FoodSearchRes{
 		Items:      items,
 		Pagination: req.PagingDto,
 		Facets:     processFacets(aggregations),

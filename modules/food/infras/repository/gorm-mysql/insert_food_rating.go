@@ -1,13 +1,13 @@
-package repository
+package foodgormmysql
 
 import (
 	"context"
 
-	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	"github.com/pkg/errors"
 )
 
-func (r *FoodRatingRepo) Insert(ctx context.Context, req *foodmodel.FoodCommentCreateReq) error {
+func (r *FoodRatingRepo) Insert(ctx context.Context, req *service.FoodCommentCreateReq) error {
 	db := r.dbCtx.GetMainConnection()
 	if err := db.Table(req.TableName()).Create(&req).Error; err != nil {
 		return errors.WithStack(err)

@@ -1,10 +1,10 @@
-package repository
+package foodgormmysql
 
 import (
 	"context"
 
 	"github.com/google/uuid"
-	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	"github.com/pkg/errors"
 )
 
@@ -16,7 +16,7 @@ type UpdateFoodDto struct {
 	CategoryId   *string `json:"categoryId"`
 }
 
-func (r *FoodRepo) Update(ctx context.Context, id uuid.UUID, req foodmodel.FoodUpdateReq) error {
+func (r *FoodRepo) Update(ctx context.Context, id uuid.UUID, req service.FoodUpdateReq) error {
 	db := r.dbCtx.GetMainConnection().Begin()
 
 	var status = ""

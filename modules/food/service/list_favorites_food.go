@@ -3,13 +3,21 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type FavoriteFoodListReq struct {
+	UserId uuid.UUID `json:"-" form:"-"`
+	sharedModel.PagingDto
+}
+
+// Initilize service
 type IListFavoritesFoodRepo interface {
-	FindFavFood(ctx context.Context, req foodmodel.FavoriteFoodListReq) ([]foodmodel.FoodSearchResDto, int64, error)
+	FindFavFood(ctx context.Context, req FavoriteFoodListReq) ([]foodmodel.FoodSearchResDto, int64, error)
 }
 
 type ListFavoritesFoodQueryHandler struct {
@@ -20,14 +28,15 @@ func NewGetFavoritesFoodQueryHandler(repo IListFavoritesFoodRepo) *ListFavorites
 	return &ListFavoritesFoodQueryHandler{repo: repo}
 }
 
-func (hdl *ListFavoritesFoodQueryHandler) Execute(ctx context.Context, req foodmodel.FavoriteFoodListReq) (foodmodel.ListFoodRes, error) {
+// Implement
+func (hdl *ListFavoritesFoodQueryHandler) Execute(ctx context.Context, req FavoriteFoodListReq) (*ListFoodRes, error) {
 	foods, total, err := hdl.repo.FindFavFood(ctx, req)
 
 	if err != nil {
-		return foodmodel.ListFoodRes{}, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	var resp foodmodel.ListFoodRes
+	var resp ListFoodRes
 	resp.Items = foods
 	if foods == nil {
 		resp.Items = make([]foodmodel.FoodSearchResDto, 0)
@@ -38,5 +47,5 @@ func (hdl *ListFavoritesFoodQueryHandler) Execute(ctx context.Context, req foodm
 		Limit: req.Limit,
 		Total: total,
 	}
-	return resp, nil
+	return &resp, nil
 }

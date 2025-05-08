@@ -1,14 +1,15 @@
-package repository
+package foodgormmysql
 
 import (
 	"context"
 
 	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 	"github.com/pkg/errors"
 )
 
-func (r *FoodRatingRepo) FindByFoodIdOrUserId(ctx context.Context, req foodmodel.FoodRatingListReq) ([]foodmodel.FoodRatings, int64, error) {
+func (r *FoodRatingRepo) FindByFoodIdOrUserId(ctx context.Context, req service.FoodRatingListReq) ([]foodmodel.FoodRatings, int64, error) {
 	var foodRatings []foodmodel.FoodRatings
 
 	tx := r.dbCtx.GetMainConnection().

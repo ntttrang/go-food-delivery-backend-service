@@ -25,7 +25,7 @@ func (ctrl *FoodHttpController) SyncFoodByIdAPI(c *gin.Context) {
 	}
 
 	// Sync food
-	err = ctrl.syncFoodIndexCommandHandler.SyncFood(c.Request.Context(), id)
+	err = ctrl.syncFoodByIdCommandHandler.SyncFood(c.Request.Context(), id)
 	if err != nil {
 		panic(err)
 	}

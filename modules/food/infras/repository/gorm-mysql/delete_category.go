@@ -1,4 +1,4 @@
-package repository
+package foodgormmysql
 
 import (
 	"context"

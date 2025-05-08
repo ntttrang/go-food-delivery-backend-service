@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -16,7 +16,7 @@ func (ctrl *FoodHttpController) GetFoodByIdAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	Food, err := ctrl.getDetailCmdHdl.Execute(c.Request.Context(), foodmodel.FoodDetailReq{Id: id})
+	Food, err := ctrl.getDetailCmdHdl.Execute(c.Request.Context(), service.FoodDetailReq{Id: id})
 	if err != nil {
 		panic(err)
 	}

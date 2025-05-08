@@ -10,11 +10,11 @@ import (
 
 // FoodElasticsearchHandler implements IFoodEventHandler for Elasticsearch operations
 type FoodElasticsearchHandler struct {
-	indexRepo IFoodIndexRepo
+	indexRepo ISyncFoodByIdRepo
 }
 
 // NewFoodElasticsearchHandler creates a new FoodElasticsearchHandler
-func NewFoodElasticsearchHandler(indexRepo IFoodIndexRepo) *FoodElasticsearchHandler {
+func NewFoodElasticsearchHandler(indexRepo ISyncFoodByIdRepo) *FoodElasticsearchHandler {
 	return &FoodElasticsearchHandler{
 		indexRepo: indexRepo,
 	}

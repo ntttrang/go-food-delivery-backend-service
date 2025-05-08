@@ -1,12 +1,10 @@
 package foodmodule
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	foodHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/controller/http-gin"
-	repo "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository"
 	elasticsearch "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/elasticsearch"
+	repo "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/rpc-client"
 	foodService "github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
@@ -36,52 +34,22 @@ func SetupFoodModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	listCommentFoodCmdl := foodService.NewListFoodCommentsQueryHandler(foodRatingRepo, userRPCClient)
 	deleteCommentFoodCmdl := foodService.NewDeleteCommentCommandHandler(foodRatingRepo)
 
-	// Setup Elasticsearch if available
-	var searchFoodQueryHandler *foodService.SearchFoodQueryHandler
-	var syncFoodIndexCommandHandler *foodService.SyncFoodIndexCommandHandler
-
+	// Setup Elasticsearch
 	// Try to initialize Elasticsearch client
 	esClient, err := shareComponent.NewElasticsearchClient(appCtx.GetConfig().ElasticSearch)
 	if err != nil {
 		panic(err)
 	}
-
-	// If Elasticsearch client was successfully created, set up search functionality
-	if esClient != nil {
-		// Create a new client with the food index name
-		foodIndexName := "foods"
-		if appCtx.GetConfig().ElasticSearch.IndexName != "" {
-			foodIndexName = appCtx.GetConfig().ElasticSearch.IndexName
-		}
-
-		// Use the client with the food index
-		foodEsClient := esClient.WithIndex(foodIndexName)
-
-		// Setup search repository
-		foodSearchRepo := elasticsearch.NewFoodSearchRepo(foodEsClient)
-
-		// Setup search handlers
-		searchFoodQueryHandler = foodService.NewSearchFoodQueryHandler(foodSearchRepo)
-		syncFoodIndexCommandHandler = foodService.NewSyncFoodIndexCommandHandler(foodRepo, foodSearchRepo)
-		log.Println("Elasticsearch initialized successfully. Search functionality is enabled.")
-	} else {
-		log.Println("Elasticsearch client not available. Search functionality will be disabled.")
-	}
-
-	// Create a dummy search handler if Elasticsearch is not available
-	if searchFoodQueryHandler == nil {
-		searchFoodQueryHandler = &foodService.SearchFoodQueryHandler{}
-	}
-
-	if syncFoodIndexCommandHandler == nil {
-		syncFoodIndexCommandHandler = &foodService.SyncFoodIndexCommandHandler{}
-	}
+	foodSearchRepo := elasticsearch.NewFoodSearchRepo(esClient)
+	searchFoodQueryHdl := foodService.NewSearchFoodQueryHandler(foodSearchRepo)
+	syncFoodByIdCmdHdl := foodService.NewSyncFoodByIdCommandHandler(foodRepo, foodSearchRepo)
+	syncFoodIndexCmdHdl := foodService.NewSyncFoodIndexCommandHandler(foodRepo, foodSearchRepo)
 
 	foodCtrl := foodHttpgin.NewFoodHttpController(
 		createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl, foodRepo,
 		createFoodFavoriteCmdl, favoriteFoodQueryHdl,
 		createCommentFoodCmdl, listCommentFoodCmdl, deleteCommentFoodCmdl,
-		searchFoodQueryHandler, syncFoodIndexCommandHandler,
+		searchFoodQueryHdl, syncFoodByIdCmdHdl, syncFoodIndexCmdHdl,
 	)
 
 	// Setup router

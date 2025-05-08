@@ -1,14 +1,15 @@
-package repository
+package foodgormmysql
 
 import (
 	"context"
 
 	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 	"github.com/pkg/errors"
 )
 
-func (r *FoodRepo) ListFoods(ctx context.Context, req foodmodel.ListFoodReq) ([]foodmodel.Food, int64, error) {
+func (r *FoodRepo) ListFoods(ctx context.Context, req service.ListFoodReq) ([]foodmodel.Food, int64, error) {
 
 	var result []foodmodel.Food
 	var total int64

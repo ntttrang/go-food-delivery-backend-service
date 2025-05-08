@@ -8,8 +8,26 @@ import (
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
+// Define DTOs & validate
+type SearchFoodDto struct {
+	Name        string `json:"name" form:"name"`
+	Description string `json:"description" form:"description"`
+}
+
+type ListFoodReq struct {
+	SearchFoodDto
+	sharedModel.PagingDto
+	sharedModel.SortingDto
+}
+
+type ListFoodRes struct {
+	Items      []foodmodel.FoodSearchResDto `json:"items"`
+	Pagination sharedModel.PagingDto        `json:"pagination"`
+}
+
+// Initilize service
 type IListRep interface {
-	ListFoods(ctx context.Context, req foodmodel.ListFoodReq) ([]foodmodel.Food, int64, error)
+	ListFoods(ctx context.Context, req ListFoodReq) ([]foodmodel.Food, int64, error)
 }
 
 type ListCommandHandler struct {
@@ -22,7 +40,8 @@ func NewListCommandHandler(repo IListRep) *ListCommandHandler {
 	}
 }
 
-func (s *ListCommandHandler) Execute(ctx context.Context, req foodmodel.ListFoodReq) (*foodmodel.ListFoodRes, error) {
+// Implement
+func (s *ListCommandHandler) Execute(ctx context.Context, req ListFoodReq) (*ListFoodRes, error) {
 	foods, total, err := s.repo.ListFoods(ctx, req)
 
 	if err != nil {
@@ -30,7 +49,7 @@ func (s *ListCommandHandler) Execute(ctx context.Context, req foodmodel.ListFood
 	}
 
 	foodDtos := convertListCategoryRes(foods)
-	var resp foodmodel.ListFoodRes
+	var resp ListFoodRes
 	resp.Items = foodDtos
 	resp.Pagination = sharedModel.PagingDto{
 		Page:  req.Page,

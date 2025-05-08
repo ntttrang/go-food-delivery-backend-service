@@ -1,11 +1,11 @@
 package elasticsearch
 
 import (
-	foodmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/food/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 )
 
 // buildFoodSearchQuery constructs the Elasticsearch query based on the search request
-func buildFoodSearchQuery(req foodmodel.FoodSearchReq) map[string]interface{} {
+func buildFoodSearchQuery(req service.FoodSearchReq) map[string]interface{} {
 	// Start with a bool query
 	boolQuery := map[string]interface{}{
 		"must":   []interface{}{},
