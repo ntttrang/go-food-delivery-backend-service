@@ -3,12 +3,11 @@ package service
 import (
 	"context"
 
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 type IDeleteMenuItemRepo interface {
-	Delete(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
+	Delete(ctx context.Context, req *MenuItemCreateReq) error
 }
 
 type DeleteMenuItemCommandHandler struct {
@@ -21,7 +20,7 @@ func NewDeleteMenuItemCommandHandler(menuItemRepo IDeleteMenuItemRepo) *DeleteMe
 	}
 }
 
-func (s *DeleteMenuItemCommandHandler) Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error {
+func (s *DeleteMenuItemCommandHandler) Execute(ctx context.Context, req *MenuItemCreateReq) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
 	}

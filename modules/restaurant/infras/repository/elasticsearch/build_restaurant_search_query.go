@@ -3,21 +3,21 @@ package elasticsearch
 import (
 	"fmt"
 
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 )
 
 // buildRestaurantSearchQuery constructs the Elasticsearch query based on the search request
-func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[string]interface{} {
+func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[string]any {
 	// Start with a bool query
-	boolQuery := map[string]interface{}{
-		"must":   []interface{}{},
-		"filter": []interface{}{},
+	boolQuery := map[string]any{
+		"must":   []any{},
+		"filter": []any{},
 	}
 
 	// Add keyword search if provided
 	if req.Keyword != "" {
-		boolQuery["must"] = append(boolQuery["must"].([]interface{}), map[string]interface{}{
-			"multi_match": map[string]interface{}{
+		boolQuery["must"] = append(boolQuery["must"].([]any), map[string]any{
+			"multi_match": map[string]any{
 				"query":     req.Keyword,
 				"fields":    []string{"name", "address"},
 				"type":      "best_fields",
@@ -28,9 +28,9 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 
 	// Add name search if provided
 	if req.Name != "" {
-		boolQuery["must"] = append(boolQuery["must"].([]interface{}), map[string]interface{}{
-			"match": map[string]interface{}{
-				"name": map[string]interface{}{
+		boolQuery["must"] = append(boolQuery["must"].([]any), map[string]any{
+			"match": map[string]any{
+				"name": map[string]any{
 					"query": req.Name,
 					"boost": 2.0,
 				},
@@ -40,8 +40,8 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 
 	// Add city filter if provided
 	if req.CityID != nil {
-		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
-			"term": map[string]interface{}{
+		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+			"term": map[string]any{
 				"city_id": *req.CityID,
 			},
 		})
@@ -49,8 +49,8 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 
 	// Add cuisines filter if provided
 	if len(req.Cuisines) > 0 {
-		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
-			"terms": map[string]interface{}{
+		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+			"terms": map[string]any{
 				"cuisines": req.Cuisines,
 			},
 		})
@@ -58,9 +58,9 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 
 	// Add rating filter if provided
 	if req.Rating != nil {
-		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
-			"range": map[string]interface{}{
-				"avg_rating": map[string]interface{}{
+		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+			"range": map[string]any{
+				"avg_rating": map[string]any{
 					"gte": *req.Rating,
 				},
 			},
@@ -69,8 +69,8 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 
 	// Add free shipping filter if provided
 	if req.FreeShipping != nil && *req.FreeShipping {
-		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
-			"term": map[string]interface{}{
+		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+			"term": map[string]any{
 				"shipping_fee_per_km": 0,
 			},
 		})
@@ -78,10 +78,10 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 
 	// Add geo distance filter if lat, lng, and radius are provided
 	if req.Lat != nil && req.Lng != nil && req.Radius != nil {
-		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
-			"geo_distance": map[string]interface{}{
+		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+			"geo_distance": map[string]any{
 				"distance": fmt.Sprintf("%.1fkm", *req.Radius),
-				"location": map[string]interface{}{
+				"location": map[string]any{
 					"lat": *req.Lat,
 					"lon": *req.Lng,
 				},
@@ -90,21 +90,21 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 	}
 
 	// Add status filter (always filter for active restaurants)
-	boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
-		"term": map[string]interface{}{
+	boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+		"term": map[string]any{
 			"status": "ACTIVE",
 		},
 	})
 
 	// If no must clauses, match all documents
-	if len(boolQuery["must"].([]interface{})) == 0 {
-		boolQuery["must"] = append(boolQuery["must"].([]interface{}), map[string]interface{}{
-			"match_all": map[string]interface{}{},
+	if len(boolQuery["must"].([]any)) == 0 {
+		boolQuery["must"] = append(boolQuery["must"].([]any), map[string]any{
+			"match_all": map[string]any{},
 		})
 	}
 
 	// Build sort
-	sort := []interface{}{}
+	sort := []any{}
 
 	if req.SortBy != "" {
 		direction := "desc"
@@ -128,9 +128,9 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 		case "distance":
 			if req.Lat != nil && req.Lng != nil {
 				// Sort by distance from the user
-				sort = append(sort, map[string]interface{}{
-					"_geo_distance": map[string]interface{}{
-						"location": map[string]interface{}{
+				sort = append(sort, map[string]any{
+					"_geo_distance": map[string]any{
+						"location": map[string]any{
 							"lat": *req.Lat,
 							"lon": *req.Lng,
 						},
@@ -147,58 +147,58 @@ func buildRestaurantSearchQuery(req restaurantmodel.RestaurantSearchReq) map[str
 		}
 
 		if sortField != "" {
-			sort = append(sort, map[string]interface{}{
-				sortField: map[string]interface{}{
+			sort = append(sort, map[string]any{
+				sortField: map[string]any{
 					"order": direction,
 				},
 			})
 		}
 	} else {
 		// Default sort by relevance
-		sort = append(sort, map[string]interface{}{
-			"_score": map[string]interface{}{
+		sort = append(sort, map[string]any{
+			"_score": map[string]any{
 				"order": "desc",
 			},
 		})
 	}
 
 	// Add aggregations for facets
-	aggs := map[string]interface{}{
-		"cuisines": map[string]interface{}{
-			"terms": map[string]interface{}{
+	aggs := map[string]any{
+		"cuisines": map[string]any{
+			"terms": map[string]any{
 				"field": "cuisines",
 				"size":  20,
 			},
 		},
-		"ratings": map[string]interface{}{
-			"range": map[string]interface{}{
+		"ratings": map[string]any{
+			"range": map[string]any{
 				"field": "avg_rating",
-				"ranges": []interface{}{
-					map[string]interface{}{"from": 4, "to": 5},
-					map[string]interface{}{"from": 3, "to": 4},
-					map[string]interface{}{"from": 2, "to": 3},
-					map[string]interface{}{"from": 1, "to": 2},
-					map[string]interface{}{"from": 0, "to": 1},
+				"ranges": []any{
+					map[string]any{"from": 4, "to": 5},
+					map[string]any{"from": 3, "to": 4},
+					map[string]any{"from": 2, "to": 3},
+					map[string]any{"from": 1, "to": 2},
+					map[string]any{"from": 0, "to": 1},
 				},
 			},
 		},
-		"delivery_time": map[string]interface{}{
-			"range": map[string]interface{}{
+		"delivery_time": map[string]any{
+			"range": map[string]any{
 				"field": "delivery_time",
-				"ranges": []interface{}{
-					map[string]interface{}{"to": 15},
-					map[string]interface{}{"from": 15, "to": 30},
-					map[string]interface{}{"from": 30, "to": 45},
-					map[string]interface{}{"from": 45, "to": 60},
-					map[string]interface{}{"from": 60},
+				"ranges": []any{
+					map[string]any{"to": 15},
+					map[string]any{"from": 15, "to": 30},
+					map[string]any{"from": 30, "to": 45},
+					map[string]any{"from": 45, "to": 60},
+					map[string]any{"from": 60},
 				},
 			},
 		},
 	}
 
 	// Construct the final query
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
+	query := map[string]any{
+		"query": map[string]any{
 			"bool": boolQuery,
 		},
 		"sort":             sort,

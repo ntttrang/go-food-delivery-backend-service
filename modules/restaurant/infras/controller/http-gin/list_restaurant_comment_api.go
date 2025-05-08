@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 // ListRestaurantCommentAPI: List all comments belong to restaurant or user input
 func (ctrl *RestaurantHttpController) ListRestaurantCommentAPI(c *gin.Context) {
-	var req restaurantmodel.RestaurantRatingListReq
+	var req restaurantservice.RestaurantRatingListReq
 	if err := c.ShouldBind(&req); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}

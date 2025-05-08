@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -15,7 +15,7 @@ func (ctrl *RestaurantHttpController) GetRestaurantDetailAPI(c *gin.Context) {
 	if err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
-	restaurant, err := ctrl.getDetailQueryHdl.Execute(c.Request.Context(), restaurantmodel.RestaurantDetailReq{Id: id})
+	restaurant, err := ctrl.getDetailQueryHdl.Execute(c.Request.Context(), restaurantservice.RestaurantDetailReq{Id: id})
 
 	if err != nil {
 		// c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

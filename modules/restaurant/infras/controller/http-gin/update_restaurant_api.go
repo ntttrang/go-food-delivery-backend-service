@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -17,13 +17,13 @@ func (ctrl *RestaurantHttpController) UpdateRestaurantByIdAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	var requestBodyData restaurantmodel.RestaurantUpdateDto
+	var requestBodyData restaurantservice.RestaurantUpdateDto
 
 	if err := c.ShouldBindJSON(&requestBodyData); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	cmd := restaurantmodel.RestaurantUpdateReq{
+	cmd := restaurantservice.RestaurantUpdateReq{
 		Id:  id,
 		Dto: requestBodyData,
 	}

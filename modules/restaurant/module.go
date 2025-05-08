@@ -54,15 +54,15 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 
 	// Setup Elasticsearch
 	searchRestaurantQueryHandler := restaurantService.NewSearchRestaurantQueryHandler(esRestaurantRepo)
-	syncRestaurantByIdCommandHandler := restaurantService.NewSyncRestaurantByIdCommandHandler(restaurantRepo, esRestaurantRepo)
-	syncRestaurantIndexCommandHandler := restaurantService.NewSyncRestaurantIndexCommandHandler(restaurantRepo, esRestaurantRepo)
+	syncRestaurantByIdCmdHdl := restaurantService.NewSyncRestaurantByIdCommandHandler(restaurantRepo, esRestaurantRepo)
+	syncRestaurantIndexCmdHdl := restaurantService.NewSyncRestaurantIndexCommandHandler(restaurantRepo, esRestaurantRepo)
 
 	resCtl := restaurantHttpgin.NewRestaurantHttpController(
 		createCmdHdl, listQueryHdl, getDetailQueryHdl, updateCmdHdl, deleteCmdHdl,
 		createRestaurantFavoriteCmdl, favoriteRestaurantQueryHdl,
 		createCommentRestaurantCmdl, listCommentRestaurantCmdl, deleteCommentRestaurantCmdl,
 		createMenuItemCmdHdl, listMenuItemCmdHdl, deleteMenuItemCmdHdl,
-		searchRestaurantQueryHandler, syncRestaurantByIdCommandHandler, syncRestaurantIndexCommandHandler,
+		searchRestaurantQueryHandler, syncRestaurantByIdCmdHdl, syncRestaurantIndexCmdHdl,
 	)
 
 	restaurants := g.Group("/restaurants")

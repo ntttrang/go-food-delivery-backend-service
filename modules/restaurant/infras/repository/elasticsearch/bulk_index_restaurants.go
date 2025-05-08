@@ -13,7 +13,7 @@ func (r *RestaurantSearchRepo) BulkIndexRestaurants(ctx context.Context, restaur
 	}
 
 	// Prepare documents for bulk indexing
-	documents := make(map[string]interface{}, len(restaurants))
+	documents := make(map[string]any, len(restaurants))
 	for _, restaurant := range restaurants {
 		restaurantDoc := restaurant.ToRestaurantDocument()
 		documents[restaurant.Id.String()] = restaurantDoc

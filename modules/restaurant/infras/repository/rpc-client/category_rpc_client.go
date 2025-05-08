@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"resty.dev/v3"
 )
 
@@ -17,11 +17,11 @@ func NewCategoryRPCClient(catServiceURL string) *CategoryRPCClient {
 	return &CategoryRPCClient{catServiceURL: catServiceURL}
 }
 
-func (c *CategoryRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantmodel.CategoryDto, error) {
+func (c *CategoryRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantservice.CategoryDto, error) {
 	client := resty.New()
 
 	type ResponseDTO struct {
-		Data []restaurantmodel.CategoryDto `json:"data"`
+		Data []restaurantservice.CategoryDto `json:"data"`
 	}
 
 	var response ResponseDTO
@@ -40,7 +40,7 @@ func (c *CategoryRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map
 	}
 
 	cats := response.Data
-	catsMap := make(map[uuid.UUID]restaurantmodel.CategoryDto, len(cats))
+	catsMap := make(map[uuid.UUID]restaurantservice.CategoryDto, len(cats))
 	for _, r := range cats {
 		catsMap[r.Id] = r
 	}

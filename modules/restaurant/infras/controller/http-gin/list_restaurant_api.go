@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
 func (ctrl *RestaurantHttpController) ListRestaurantsAPI(c *gin.Context) {
-	var searchDto restaurantmodel.RestaurantSearchDto
+	var searchDto restaurantservice.RestaurantSearchDto
 	var pagingDto sharedModel.PagingDto
 	var sortingDto sharedModel.SortingDto
 	if err := c.ShouldBind(&pagingDto); err != nil {
@@ -27,7 +27,7 @@ func (ctrl *RestaurantHttpController) ListRestaurantsAPI(c *gin.Context) {
 
 	pagingDto.Process()
 
-	req := restaurantmodel.RestaurantListReq{
+	req := restaurantservice.RestaurantListReq{
 		RestaurantSearchDto: searchDto,
 		PagingDto:           pagingDto,
 		SortingDto:          sortingDto,

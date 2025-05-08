@@ -5,10 +5,11 @@ import (
 
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/rpc-client"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/pkg/errors"
 )
 
-func (r *RestaurantFoodRepo) Delete(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error {
+func (r *RestaurantFoodRepo) Delete(ctx context.Context, req *restaurantservice.MenuItemCreateReq) error {
 
 	tx := r.dbCtx.GetMainConnection().Begin()
 

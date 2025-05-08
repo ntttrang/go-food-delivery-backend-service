@@ -1,16 +1,16 @@
 package elasticsearch
 
 import (
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 )
 
 // processRestaurantFacets processes the aggregation results from Elasticsearch into facets
-func processRestaurantFacets(aggregations map[string]interface{}) restaurantmodel.RestaurantSearchFacets {
-	facets := restaurantmodel.RestaurantSearchFacets{
-		Cuisines:     []restaurantmodel.CuisineFacet{},
-		PriceRanges:  []restaurantmodel.PriceRangeFacet{},
-		Ratings:      []restaurantmodel.RatingFacet{},
-		DeliveryTime: []restaurantmodel.TimeFacet{},
+func processRestaurantFacets(aggregations map[string]interface{}) restaurantservice.RestaurantSearchFacets {
+	facets := restaurantservice.RestaurantSearchFacets{
+		Cuisines:     []restaurantservice.CuisineFacet{},
+		PriceRanges:  []restaurantservice.PriceRangeFacet{},
+		Ratings:      []restaurantservice.RatingFacet{},
+		DeliveryTime: []restaurantservice.TimeFacet{},
 	}
 
 	// If no aggregations, return empty facets
@@ -26,7 +26,7 @@ func processRestaurantFacets(aggregations map[string]interface{}) restaurantmode
 				value := b["key"].(string)
 				count := int(b["doc_count"].(float64))
 
-				facets.Cuisines = append(facets.Cuisines, restaurantmodel.CuisineFacet{
+				facets.Cuisines = append(facets.Cuisines, restaurantservice.CuisineFacet{
 					Value: value,
 					Count: count,
 				})
@@ -52,7 +52,7 @@ func processRestaurantFacets(aggregations map[string]interface{}) restaurantmode
 					to = toVal.(float64)
 				}
 
-				facets.Ratings = append(facets.Ratings, restaurantmodel.RatingFacet{
+				facets.Ratings = append(facets.Ratings, restaurantservice.RatingFacet{
 					From:  from,
 					To:    to,
 					Count: count,
@@ -79,7 +79,7 @@ func processRestaurantFacets(aggregations map[string]interface{}) restaurantmode
 					to = int(toVal.(float64))
 				}
 
-				facets.DeliveryTime = append(facets.DeliveryTime, restaurantmodel.TimeFacet{
+				facets.DeliveryTime = append(facets.DeliveryTime, restaurantservice.TimeFacet{
 					From:  from,
 					To:    to,
 					Count: count,

@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
 // SearchRestaurantsAPI handles the search restaurants API endpoint
 func (ctrl *RestaurantHttpController) SearchRestaurantsAPI(c *gin.Context) {
 	// Create a request object to bind the JSON body
-	var req restaurantmodel.RestaurantSearchReq
+	var req restaurantservice.RestaurantSearchReq
 
 	// Bind JSON body
 	if err := c.ShouldBindJSON(&req); err != nil {

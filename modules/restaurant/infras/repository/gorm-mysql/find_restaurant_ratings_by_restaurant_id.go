@@ -4,11 +4,12 @@ import (
 	"context"
 
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 	"github.com/pkg/errors"
 )
 
-func (r *RestaurantRatingRepo) FindByRestaurantIdOrUserId(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRating, int64, error) {
+func (r *RestaurantRatingRepo) FindByRestaurantIdOrUserId(ctx context.Context, req restaurantservice.RestaurantRatingListReq) ([]restaurantmodel.RestaurantRating, int64, error) {
 	var restaurantRatings []restaurantmodel.RestaurantRating
 
 	tx := r.dbCtx.GetMainConnection().

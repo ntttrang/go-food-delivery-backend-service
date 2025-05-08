@@ -7,64 +7,65 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	model "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	sharedrpc "github.com/ntttrang/go-food-delivery-backend-service/shared/infras/rpc"
 )
 
 type ICreateCommandHandler interface {
-	Execute(ctx context.Context, data *restaurantmodel.RestaurantInsertDto) error
+	Execute(ctx context.Context, req *restaurantservice.RestaurantInsertDto) error
 }
 
 type IListQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantListReq) (restaurantmodel.RestaurantSearchRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantListReq) (*restaurantservice.RestaurantSearchRes, error)
 }
 
 type IGetDetailQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantDetailReq) (restaurantmodel.RestaurantDetailRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantDetailReq) (*restaurantservice.RestaurantDetailRes, error)
 }
 
 type IUpdateRestaurantCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantUpdateReq) error
+	Execute(ctx context.Context, req restaurantservice.RestaurantUpdateReq) error
 }
 
 type IDeleteCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantDeleteReq) error
+	Execute(ctx context.Context, req restaurantservice.RestaurantDeleteReq) error
 }
 
 type IAddFavoritesCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantLike) (*string, error)
+	Execute(ctx context.Context, req model.RestaurantLike) (*string, error)
 }
 type IListFavoritesQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.FavoriteRestaurantListReq) (restaurantmodel.RestaurantSearchRes, error)
+	Execute(ctx context.Context, req restaurantservice.FavoriteRestaurantListReq) (*restaurantservice.RestaurantSearchRes, error)
 }
 
 type ICreateRestaurantCommentCommandHandler interface {
-	Execute(ctx context.Context, req *restaurantmodel.RestaurantCommentCreateReq) error
+	Execute(ctx context.Context, req *restaurantservice.RestaurantCommentCreateReq) error
 }
 
 type IListRestaurantCommentsQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantRatingListReq) (*restaurantmodel.RestaurantRatingListRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantRatingListReq) (*restaurantservice.RestaurantRatingListRes, error)
 }
 
 type IDeleteCommentCommandHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantDeleteCommentReq) error
+	Execute(ctx context.Context, req restaurantservice.RestaurantDeleteCommentReq) error
 }
 
 type ICreateMenuItemCommandHandler interface {
-	Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
+	Execute(ctx context.Context, req *restaurantservice.MenuItemCreateReq) error
 }
 
 type IListMenuItemQueryHandler interface {
-	Execute(ctx context.Context, restaurantId uuid.UUID) (*restaurantmodel.MenuItemListRes, error)
+	Execute(ctx context.Context, restaurantId uuid.UUID) (*restaurantservice.MenuItemListRes, error)
 }
 
 type IDeleteMenuItemCommandHandler interface {
-	Execute(ctx context.Context, req *restaurantmodel.MenuItemCreateReq) error
+	Execute(ctx context.Context, req *restaurantservice.MenuItemCreateReq) error
 }
 
 // ISearchRestaurantQueryHandler defines the interface for restaurant search operations
 type ISearchRestaurantQueryHandler interface {
-	Execute(ctx context.Context, req restaurantmodel.RestaurantSearchReq) (*restaurantmodel.RestaurantSearchRes, error)
+	Execute(ctx context.Context, req restaurantservice.RestaurantSearchReq) (*restaurantservice.RestaurantSearchRes, error)
 }
 
 // ISyncRestaurantIndexCommandHandler defines the interface for restaurant index sync operations
