@@ -107,6 +107,13 @@ CREATE TABLE `order_trackings` (
   `id` VARCHAR(36) NOT NULL,
   `order_id` VARCHAR(36) NOT NULL,
   `state` enum('waiting_for_shipper','preparing','on_the_way','delivered','cancel') NOT NULL,
+  `payment_status` enum('pending','paid') NOT NULL,
+  `payment_method` enum('cash','card') NOT NULL,
+  `delivery_address` json DEFAULT NULL,
+  `delivery_fee` float DEFAULT '0',
+  `estimated_time` int DEFAULT '0',
+  `delivery_time` int DEFAULT '0',
+  `restaurant_id` VARCHAR(36) NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -126,6 +133,25 @@ CREATE TABLE `orders` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`) USING BTREE,
   KEY `shipper_id` (`shipper_id`) USING BTREE
+) ENGINE=InnoDB;
+
+DROP TABLE IF EXISTS `cards`;
+CREATE TABLE `cards` (
+  `id` VARCHAR(36) NOT NULL,
+  `method` enum('credit_card','debit_card') NOT NULL,
+  `provider` enum('stripe','paypal') NOT NULL,
+  `cardholder_name` VARCHAR(50)  NOT NULL,
+  `card_number` VARCHAR(50)  NOT NULL,
+  `card_type` enum('visa','mastercard','JCB') NOT NULL,
+  `expiry_month` VARCHAR(50)  NOT NULL,
+  `expiry_year` VARCHAR(50)  NOT NULL,
+  `cvv` VARCHAR(50)  NOT NULL,
+  `user_id` VARCHAR(36)  NOT NULL,
+  `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`) USING BTREE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS `restaurant_foods`;
