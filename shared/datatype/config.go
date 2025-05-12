@@ -6,14 +6,15 @@ import (
 )
 
 type Config struct {
-	UserServiceURL string
-	CatServiceURL  string
-	FoodServiceURL string
-	EmailConfig    EmailConfig
-	RedisConfig    RedisConfig
-	GoogleConfig   GoogleConfig
-	MinioS3        MinioS3Config
-	ElasticSearch  ElasticSearchConfig
+	UserServiceURL       string
+	CatServiceURL        string
+	FoodServiceURL       string
+	RestaurantServiceURL string
+	EmailConfig          EmailConfig
+	RedisConfig          RedisConfig
+	GoogleConfig         GoogleConfig
+	MinioS3              MinioS3Config
+	ElasticSearch        ElasticSearchConfig
 }
 
 var config *Config
@@ -27,9 +28,10 @@ func NewConfig() *Config {
 
 	if config == nil {
 		config = &Config{
-			UserServiceURL: os.Getenv("USER_SERVICE_URL"),
-			CatServiceURL:  os.Getenv("CAT_SERVICE_URL"),
-			FoodServiceURL: os.Getenv("FOOD_SERVICE_URL"),
+			UserServiceURL:       os.Getenv("USER_SERVICE_URL"),
+			CatServiceURL:        os.Getenv("CAT_SERVICE_URL"),
+			FoodServiceURL:       os.Getenv("FOOD_SERVICE_URL"),
+			RestaurantServiceURL: os.Getenv("RESTAURANT_SERVICE_URL"),
 			EmailConfig: EmailConfig{
 				SMTPHost:     os.Getenv("SMTP_HOST"),
 				SMTPPort:     smtpPort,

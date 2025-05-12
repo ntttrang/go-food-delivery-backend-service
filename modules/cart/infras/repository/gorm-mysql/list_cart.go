@@ -8,27 +8,27 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (r *CartRepo) ListByUserId(ctx context.Context, req service.CartListReq) ([]cartmodel.Cart, int64, error) {
+func (r *CartRepo) ListByUserId(ctx context.Context, req service.CartListReq) ([]cartmodel.Cart, error) {
 	var carts []cartmodel.Cart
-	var total int64
 
-	db := r.dbCtx.GetMainConnection().Table(cartmodel.Cart{}.TableName())
+	db := r.dbCtx.GetMainConnection().Table(cartmodel.Cart{}.TableName()).Select("id", "user_id", "restaurant_id", "COUNT(*) AS item_quantity", "dropoff_lat", "dropoff_lng")
 
 	if req.UserID != nil {
 		db = db.Where("user_id = ?", req.UserID)
 	}
 
 	// By default, only return active carts
-	db = db.Where("status != ?", cartmodel.CartStatusProcessed)
+	db = db.Where("status != ?", cartmodel.CartStatusProcessed).Group("id,user_id, restaurant_id, dropoff_lat, dropoff_lng")
 
-	sortStr := "created_at DESC"
-	if req.SortBy != "" {
-		sortStr = req.SortBy + " " + req.Direction
+	// TODO: Sort newest cart
+	// sortStr := "created_at DESC"
+	// if req.SortBy != "" {
+	// 	sortStr = req.SortBy + " " + req.Direction
+	// }
+
+	if err := db.Find(&carts).Error; err != nil {
+		return nil, errors.WithStack(err)
 	}
 
-	if err := db.Count(&total).Offset((req.Page - 1) * req.Limit).Limit(req.Limit).Order(sortStr).Find(&carts).Error; err != nil {
-		return nil, 0, errors.WithStack(err)
-	}
-
-	return carts, total, nil
+	return carts, nil
 }

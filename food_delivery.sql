@@ -5,6 +5,8 @@ CREATE TABLE `carts` (
   `food_id` VARCHAR(36)  NOT NULL,
   `restaurant_id` VARCHAR(36)  NOT NULL,
   `quantity` int NOT NULL,
+  `dropoff_lat` float NOT NULL,
+  `dropoff_lng` float NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

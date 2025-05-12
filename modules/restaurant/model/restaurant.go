@@ -1,7 +1,6 @@
 package restaurantmodel
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,17 +9,17 @@ import (
 )
 
 type Restaurant struct {
-	Id               uuid.UUID       `gorm:"column:id;"`
-	OwnerId          uuid.UUID       `gorm:"column:owner_id;"`
-	Name             string          `gorm:"column:name;"`
-	Addr             string          `gorm:"column:addr;"`
-	CityId           int             `gorm:"column:city_id;"`
-	Lat              float64         `gorm:"column:lat;"`
-	Lng              float64         `gorm:"column:lng;"`
-	Cover            json.RawMessage `gorm:"column:cover;"` // json
-	Logo             json.RawMessage `gorm:"column:logo;"`  // json
-	ShippingFeePerKm float64         `gorm:"column:shipping_fee_per_km;"`
-	Status           string          `gorm:"column:status;"`
+	Id               uuid.UUID `gorm:"column:id;"`
+	OwnerId          uuid.UUID `gorm:"column:owner_id;"`
+	Name             string    `gorm:"column:name;"`
+	Addr             string    `gorm:"column:addr;"`
+	CityId           int       `gorm:"column:city_id;"`
+	Lat              float64   `gorm:"column:lat;"`
+	Lng              float64   `gorm:"column:lng;"`
+	Cover            string    `gorm:"column:cover;"` // json
+	Logo             string    `gorm:"column:logo;"`  // json
+	ShippingFeePerKm float64   `gorm:"column:shipping_fee_per_km;"`
+	Status           string    `gorm:"column:status;"`
 	sharedmodel.DateDto
 }
 
@@ -47,6 +46,8 @@ func (r *Restaurant) ToRestaurantDocument() map[string]any {
 		"lng":                 r.Lng,
 		"shipping_fee_per_km": r.ShippingFeePerKm,
 		"status":              r.Status,
+		"logo":                r.Logo,
+		"cover":               r.Cover,
 	}
 
 	// Add timestamps if available
@@ -55,20 +56,6 @@ func (r *Restaurant) ToRestaurantDocument() map[string]any {
 	}
 	if r.UpdatedAt != nil {
 		doc["updated_at"] = r.UpdatedAt.Format(time.RFC3339)
-	}
-
-	// Add complex fields (logo, cover) if available
-	if len(r.Logo) > 0 {
-		var logoMap map[string]any
-		if err := json.Unmarshal(r.Logo, &logoMap); err == nil {
-			doc["logo"] = logoMap
-		}
-	}
-	if len(r.Cover) > 0 {
-		var coverMap map[string]any
-		if err := json.Unmarshal(r.Cover, &coverMap); err == nil {
-			doc["cover"] = coverMap
-		}
 	}
 
 	// Default values for search-specific fields

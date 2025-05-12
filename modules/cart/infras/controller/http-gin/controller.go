@@ -14,8 +14,12 @@ type ICreateCommandHandler interface {
 	Execute(ctx context.Context, data *service.CartUpsertDto) error
 }
 
-type IListQueryHandler interface {
+type IListCartQueryHandler interface {
 	Execute(ctx context.Context, req service.CartListReq) (*service.CartListRes, error)
+}
+
+type IListCartItemQueryHandler interface {
+	Execute(ctx context.Context, req service.CartItemListReq) (*service.CartItemListRes, error)
 }
 
 type IGetDetailQueryHandler interface {
@@ -31,26 +35,29 @@ type IDeleteCommandHandler interface {
 }
 
 type CartHttpController struct {
-	createCmdHdl      ICreateCommandHandler
-	listQueryHdl      IListQueryHandler
-	getDetailQueryHdl IGetDetailQueryHandler
-	updateCmdHdl      IUpdateCommandHandler
-	deleteCmdHdl      IDeleteCommandHandler
+	createCmdHdl         ICreateCommandHandler
+	listCartQueryHdl     IListCartQueryHandler
+	listCartItemQueryHdl IListCartItemQueryHandler
+	getDetailQueryHdl    IGetDetailQueryHandler
+	updateCmdHdl         IUpdateCommandHandler
+	deleteCmdHdl         IDeleteCommandHandler
 }
 
 func NewCartHttpController(
 	createCmdHdl ICreateCommandHandler,
-	listQueryHdl IListQueryHandler,
+	listCartQueryHdl IListCartQueryHandler,
+	listCartItemQueryHdl IListCartItemQueryHandler,
 	getDetailQueryHdl IGetDetailQueryHandler,
 	updateCmdHdl IUpdateCommandHandler,
 	deleteCmdHdl IDeleteCommandHandler,
 ) *CartHttpController {
 	return &CartHttpController{
-		createCmdHdl:      createCmdHdl,
-		listQueryHdl:      listQueryHdl,
-		getDetailQueryHdl: getDetailQueryHdl,
-		updateCmdHdl:      updateCmdHdl,
-		deleteCmdHdl:      deleteCmdHdl,
+		createCmdHdl:         createCmdHdl,
+		listCartQueryHdl:     listCartQueryHdl,
+		listCartItemQueryHdl: listCartItemQueryHdl,
+		getDetailQueryHdl:    getDetailQueryHdl,
+		updateCmdHdl:         updateCmdHdl,
+		deleteCmdHdl:         deleteCmdHdl,
 	}
 }
 
@@ -60,6 +67,7 @@ func (ctrl *CartHttpController) SetupRoutes(g *gin.RouterGroup) {
 	// Cart routes
 	g.POST("", middleware.Auth(introspectRpcClient), ctrl.UpsertCartAPI)
 	g.GET("", ctrl.ListCartAPI)
+	g.GET("/cart-item", ctrl.ListCartItemAPI)
 	g.GET("/:userId/:foodId", ctrl.GetCartByUserIdAndFoodIdAPI)
 	g.PATCH("/:id", ctrl.UpdateCartByIdAPI)
 	g.DELETE("/:userId/:foodId", ctrl.DeleteCartByIdAPI)

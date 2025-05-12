@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/repository/rpcclient"
 	cartmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/model"
+	sharedComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
@@ -20,80 +22,86 @@ type CartListReq struct {
 	sharedModel.SortingDto
 }
 
+// No need to paginate
+// Maximum 10 carts
 type CartListRes struct {
-	Items      []CartItemDto         `json:"items"`
-	Pagination sharedModel.PagingDto `json:"pagination"`
+	Items []CartDto `json:"items"`
 }
 
-type CartItemDto struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"userId"`
-	FoodID      uuid.UUID `json:"foodId"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Quantity    int       `json:"quantity"`
-	Status      string    `json:"status"`
-	sharedModel.DateDto
+type CartDto struct {
+	ID             uuid.UUID `json:"id"`
+	UserID         uuid.UUID `json:"userId"`
+	RestaurantId   uuid.UUID `json:"restaurantId"`
+	RestaurantName string    `json:"restaurantName"`
+	ItemQuantity   int64     `json:"itemQuantity"`
+	EstDistance    float64   `json:"estDistance"` // Km
+	EstTime        float64   `json:"estTime"`     // minute
+
+	DropOffLat float64 `json:"-"`
+	DropOffLng float64 `json:"-"`
 }
 
 // Initialize service
 type IListCartRepo interface {
-	ListByUserId(ctx context.Context, req CartListReq) ([]cartmodel.Cart, int64, error)
+	ListByUserId(ctx context.Context, req CartListReq) ([]cartmodel.Cart, error)
 }
 
-type IRpcFoodRepo interface {
-	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]cartmodel.Food, error)
+type IRpcRestaurantRepo interface {
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]rpcclient.RPCGetByIdsResponseDTO, error)
 }
 
 type ListQueryHandler struct {
-	cartRepo    IListCartRepo
-	rpcFoodRepo IRpcFoodRepo
+	cartRepo          IListCartRepo
+	rpcRestaurantRepo IRpcRestaurantRepo
 }
 
-func NewListQueryHandler(cartRepo IListCartRepo, rpcFoodRepo IRpcFoodRepo) *ListQueryHandler {
+func NewListQueryHandler(cartRepo IListCartRepo, rpcRestaurantRepo IRpcRestaurantRepo) *ListQueryHandler {
 	return &ListQueryHandler{
-		cartRepo:    cartRepo,
-		rpcFoodRepo: rpcFoodRepo,
+		cartRepo:          cartRepo,
+		rpcRestaurantRepo: rpcRestaurantRepo,
 	}
 }
 
 // Implement
 func (hdl *ListQueryHandler) Execute(ctx context.Context, req CartListReq) (*CartListRes, error) {
-	carts, total, err := hdl.cartRepo.ListByUserId(ctx, req)
+	carts, err := hdl.cartRepo.ListByUserId(ctx, req)
 
 	if err != nil {
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	var items []CartItemDto
-	var foodIds []uuid.UUID
+	var items []CartDto
+	var restaurantIds []uuid.UUID
 	for _, cart := range carts {
-		items = append(items, CartItemDto{
-			ID:       cart.ID,
-			UserID:   cart.UserID,
-			FoodID:   cart.FoodID,
-			Quantity: cart.Quantity,
-			Status:   cart.Status,
-			DateDto:  cart.DateDto,
+		items = append(items, CartDto{
+			ID:           cart.ID,
+			UserID:       cart.UserID,
+			RestaurantId: cart.RestaurantId,
+			ItemQuantity: cart.ItemQuantity,
 		})
-		foodIds = append(foodIds, cart.FoodID)
+		restaurantIds = append(restaurantIds, cart.RestaurantId)
 	}
 
-	foodMap, err := hdl.rpcFoodRepo.FindByIds(ctx, foodIds)
+	restaurantMap, err := hdl.rpcRestaurantRepo.FindByIds(ctx, restaurantIds)
 	if err != nil {
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
+
 	for i := 0; i < len(items); i++ {
-		items[i].Name = foodMap[items[i].FoodID].Name
-		items[i].Description = foodMap[items[i].FoodID].Description
+		items[i].RestaurantName = restaurantMap[items[i].RestaurantId].Name
+
+		// Estimate distance & time
+		lat := restaurantMap[items[i].RestaurantId].Lat
+		lng := restaurantMap[items[i].RestaurantId].Lng
+		currentLat := carts[i].DropOffLat
+		currentLng := carts[i].DropOffLng
+
+		distance := sharedComponent.Haversine(currentLat, currentLng, lat, lng)
+
+		items[i].EstDistance = distance
 	}
 
 	var resp CartListRes
 	resp.Items = items
-	resp.Pagination = sharedModel.PagingDto{
-		Page:  req.Page,
-		Limit: req.Limit,
-		Total: total,
-	}
 	return &resp, nil
 }

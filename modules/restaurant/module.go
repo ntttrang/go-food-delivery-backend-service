@@ -63,7 +63,11 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		createCommentRestaurantCmdl, listCommentRestaurantCmdl, deleteCommentRestaurantCmdl,
 		createMenuItemCmdHdl, listMenuItemCmdHdl, deleteMenuItemCmdHdl,
 		searchRestaurantQueryHandler, syncRestaurantByIdCmdHdl, syncRestaurantIndexCmdHdl,
+		restaurantRepo,
 	)
+
+	// RPC
+	g.POST("/rpc/restaurants/find-by-ids", resCtl.RPCGetByIds)
 
 	restaurants := g.Group("/restaurants")
 	resCtl.SetupRoutes(restaurants)

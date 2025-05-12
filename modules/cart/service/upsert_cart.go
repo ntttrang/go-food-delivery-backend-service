@@ -45,7 +45,7 @@ func (c CartUpsertDto) ConvertToCart() *cartmodel.Cart {
 type ICreateCartRepository interface {
 	Insert(ctx context.Context, cart *cartmodel.Cart) error
 	FindByUserIdAndFoodId(ctx context.Context, userId, foodId uuid.UUID) (*cartmodel.Cart, error)
-	FindByUserIdAndRestaurantId(ctx context.Context, userId, foodId uuid.UUID) (*cartmodel.Cart, error)
+	FindByUserIdAndRestaurantId(ctx context.Context, userId, foodId uuid.UUID) ([]cartmodel.Cart, error)
 	Update(ctx context.Context, cart *cartmodel.Cart) error
 }
 
@@ -97,9 +97,9 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *CartUpsertDto)
 
 	// Check if cart already exists for this user and restaurant
 	var cartId uuid.UUID
-	existingCartByRestaurant, err := s.repo.FindByUserIdAndRestaurantId(ctx, data.UserID, food[data.FoodID].RestaurantId)
-	if err == nil && existingCartByRestaurant != nil {
-		cartId = existingCartByRestaurant.ID
+	existingCartByRestaurants, err := s.repo.FindByUserIdAndRestaurantId(ctx, data.UserID, food[data.FoodID].RestaurantId)
+	if err == nil && len(existingCartByRestaurants) > 0 {
+		cartId = existingCartByRestaurants[0].ID
 	} else {
 		cartId, _ = uuid.NewV7()
 	}

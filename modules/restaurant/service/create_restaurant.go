@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	"github.com/google/uuid"
@@ -43,10 +42,8 @@ func (r RestaurantInsertDto) ConvertToRestaurant() *restaurantmodel.Restaurant {
 		Lat:              r.Lat,
 		Lng:              r.Lng,
 		ShippingFeePerKm: r.ShippingFeePerKm,
-
-		// TODO: Hard code
-		Cover: json.RawMessage(`{"key": "value"}`),
-		Logo:  json.RawMessage(`{"key": "value"}`),
+		Cover:            "[]",
+		Logo:             "[]",
 	}
 }
 

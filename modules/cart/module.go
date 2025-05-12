@@ -15,10 +15,12 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	// Setup repository
 	repo := cartRepo.NewCartRepo(dbCtx)
 	rpcFoodRepo := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
+	rpcRestaurantRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
 
 	// Setup command handlers
 	createCmdHdl := cartService.NewCreateCommandHandler(repo, rpcFoodRepo)
-	listQueryHdl := cartService.NewListQueryHandler(repo, rpcFoodRepo)
+	listQueryHdl := cartService.NewListQueryHandler(repo, rpcRestaurantRepo)
+	listCartItemQueryHdl := cartService.NewListCartItemQueryHandler(repo, rpcFoodRepo, rpcRestaurantRepo)
 	getDetailQueryHdl := cartService.NewGetDetailQueryHandler(repo, rpcFoodRepo)
 	updateCmdHdl := cartService.NewUpdateCommandHandler(repo)
 	deleteCmdHdl := cartService.NewDeleteCommandHandler(repo)
@@ -27,6 +29,7 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	cartCtl := cartHttpgin.NewCartHttpController(
 		createCmdHdl,
 		listQueryHdl,
+		listCartItemQueryHdl,
 		getDetailQueryHdl,
 		updateCmdHdl,
 		deleteCmdHdl,

@@ -77,6 +77,10 @@ type ISyncRestaurantIndexCommandHandler interface {
 	SyncAll(ctx context.Context) error
 }
 
+type RpcRestaurantRepo interface {
+	FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]model.Restaurant, error)
+}
+
 type RestaurantHttpController struct {
 	createCmdHdl      ICreateCommandHandler
 	listQueryHdl      IListQueryHandler
@@ -99,6 +103,8 @@ type RestaurantHttpController struct {
 	searchRestaurantQueryHandler      ISearchRestaurantQueryHandler
 	syncRestaurantByIdCommandHandler  ISyncRestaurantByIdCommandHandler
 	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler
+
+	rpcRepo RpcRestaurantRepo
 }
 
 func NewRestaurantHttpController(
@@ -117,7 +123,9 @@ func NewRestaurantHttpController(
 	deleteMenuItemCmdHdl IDeleteMenuItemCommandHandler,
 	searchRestaurantQueryHandler ISearchRestaurantQueryHandler,
 	syncRestaurantByIdCommandHandler ISyncRestaurantByIdCommandHandler,
-	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler) *RestaurantHttpController {
+	syncRestaurantIndexCommandHandler ISyncRestaurantIndexCommandHandler,
+	rpcRepo RpcRestaurantRepo,
+) *RestaurantHttpController {
 	return &RestaurantHttpController{
 		createCmdHdl:      createCmdHdl,
 		listQueryHdl:      listQueryHdl,
@@ -139,6 +147,8 @@ func NewRestaurantHttpController(
 		searchRestaurantQueryHandler:      searchRestaurantQueryHandler,
 		syncRestaurantByIdCommandHandler:  syncRestaurantByIdCommandHandler,
 		syncRestaurantIndexCommandHandler: syncRestaurantIndexCommandHandler,
+
+		rpcRepo: rpcRepo,
 	}
 }
 

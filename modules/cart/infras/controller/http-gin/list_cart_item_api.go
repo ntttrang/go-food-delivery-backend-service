@@ -8,17 +8,17 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
-func (ctrl *CartHttpController) ListCartAPI(c *gin.Context) {
-	var searchDto service.CartSearchDto
+func (ctrl *CartHttpController) ListCartItemAPI(c *gin.Context) {
+	var searchDto service.CartItemSearchDto
 	if err := c.ShouldBind(&searchDto); err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	req := service.CartListReq{
-		CartSearchDto: searchDto,
+	req := service.CartItemListReq{
+		CartItemSearchDto: searchDto,
 	}
 
-	result, err := ctrl.listCartQueryHdl.Execute(c.Request.Context(), req)
+	result, err := ctrl.listCartItemQueryHdl.Execute(c.Request.Context(), req)
 	if err != nil {
 		panic(err)
 	}

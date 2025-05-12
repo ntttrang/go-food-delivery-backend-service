@@ -8,4 +8,6 @@ type Food struct {
 	CategoryId   uuid.UUID `json:"categoryId"`
 	Name         string
 	Description  string
+	Images       string
+	Price        float64
 }
