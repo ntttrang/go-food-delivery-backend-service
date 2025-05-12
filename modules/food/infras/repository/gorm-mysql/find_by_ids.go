@@ -29,12 +29,13 @@ func (r *FoodRepo) FindByIds(ctx context.Context, ids []uuid.UUID) ([]foodmodel.
 				f.price, 
 				f.category_id,
 				COUNT(fr.comment) AS comment_qty,
-				AVG(fr.point) AS avg_point
+				AVG(fr.point) AS avg_point,
+				f.restaurant_id
 				FROM foods f
 			LEFT JOIN food_ratings fr
 			ON f.id = fr.food_id
 			WHERE f.id IN (?) AND f.status = ?
-			GROUP BY f.id, f.name, f.description, f.images, f.price, f.category_id`, ids, sharedModel.StatusActive).
+			GROUP BY f.id, f.name, f.description, f.images, f.price, f.category_id, f.restaurant_id`, ids, sharedModel.StatusActive).
 		Find(&foods).Error; err != nil {
 		return nil, err
 	}

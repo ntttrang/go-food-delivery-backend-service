@@ -1,7 +1,9 @@
 DROP TABLE IF EXISTS `carts`;
 CREATE TABLE `carts` (
+  `id` VARCHAR(36)  NOT NULL,
   `user_id` VARCHAR(36)  NOT NULL,
   `food_id` VARCHAR(36)  NOT NULL,
+  `restaurant_id` VARCHAR(36)  NOT NULL,
   `quantity` int NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

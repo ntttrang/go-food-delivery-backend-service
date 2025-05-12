@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
+	cartmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/cart"
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
@@ -65,6 +66,7 @@ func main() {
 	foodmodule.SetupFoodModule(appCtx, v1)
 	mediamodule.SetupMediaModule(appCtx, v1)
 	paymentmodule.SetupPaymentModule(appCtx, v1)
+	cartmodule.SetupCartModule(appCtx, v1)
 
 	r.Run(fmt.Sprintf(":%s", port))
 
