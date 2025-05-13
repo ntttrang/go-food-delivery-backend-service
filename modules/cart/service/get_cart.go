@@ -64,7 +64,7 @@ func (hdl *GetDetailQueryHandler) Execute(ctx context.Context, req CartDetailReq
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 	if cart == nil {
-		return nil, datatype.ErrNotFound.WithWrap(err).WithDebug(err.Error())
+		return nil, datatype.ErrNotFound
 	}
 
 	// Check if cart is processed
