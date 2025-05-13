@@ -13,6 +13,7 @@ import (
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
+	ordermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/order"
 	paymentmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/payment"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
@@ -67,6 +68,7 @@ func main() {
 	mediamodule.SetupMediaModule(appCtx, v1)
 	paymentmodule.SetupPaymentModule(appCtx, v1)
 	cartmodule.SetupCartModule(appCtx, v1)
+	ordermodule.SetupOrderModule(appCtx, v1)
 
 	r.Run(fmt.Sprintf(":%s", port))
 

@@ -12,20 +12,20 @@ import (
 
 // Payment method constants
 const (
-	MethodCreditCard = "credit_card"
-	MethodDebitCard  = "debit_card"
+	MethodCreditCard = "CREDIT_CARD"
+	MethodDebitCard  = "DEBIT_CARD"
 )
 
 // Payment provider constants
 const (
-	ProviderStripe = "stripe"
-	ProviderPaypal = "paypal"
+	ProviderStripe = "STRIPE"
+	ProviderPaypal = "PAYPAL"
 )
 
 // Card type constants
 const (
-	CardTypeVisa       = "visa"
-	CardTypeMastercard = "mastercard"
+	CardTypeVisa       = "VISA"
+	CardTypeMastercard = "MASTERCARD"
 	CardTypeJCB        = "JCB"
 )
 

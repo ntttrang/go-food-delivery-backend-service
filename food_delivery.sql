@@ -112,7 +112,8 @@ CREATE TABLE `order_trackings` (
   `order_id` VARCHAR(36) NOT NULL,
   `state` enum('waiting_for_shipper','preparing','on_the_way','delivered','cancel') NOT NULL,
   `payment_status` enum('pending','paid') NOT NULL,
-  `payment_method` enum('cash','card') NOT NULL,
+  `payment_method` enum('CASH','CREDIT_CARD', 'DEBIT_CARD') NOT NULL,
+  `card_id` VARCHAR(36) NOT NULL,
   `delivery_address` json DEFAULT NULL,
   `delivery_fee` float DEFAULT '0',
   `estimated_time` int DEFAULT '0',
@@ -122,7 +123,8 @@ CREATE TABLE `order_trackings` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `order_id` (`order_id`) USING BTREE
+  KEY `order_id` (`order_id`) USING BTREE,
+  KEY `card_id` (`card_id`) USING BTREE
 ) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS `orders`;
