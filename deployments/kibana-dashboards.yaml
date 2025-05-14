@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-dashboards
+  namespace: food-delivery
+  labels:
+    k8s-app: kibana
+data:
+  kibana-dashboards.ndjson: |
+    {"attributes":{"title":"food-delivery-overview","hits":0,"description":"Overview of all microservices in the food delivery application","panelsJSON":"[{\"version\":\"7.10.0\",\"gridData\":{\"h\":15,\"i\":\"1\",\"w\":24,\"x\":0,\"y\":0},\"panelIndex\":\"1\",\"embeddableConfig\":{\"title\":\"Log Count by Service\"},\"panelRefName\":\"panel_1\"},{\"version\":\"7.10.0\",\"gridData\":{\"h\":15,\"i\":\"2\",\"w\":24,\"x\":24,\"y\":0},\"panelIndex\":\"2\",\"embeddableConfig\":{\"title\":\"Error Count by Service\"},\"panelRefName\":\"panel_2\"},{\"version\":\"7.10.0\",\"gridData\":{\"h\":15,\"i\":\"3\",\"w\":48,\"x\":0,\"y\":15},\"panelIndex\":\"3\",\"embeddableConfig\":{\"title\":\"Recent Logs\"},\"panelRefName\":\"panel_3\"}]","timeRestore":false,"kibanaSavedObjectMeta":{"searchSourceJSON":"{\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"filter\":[]}"},"optionsJSON":"{\"useMargins\":true,\"hidePanelTitles\":false}","version":1},"id":"food-delivery-overview","references":[{"id":"service-log-count","name":"panel_1","type":"visualization"},{"id":"service-error-count","name":"panel_2","type":"visualization"},{"id":"recent-logs","name":"panel_3","type":"search"}],"type":"dashboard"}
+    {"attributes":{"title":"service-log-count","visState":"{\"title\":\"service-log-count\",\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"isDonut\":false,\"labels\":{\"show\":true,\"values\":true,\"last_level\":true,\"truncate\":100}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"kubernetes.container.name\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}","uiStateJSON":"{}","description":"","version":1,"kibanaSavedObjectMeta":{"searchSourceJSON":"{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"}},"id":"service-log-count","references":[{"id":"filebeat-*","name":"kibanaSavedObjectMeta.searchSourceJSON.index","type":"index-pattern"}],"type":"visualization"}
+    {"attributes":{"title":"service-error-count","visState":"{\"title\":\"service-error-count\",\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"isDonut\":false,\"labels\":{\"show\":true,\"values\":true,\"last_level\":true,\"truncate\":100}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"kubernetes.container.name\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}","uiStateJSON":"{}","description":"","version":1,"kibanaSavedObjectMeta":{"searchSourceJSON":"{\"query\":{\"query\":\"message:*error* OR message:*fail* OR message:*exception*\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"}},"id":"service-error-count","references":[{"id":"filebeat-*","name":"kibanaSavedObjectMeta.searchSourceJSON.index","type":"index-pattern"}],"type":"visualization"}
+    {"attributes":{"title":"recent-logs","columns":["kubernetes.container.name","message"],"description":"","hits":0,"kibanaSavedObjectMeta":{"searchSourceJSON":"{\"highlightAll\":true,\"version\":true,\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"},"sort":[["@timestamp","desc"]],"version":1},"id":"recent-logs","references":[{"id":"filebeat-*","name":"kibanaSavedObjectMeta.searchSourceJSON.index","type":"index-pattern"}],"type":"search"}
+    {"attributes":{"title":"filebeat-*","timeFieldName":"@timestamp","fields":"[]"},"id":"filebeat-*","references":[],"type":"index-pattern"}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kibana-dashboard-setup
+  namespace: food-delivery
+spec:
+  template:
+    spec:
+      containers:
+      - name: dashboard-setup
+        image: curlimages/curl:latest
+        command:
+        - sh
+        - -c
+        - |
+          # Wait for Kibana to be ready
+          echo "Waiting for Kibana to be ready..."
+          until curl -s http://kibana:5601/api/status | grep -q '"overall":{"level":"available"'; do
+            sleep 5
+          done
+          
+          # Create index pattern
+          echo "Creating index pattern..."
+          curl -X POST "http://kibana:5601/api/saved_objects/index-pattern/filebeat-*" \
+            -H 'kbn-xsrf: true' \
+            -H 'Content-Type: application/json' \
+            -d '{"attributes":{"title":"filebeat-*","timeFieldName":"@timestamp"}}'
+          
+          # Import dashboards
+          echo "Importing dashboards..."
+          curl -X POST "http://kibana:5601/api/saved_objects/_import?overwrite=true" \
+            -H "kbn-xsrf: true" \
+            --form file=@/dashboards/kibana-dashboards.ndjson
+          
+          echo "Dashboard setup completed."
+        volumeMounts:
+        - name: dashboards-volume
+          mountPath: /dashboards
+      restartPolicy: OnFailure
+      volumes:
+      - name: dashboards-volume
+        configMap:
+          name: kibana-dashboards
+          items:
+          - key: kibana-dashboards.ndjson
+            path: kibana-dashboards.ndjson

@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: food-delivery
+  labels:
+    k8s-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*.log
+      processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            matchers:
+            - logs_path:
+                logs_path: "/var/log/containers/"
+        - add_fields:
+            target: ''
+            fields:
+              environment: ${ENVIRONMENT:kubernetes}
+
+    processors:
+      - add_cloud_metadata:
+      - add_host_metadata:
+      - add_kubernetes_metadata:
+          host: ${NODE_NAME}
+          matchers:
+          - logs_path:
+              logs_path: "/var/log/containers/"
+      - decode_json_fields:
+          fields: ["message"]
+          target: "json"
+          overwrite_keys: true
+          process_array: false
+          max_depth: 1
+          add_error_key: true
+      - drop_event:
+          when:
+            or:
+              - contains:
+                  kubernetes.container.name: "filebeat"
+              - contains:
+                  kubernetes.container.name: "elasticsearch"
+              - contains:
+                  kubernetes.container.name: "kibana"
+
+    output.elasticsearch:
+      hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+      index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+    setup.kibana:
+      host: "${KIBANA_HOST:kibana}:${KIBANA_PORT:5601}"
+
+    setup.ilm.enabled: auto
+    setup.ilm.rollover_alias: "filebeat"
+    setup.ilm.pattern: "{now/d}-000001"
+    setup.template.name: "filebeat"
+    setup.template.pattern: "filebeat-*"

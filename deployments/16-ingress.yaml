@@ -1,0 +1,83 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: food-delivery-ingress
+  namespace: food-delivery
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/restaurants
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: food-delivery.local
+    http:
+      paths:
+      - path: /api/restaurant
+        pathType: Prefix
+        backend:
+          service:
+            name: restaurant-service
+            port:
+              number: 8080
+      - path: /api/user
+        pathType: Prefix
+        backend:
+          service:
+            name: user-service
+            port:
+              number: 8080
+      - path: /api/food
+        pathType: Prefix
+        backend:
+          service:
+            name: food-service
+            port:
+              number: 8080
+      - path: /api/category
+        pathType: Prefix
+        backend:
+          service:
+            name: category-service
+            port:
+              number: 8080
+      - path: /api/media
+        pathType: Prefix
+        backend:
+          service:
+            name: media-service
+            port:
+              number: 8080
+      - path: /api/cart
+        pathType: Prefix
+        backend:
+          service:
+            name: cart-service
+            port:
+              number: 8080
+      - path: /api/order
+        pathType: Prefix
+        backend:
+          service:
+            name: order-service
+            port:
+              number: 8080
+      - path: /api/payment
+        pathType: Prefix
+        backend:
+          service:
+            name: payment-service
+            port:
+              number: 8080
+
+      - path: /minio
+        pathType: Prefix
+        backend:
+          service:
+            name: minio
+            port:
+              number: 9001
