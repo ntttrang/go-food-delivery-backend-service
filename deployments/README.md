@@ -29,6 +29,9 @@ The deployment is organized into the following files:
 - `14-order-service.yaml`: Order service deployment
 - `15-payment-service.yaml`: Payment service deployment
 - `16-ingress.yaml`: Ingress configuration for external access
+- `18-filebeat.yaml`: Filebeat DaemonSet for log collection
+- `filebeat-config.yaml`: Configuration for Filebeat
+- `kibana-dashboards.yaml`: Kibana dashboards for log visualization
 
 ## Deployment Scripts
 
@@ -126,7 +129,7 @@ You can monitor the deployment using:
 kubectl get all -n food-delivery
 ```
 
-To view logs for a specific service:
+To view logs for a specific service directly:
 
 ```
 kubectl logs -n food-delivery deployment/[service-name]
@@ -137,6 +140,31 @@ For example:
 ```
 kubectl logs -n food-delivery deployment/restaurant-service
 ```
+
+## Centralized Logging
+
+The deployment includes a centralized logging system using the ELK stack (Elasticsearch, Logstash, Kibana) with Filebeat for log collection:
+
+1. **Filebeat**: Deployed as a DaemonSet on all nodes to collect container logs
+2. **Elasticsearch**: Stores and indexes all logs
+3. **Kibana**: Provides visualization and search capabilities for logs
+
+### Accessing Logs in Kibana
+
+1. Access Kibana at http://food-delivery.local/kibana
+2. Navigate to the "Discover" section to search and filter logs
+3. Use the pre-configured dashboards to visualize log data:
+   - "Food Delivery Overview" dashboard shows log counts by service and recent logs
+   - Filter logs by service using the kubernetes.container.name field
+   - Search for errors using keywords like "error", "fail", or "exception"
+
+### Log Filtering Examples
+
+In Kibana's search bar, you can use queries like:
+
+- `kubernetes.container.name: "restaurant-service"` - Show only restaurant service logs
+- `message: *error*` - Show logs containing the word "error"
+- `kubernetes.namespace: "food-delivery" AND message: *exception*` - Show exception logs in the food-delivery namespace
 
 ## Cleanup
 

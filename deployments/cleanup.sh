@@ -39,6 +39,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
   # Delete infrastructure components
   echo "Deleting infrastructure components..."
+  kubectl delete -f deployments/kibana-dashboards.yaml --ignore-not-found=true
   kubectl delete -f deployments/18-filebeat.yaml --ignore-not-found=true
   kubectl delete -f deployments/filebeat-config.yaml --ignore-not-found=true
   kubectl delete -f deployments/07-elasticsearch-kibana.yaml --ignore-not-found=true

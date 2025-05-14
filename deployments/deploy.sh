@@ -144,6 +144,9 @@ if [ "$SKIP_INFRA" = false ]; then
   kubectl apply -f deployments/filebeat-config.yaml
   kubectl apply -f deployments/18-filebeat.yaml
 
+  # Apply Kibana dashboards
+  kubectl apply -f deployments/kibana-dashboards.yaml
+
   # Wait for infrastructure to be ready
   echo "Waiting for infrastructure components to be ready..."
   kubectl wait --namespace food-delivery --for=condition=ready pod --selector=app=mysql --timeout=300s || echo "Warning: MySQL not ready in time, continuing anyway"
