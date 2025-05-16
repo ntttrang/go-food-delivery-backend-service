@@ -1,5 +1,4 @@
 # IDE specific files
-.continue
 .vscode
 .idea/
 *.sublime-workspace
