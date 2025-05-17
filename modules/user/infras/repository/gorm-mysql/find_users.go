@@ -9,7 +9,7 @@ import (
 )
 
 func (r *UserRepo) FindUsers(ctx context.Context, req service.UserListReq) ([]service.UserSearchResDto, int64, error) {
-	db := r.dbCtx.GetMainConnection().Table(usermodel.User{}.TableName()).Select("id", "first_name", "last_name", "role", "email", "phone", "created_at", "updated_at") // Use field name ( Struct) or gorm name is OK
+	db := r.dbCtx.GetMainConnection().Table(usermodel.User{}.TableName()).Select("id", "first_name", "last_name", "role", "email", "phone", "created_at", "updated_at", "avatar") // Use field name ( Struct) or gorm name is OK
 	if req.Name != "" {
 		db = db.Where("first_name LIKE ? OR last_name LIKE ?", `%`+req.Name+`%`)
 	}

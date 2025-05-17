@@ -105,7 +105,7 @@ func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signU
 func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.HandlerFunc) {
 	// Signup by email
 	g.POST("/register", ctrl.RegisterAPI)
-	// Sign Up with Google
+	// Sign up with Google Account
 	g.POST("/google/signup", ctrl.SignUpWithGoogleAPI)
 	g.GET("/google/callback", ctrl.CallbackAPI)
 
@@ -114,17 +114,17 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	g.POST("/rpc/users/introspect-token", ctrl.IntrospectTokenRpcAPI) // RPC
 	g.GET("/generate-code", authMld, ctrl.GenerateCodeAPI)
 	g.GET("/verify/:code", authMld, ctrl.VerifyCodeAPI)
-	//g.GET("/reset-password", ctrl.VerifyCodeAPI)
+	//g.GET("/reset-password", ctrl.ResetPasswordAPI)
 
 	// RPC
 	g.POST("/rpc/users/find-by-ids", ctrl.RPCGetByIds)
 
 	// User info group API
 	users := g.Group("/users")
-	users.POST("", ctrl.CreateUserAPI)
+	users.POST("", authMld, ctrl.CreateUserAPI)
 	users.GET("", ctrl.ListUsersAPI)
 	users.GET("/:id", ctrl.GetUserDetailAPI)
-	users.PATCH("/:id", ctrl.UpdateUseAPI)
+	users.PATCH("/:id", authMld, ctrl.UpdateUseAPI)
 
 	// Address
 	users.POST("/address", authMld, ctrl.CreateUserAddrAPI)

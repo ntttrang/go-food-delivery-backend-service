@@ -16,4 +16,5 @@ var (
 	ErrAddrRequired        = errors.New("addr is required")
 	ErrDuplicated          = errors.New("addr is duplicated")
 	ErrUserAddrNotFound    = errors.New("user address not found")
+	ErrPermission          = errors.New("you can only update your own profile unless you're an admin")
 )

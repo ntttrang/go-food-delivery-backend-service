@@ -22,12 +22,12 @@ func (ctrl *MediaHTTPController) UploadImageAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
+	// Saving the uploaded file to the local filesystem.
 	filename := fmt.Sprintf("%d_%s", time.Now().UTC().UnixNano(), fileHeader.Filename)
 	dst := fmt.Sprintf("%s/%s", folder, filename)
-
-	// if err := c.SaveUploadedFile(fileHeader, dst); err != nil {
-	// 	panic(datatype.ErrBadRequest.WithError(err.Error()))
-	// }
+	if err := c.SaveUploadedFile(fileHeader, dst); err != nil {
+		panic(datatype.ErrBadRequest.WithError(err.Error()))
+	}
 
 	file, err := fileHeader.Open()
 
@@ -39,6 +39,7 @@ func (ctrl *MediaHTTPController) UploadImageAPI(c *gin.Context) {
 
 	contentType := fileHeader.Header.Get("Content-Type")
 
+	// Upload to Cloud
 	err = ctrl.uploader.SaveFileUpload(c.Request.Context(), filename, dst, contentType)
 	if err != nil {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))

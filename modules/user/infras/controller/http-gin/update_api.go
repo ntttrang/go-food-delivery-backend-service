@@ -24,6 +24,10 @@ func (ctrl *UserHttpController) UpdateUseAPI(c *gin.Context) {
 
 	req.Id = id
 
+	// Get requester from context and pass it to the service
+	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
+	req.Requester = requester
+
 	if err := ctrl.updateCmdHdl.Execute(c.Request.Context(), req); err != nil {
 		panic(err)
 	}

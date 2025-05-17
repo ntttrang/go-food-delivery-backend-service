@@ -15,6 +15,10 @@ func (ctrl *UserHttpController) CreateUserAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
+	// Get requester from context and pass it to the service
+	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
+	requestBodyData.Requester = requester
+
 	if err := ctrl.createCmdHdl.Execute(c.Request.Context(), requestBodyData); err != nil {
 		panic(err)
 	}

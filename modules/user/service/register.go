@@ -86,7 +86,6 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *Registe
 	existUser, err := hdl.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
 		if !errors.Is(err, usermodel.ErrUserNotFound) {
-			//return datatype.ErrNotFound.WithDebug(ErrUserNotFound.Error())
 			return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 		}
 
@@ -119,7 +118,7 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *Registe
 	user.Salt = salt
 	user.Status = usermodel.StatusActive
 	user.Type = usermodel.TypeEmailPassword
-	user.Role = usermodel.RoleAdmin
+	user.Role = usermodel.RoleUser
 	user.CreatedAt = &now
 	user.UpdatedAt = &now
 

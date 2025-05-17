@@ -17,9 +17,9 @@ type UpdateUserReq struct {
 	LastName  string `json:"lastName"`
 	Phone     string `json:"phone"`
 	Avatar    string `json:"avatar"`
-	Status    string `json:"status"`
 
-	Id uuid.UUID `json:"_"`
+	Id        uuid.UUID          `json:"_"`
+	Requester datatype.Requester `json:"-"`
 }
 
 func (UpdateUserReq) TableName() string {
@@ -60,6 +60,26 @@ func NewUpdateCommandHandler(userRepo IupdateRepo) *UpdateCommandHandler {
 func (hdl *UpdateCommandHandler) Execute(ctx context.Context, req UpdateUserReq) error {
 	if err := req.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
+	}
+
+	// Authorization check
+	if req.Requester == nil {
+		return datatype.ErrUnauthorized.WithDebug("requester information required")
+	}
+
+	// Check permissions:
+	// 1. Users can update their own profile
+	// 2. Admins can update any user's profile
+	isOwnProfile := req.Requester.Subject() == req.Id
+
+	// Check if requester is admin
+	isAdmin := false
+	if user, ok := req.Requester.(*IntrospectRes); ok {
+		isAdmin = user.Role == usermodel.RoleAdmin
+	}
+
+	if !isOwnProfile && !isAdmin {
+		return datatype.ErrForbidden.WithDebug(usermodel.ErrPermission.Error())
 	}
 
 	existUser, err := hdl.userRepo.FindById(ctx, req.Id)

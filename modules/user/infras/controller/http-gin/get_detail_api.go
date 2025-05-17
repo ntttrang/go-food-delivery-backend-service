@@ -16,7 +16,7 @@ func (ctrl *UserHttpController) GetUserDetailAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	restaurant, err := ctrl.getDetailQueryHdl.Execute(c.Request.Context(), service.UserDetailReq{Id: id})
+	user, err := ctrl.getDetailQueryHdl.Execute(c.Request.Context(), service.UserDetailReq{Id: id})
 
 	if err != nil {
 		// c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -24,5 +24,5 @@ func (ctrl *UserHttpController) GetUserDetailAPI(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": restaurant})
+	c.JSON(http.StatusOK, gin.H{"data": user})
 }

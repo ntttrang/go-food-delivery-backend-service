@@ -24,6 +24,7 @@ type UserSearchResDto struct {
 	Role      usermodel.UserRole `json:"role"`
 	Email     string             `json:"email"`
 	Phone     string             `json:"phone"`
+	Avatar    string             `json:"avatar"`
 	CreatedAt *time.Time         `json:"createdAt"`
 	UpdatedAt *time.Time         `json:"updatedAt"`
 }

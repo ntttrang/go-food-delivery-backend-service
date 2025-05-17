@@ -64,7 +64,7 @@ func (s *CreateUserAddrCommandHandler) Execute(ctx context.Context, req *CreateU
 			return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 		}
 	}
-	if usrAddr != nil {
+	if usrAddr != nil && usrAddr.UserId == req.UserId {
 		return datatype.ErrConflict.WithWrap(err).WithDebug(usermodel.ErrDuplicated.Error())
 	}
 

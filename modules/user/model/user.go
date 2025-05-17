@@ -1,8 +1,6 @@
 package usermodel
 
 import (
-	"encoding/json"
-
 	"github.com/google/uuid"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
@@ -26,19 +24,19 @@ const (
 )
 
 type User struct {
-	Id        uuid.UUID       `gorm:"id"`
-	Email     string          `gorm:"email"`
-	FbId      string          `gorm:"fb_id"`
-	GgId      string          `gorm:"gg_id"`
-	Password  string          `gorm:"password"`
-	Salt      string          `gorm:"salt"`
-	LastName  string          `gorm:"last_name"`
-	FirstName string          `gorm:"first_name"`
-	Phone     string          `gorm:"phone"`
-	Role      UserRole        `gorm:"role"`
-	Type      UserType        `gorm:"type"`
-	Avatar    json.RawMessage `gorm:"avatar"`
-	Status    UserStatus      `gorm:"status"`
+	Id        uuid.UUID  `gorm:"id"`
+	Email     string     `gorm:"email"`
+	FbId      string     `gorm:"fb_id"`
+	GgId      string     `gorm:"gg_id"`
+	Password  string     `gorm:"password"`
+	Salt      string     `gorm:"salt"`
+	LastName  string     `gorm:"last_name"`
+	FirstName string     `gorm:"first_name"`
+	Phone     string     `gorm:"phone"`
+	Role      UserRole   `gorm:"role"`
+	Type      UserType   `gorm:"type"`
+	Avatar    string     `gorm:"avatar"`
+	Status    UserStatus `gorm:"status"`
 	sharedModel.DateDto
 }
 
