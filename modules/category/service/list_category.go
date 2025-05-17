@@ -20,13 +20,14 @@ type ListCategoryRes struct {
 	Id          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	Icon        string    `json:"icon"`
 	Status      string    `json:"status"`
 	sharedModel.DateDto
 }
 
 type SearchCategoryDto struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" form:"name"`
+	Description string `json:"description" form:"description"`
 }
 
 // Initilize service
@@ -62,7 +63,9 @@ func convertListCategoryRes(cats []categorymodel.Category) []ListCategoryRes {
 		listCatsDto.Id = cat.Id
 		listCatsDto.Name = cat.Name
 		listCatsDto.Description = cat.Description
+		listCatsDto.Icon = cat.Icon
 		listCatsDto.Status = cat.Status
+		listCatsDto.CreatedAt = cat.CreatedAt
 		listCatsDto.UpdatedAt = cat.UpdatedAt
 		listCategoryRes = append(listCategoryRes, listCatsDto)
 	}

@@ -21,14 +21,14 @@ func NewIntrospectRpcClient(userServiceURL string) *IntrospectRpcClient {
 
 type dataRequester struct {
 	UserID    uuid.UUID `json:"id"`
-	RoleValue uuid.UUID `json:"role"`
+	RoleValue string    `json:"role"`
 }
 
 func (r *dataRequester) Subject() uuid.UUID {
 	return r.UserID
 }
 
-func (r *dataRequester) GetRole() uuid.UUID {
+func (r *dataRequester) GetRole() string {
 	return r.RoleValue
 }
 
@@ -56,7 +56,7 @@ func (c *IntrospectRpcClient) Validate(token string) (datatype.Requester, error)
 	fmt.Println(response)
 
 	return &dataRequester{
-		UserID: uuid.MustParse(response.Data.UserId),
-		//RoleValue: uuid.MustParse(response.Data.Role),
+		UserID:    uuid.MustParse(response.Data.UserId),
+		RoleValue: response.Data.Role,
 	}, nil
 }

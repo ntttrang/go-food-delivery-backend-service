@@ -15,6 +15,10 @@ func (ctrl *CategoryHttpController) CreateCategoryAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
+	// Get requester from context for authorization
+	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
+	requestBodyData.Requester = requester
+
 	// call business logic in service
 	if err := ctrl.createCmdHdl.Execute(c.Request.Context(), &requestBodyData); err != nil {
 		panic(err)

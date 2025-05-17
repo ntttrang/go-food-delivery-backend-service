@@ -18,15 +18,15 @@ type UserDetailReq struct {
 }
 
 type UserSearchResDto struct {
-	Id        uuid.UUID          `json:"id"`
-	FirstName string             `json:"firstName"`
-	LastName  string             `json:"lastName"`
-	Role      usermodel.UserRole `json:"role"`
-	Email     string             `json:"email"`
-	Phone     string             `json:"phone"`
-	Avatar    string             `json:"avatar"`
-	CreatedAt *time.Time         `json:"createdAt"`
-	UpdatedAt *time.Time         `json:"updatedAt"`
+	Id        uuid.UUID         `json:"id"`
+	FirstName string            `json:"firstName"`
+	LastName  string            `json:"lastName"`
+	Role      datatype.UserRole `json:"role"`
+	Email     string            `json:"email"`
+	Phone     string            `json:"phone"`
+	Avatar    string            `json:"avatar"`
+	CreatedAt *time.Time        `json:"createdAt"`
+	UpdatedAt *time.Time        `json:"updatedAt"`
 }
 
 // Initilize service

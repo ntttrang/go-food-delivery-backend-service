@@ -22,6 +22,10 @@ func (ctrl *CategoryHttpController) UpdateCategoryByIdAPI(c *gin.Context) {
 	}
 	req.Id = id
 
+	// Get requester from context for authorization
+	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
+	req.Requester = requester
+
 	if err := ctrl.updateByIdCommandHandler.Execute(c.Request.Context(), req); err != nil {
 		panic(err)
 	}

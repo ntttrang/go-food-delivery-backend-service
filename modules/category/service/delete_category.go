@@ -12,7 +12,8 @@ import (
 
 // Define DTOs & validate
 type CategoryDeleteReq struct {
-	Id uuid.UUID
+	Id        uuid.UUID
+	Requester datatype.Requester `json:"-"`
 }
 
 // Initilize service
@@ -31,6 +32,24 @@ func NewDeleteByIdCommandHandler(repo IDeleteByIdRepo) *DeleteByIdCommandHandler
 
 // Implement
 func (hdl *DeleteByIdCommandHandler) Execute(ctx context.Context, req CategoryDeleteReq) error {
+	if req.Id == uuid.Nil {
+		return datatype.ErrBadRequest.WithDebug(categorymodel.ErrIdRequired.Error())
+	}
+	// Authorization check
+	if req.Requester == nil {
+		return datatype.ErrUnauthorized.WithDebug(categorymodel.ErrRequesterRequired.Error())
+	}
+
+	// Check if requester is admin or user (not shipper)
+	// Use type assertion to get the role as a string
+	role := req.Requester.GetRole()
+
+	// Check role
+	isAuthorized := role == string(datatype.RoleAdmin) || role == string(datatype.RoleUser)
+	if !isAuthorized {
+		return datatype.ErrForbidden.WithDebug(categorymodel.ErrPermission.Error())
+	}
+
 	category, err := hdl.repo.FindById(ctx, req.Id)
 
 	if err != nil {

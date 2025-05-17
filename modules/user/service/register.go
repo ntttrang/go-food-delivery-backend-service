@@ -118,7 +118,7 @@ func (hdl *RegisterUserCommandHandler) Execute(ctx context.Context, req *Registe
 	user.Salt = salt
 	user.Status = usermodel.StatusActive
 	user.Type = usermodel.TypeEmailPassword
-	user.Role = usermodel.RoleUser
+	user.Role = datatype.RoleUser
 	user.CreatedAt = &now
 	user.UpdatedAt = &now
 

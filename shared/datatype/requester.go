@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type Requester interface {
 	Subject() uuid.UUID
-	GetRole() uuid.UUID
+	GetRole() string
 }
 type requester struct {
 	userId uuid.UUID

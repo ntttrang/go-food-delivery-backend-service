@@ -29,14 +29,14 @@ type IntrospectRes struct {
 	Id        uuid.UUID            `json:"id"`
 	LastName  string               `json:"last_name"`
 	FirstName string               `json:"first_name"`
-	Role      usermodel.UserRole   `json:"role"`
+	Role      datatype.UserRole    `json:"role"`
 	Type      usermodel.UserType   `json:"type"`
 	Status    usermodel.UserStatus `json:"status"`
 	sharedModel.DateDto
 }
 
-func (ir *IntrospectRes) GetRole() uuid.UUID {
-	return uuid.MustParse(string(ir.Role))
+func (ir *IntrospectRes) GetRole() string {
+	return string(ir.Role)
 }
 
 func (ir *IntrospectRes) Subject() uuid.UUID {

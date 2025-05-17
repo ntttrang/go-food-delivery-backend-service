@@ -91,7 +91,7 @@ func (hdl *SignUpGoogleCommandHandler) AuthenticateByGoogle(ctx context.Context,
 		user.FirstName = firstName
 		user.LastName = lastName
 		user.GgId = ggUserInfo.GgId
-		user.Role = usermodel.RoleUser
+		user.Role = datatype.RoleUser
 		user.Type = usermodel.TypeGmail
 		now := time.Now().UTC()
 		user.CreatedAt = &now

@@ -75,7 +75,7 @@ func (hdl *UpdateCommandHandler) Execute(ctx context.Context, req UpdateUserReq)
 	// Check if requester is admin
 	isAdmin := false
 	if user, ok := req.Requester.(*IntrospectRes); ok {
-		isAdmin = user.Role == usermodel.RoleAdmin
+		isAdmin = user.Role == datatype.RoleAdmin
 	}
 
 	if !isOwnProfile && !isAdmin {

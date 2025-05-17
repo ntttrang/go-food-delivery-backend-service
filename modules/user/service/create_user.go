@@ -19,7 +19,7 @@ type CreateUserReq struct {
 	Password  string                `json:"password"`
 	FirstName string                `json:"firstName"`
 	LastName  string                `json:"lastName"`
-	Role      *usermodel.UserRole   `json:"role"`
+	Role      *datatype.UserRole    `json:"role"`
 	Type      *usermodel.UserType   `json:"userType"`
 	Status    *usermodel.UserStatus `json:"status"`
 	Phone     *string               `json:"phone"`
@@ -102,7 +102,7 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, req *CreateUserReq) 
 	// Check if requester is admin
 	isAdmin := false
 	if user, ok := req.Requester.(*IntrospectRes); ok {
-		isAdmin = user.Role == usermodel.RoleAdmin
+		isAdmin = user.Role == datatype.RoleAdmin
 	}
 
 	if !isOwnProfile && !isAdmin {

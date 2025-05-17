@@ -15,7 +15,8 @@ type CategoryInsertDto struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 
-	Id uuid.UUID `json:"-"`
+	Id        uuid.UUID          `json:"-"`
+	Requester datatype.Requester `json:"-"`
 }
 
 func (c *CategoryInsertDto) Validate() error {
@@ -52,6 +53,21 @@ func NewCreateCommandHandler(catRepo ICreateRepo) *CreateCommandHandler {
 func (s *CreateCommandHandler) Execute(ctx context.Context, data *CategoryInsertDto) error {
 	if err := data.Validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
+	}
+
+	// Authorization check
+	if data.Requester == nil {
+		return datatype.ErrUnauthorized.WithDebug(categorymodel.ErrRequesterRequired.Error())
+	}
+
+	// Check if requester is admin or user (not shipper)
+	// Use type assertion to get the role as a string
+	role := data.Requester.GetRole()
+
+	// Check role
+	isAuthorized := role == string(datatype.RoleAdmin) || role == string(datatype.RoleUser)
+	if !isAuthorized {
+		return datatype.ErrForbidden.WithDebug(categorymodel.ErrPermission.Error())
 	}
 
 	category := data.ConvertToCategory()

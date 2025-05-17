@@ -13,11 +13,13 @@ import (
 // Define DTOs & validate
 type CategoryUpdateReq struct {
 	// Use pointer to accept empty string
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
 	Status      *string `json:"status"`
+	Icon        string  `json:"icon"`
 
-	Id uuid.UUID `json:"-"`
+	Id        uuid.UUID          `json:"-"`
+	Requester datatype.Requester `json:"-"`
 }
 
 func (CategoryUpdateReq) TableName() string {
@@ -49,6 +51,21 @@ func NewUpdateCommandHandler(repo IUpdateByIdRepo) *UpdateCommandHandler {
 func (hdl *UpdateCommandHandler) Execute(ctx context.Context, req CategoryUpdateReq) error {
 	if err := req.validate(); err != nil {
 		return datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
+	}
+
+	// Authorization check
+	if req.Requester == nil {
+		return datatype.ErrUnauthorized.WithDebug(categorymodel.ErrRequesterRequired.Error())
+	}
+
+	// Check if requester is admin or user (not shipper)
+	// Use type assertion to get the role as a string
+	role := req.Requester.GetRole()
+
+	// Check role
+	isAuthorized := role == string(datatype.RoleAdmin) || role == string(datatype.RoleUser)
+	if !isAuthorized {
+		return datatype.ErrForbidden.WithDebug(categorymodel.ErrPermission.Error())
 	}
 
 	category, err := hdl.repo.FindById(ctx, req.Id)

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	categorymodel "github.com/ntttrang/go-food-delivery-backend-service/modules/category/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/modules/category/service"
+	sharedinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
 type ICreateCommandHandler interface {
@@ -56,12 +57,12 @@ func NewCategoryHttpController(createCmdHdl ICreateCommandHandler, listCmdHdl IL
 	}
 }
 
-func (ctrl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup) {
-	g.POST("", ctrl.CreateCategoryAPI)
+func (ctrl *CategoryHttpController) SetupRoutes(g *gin.RouterGroup, mldProvider sharedinfras.IMiddlewareProvider) {
+	g.POST("", mldProvider.Auth(), ctrl.CreateCategoryAPI)
 	g.GET("", ctrl.ListCategoryAPI)
 	g.GET("/:id", ctrl.GetCategoryByIdAPI)
-	g.PATCH("/:id", ctrl.UpdateCategoryByIdAPI)
-	g.DELETE("/:id", ctrl.DeleteCategoryByIdAPI)
+	g.PATCH("/:id", mldProvider.Auth(), ctrl.UpdateCategoryByIdAPI)
+	g.DELETE("/:id", mldProvider.Auth(), ctrl.DeleteCategoryByIdAPI)
 }
 
 func (ctrl *CategoryHttpController) SetupRoutesRPC(g *gin.RouterGroup) {

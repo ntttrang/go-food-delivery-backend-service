@@ -15,7 +15,10 @@ func (ctrl *CategoryHttpController) DeleteCategoryByIdAPI(c *gin.Context) {
 		panic(datatype.ErrBadRequest.WithError(err.Error()))
 	}
 
-	if err := ctrl.deleteCmdHdl.Execute(c.Request.Context(), service.CategoryDeleteReq{Id: id}); err != nil {
+	// Get requester from context for authorization
+	requester := c.MustGet(datatype.KeyRequester).(datatype.Requester)
+
+	if err := ctrl.deleteCmdHdl.Execute(c.Request.Context(), service.CategoryDeleteReq{Id: id, Requester: requester}); err != nil {
 		panic(err)
 	}
 

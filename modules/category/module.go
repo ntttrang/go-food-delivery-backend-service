@@ -23,7 +23,7 @@ func SetupCategoryModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 
 	// Setup router
 	categories := g.Group("/categories")
-	catCtl.SetupRoutes(categories)
+	catCtl.SetupRoutes(categories, appCtx.MiddlewareProvider())
 
 	// Setup router ( internal)
 	catCtl.SetupRoutesRPC(g)
