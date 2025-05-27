@@ -7,7 +7,7 @@ import (
 )
 
 // IndexFood indexes a food document in Elasticsearch
-func (r *FoodSearchRepo) IndexFood(ctx context.Context, food *foodmodel.Food) error {
+func (r *FoodSearchRepo) IndexFood(ctx context.Context, food *foodmodel.FoodDto) error {
 	foodDoc := food.ToFoodDocument()
 	return r.esClient.IndexDocument(ctx, food.Id.String(), foodDoc)
 }

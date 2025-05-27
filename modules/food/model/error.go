@@ -15,4 +15,5 @@ var (
 	ErrFoodLikeNotFound       = errors.New("food like not found")
 	ErrFoodRatingNotFound     = errors.New("food ratings not found")
 	ErrFoodRatingIsDeleted    = errors.New("food ratings is deleted")
+	ErrRestaurantIdEmpty      = errors.New("restaurant Id is empty")
 )

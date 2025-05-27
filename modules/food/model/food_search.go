@@ -1,6 +1,8 @@
 package foodmodel
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
@@ -37,8 +39,9 @@ type FoodDocument struct {
 	Name            string   `json:"name"`
 	Description     string   `json:"description"`
 	Price           float64  `json:"price"`
-	CategoryID      string   `json:"category_id,omitempty"`
+	CategoryID      string   `json:"category_id"`
 	RestaurantID    string   `json:"restaurant_id"`
+	RestaurantName  string   `json:"restaurant_name"`
 	Status          string   `json:"status"`
 	Images          string   `json:"images,omitempty"`
 	AvgRating       float64  `json:"avg_rating"`
@@ -46,13 +49,33 @@ type FoodDocument struct {
 	PopularityScore float64  `json:"popularity_score"`
 	DeliveryTime    int      `json:"delivery_time"`
 	FreeDelivery    bool     `json:"free_delivery"`
-	Cuisines        []string `json:"cuisines,omitempty"`
+	Cuisines        []string `json:"cuisines,omitempty"` // category name
 	CreatedAt       string   `json:"created_at"`
 	UpdatedAt       string   `json:"updated_at"`
 }
 
+type FoodDto struct {
+	Id               uuid.UUID  `json:"id"`
+	RestaurantId     uuid.UUID  `json:"restaurantId"`
+	RestaurantName   string     `json:"restaurantName"`
+	RestaurantLat    float64    `json:"restaurantLat"`
+	RestaurantLng    float64    `json:"restaurantLng"`
+	ShippingFeePerKm float64    `json:"shippingFeePerKm"`
+	CategoryId       uuid.UUID  `json:"categoryId"`
+	CategoryName     string     `json:"categoryName"`
+	Name             string     `json:"name"`
+	Description      string     `json:"description"`
+	Price            float64    `json:"price"`
+	Images           string     `json:"images"`
+	AvgPoint         float64    `json:"avgPoint"`
+	CommentQty       int        `json:"commentQty"`
+	Status           string     `json:"status"`
+	CreatedAt        *time.Time `json:"createdAt"`
+	UpdatedAt        *time.Time `json:"updatedAt"`
+}
+
 // ToFoodDocument converts a Food to a FoodDocument
-func (f *Food) ToFoodDocument() FoodDocument {
+func (f *FoodDto) ToFoodDocument() FoodDocument {
 	var createdAt, updatedAt string
 	if f.CreatedAt != nil {
 		createdAt = f.CreatedAt.Format("2006-01-02T15:04:05Z")
@@ -61,13 +84,14 @@ func (f *Food) ToFoodDocument() FoodDocument {
 		updatedAt = f.UpdatedAt.Format("2006-01-02T15:04:05Z")
 	}
 
-	// Default values for new fields
-	// In a real implementation, these would be populated from other sources
 	cuisines := []string{}
 	if f.CategoryId != uuid.Nil {
-		// In a real implementation, we would fetch the category name
-		// and add it to the cuisines array
-		cuisines = append(cuisines, f.CategoryId.String())
+		cuisines = append(cuisines, f.CategoryName)
+	}
+
+	freeDelivery := true
+	if f.ShippingFeePerKm != 0 {
+		freeDelivery = false
 	}
 
 	return FoodDocument{
@@ -79,11 +103,11 @@ func (f *Food) ToFoodDocument() FoodDocument {
 		RestaurantID:    f.RestaurantId.String(),
 		Status:          f.Status,
 		Images:          f.Images,
-		AvgRating:       0,     // This would be populated from ratings
-		RatingCount:     0,     // This would be populated from ratings
-		PopularityScore: 0,     // This would be calculated based on views, orders, etc.
-		DeliveryTime:    30,    // Default delivery time in minutes
-		FreeDelivery:    false, // Default to no free delivery
+		AvgRating:       f.AvgPoint,   // This would be populated from ratings
+		RatingCount:     f.CommentQty, // This would be populated from ratings
+		PopularityScore: 0,            // This would be calculated based on views, orders, etc.
+		DeliveryTime:    30,           // Default delivery time in minutes
+		FreeDelivery:    freeDelivery, // Default to no free delivery
 		Cuisines:        cuisines,
 		CreatedAt:       createdAt,
 		UpdatedAt:       updatedAt,

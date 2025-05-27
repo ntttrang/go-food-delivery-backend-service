@@ -7,7 +7,7 @@ import (
 )
 
 // BulkIndexFoods indexes multiple foods in a single request
-func (r *FoodSearchRepo) BulkIndexFoods(ctx context.Context, foods []foodmodel.Food) error {
+func (r *FoodSearchRepo) BulkIndexFoods(ctx context.Context, foods []foodmodel.FoodDto) error {
 	if len(foods) == 0 {
 		return nil
 	}

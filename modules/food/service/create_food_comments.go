@@ -11,7 +11,7 @@ import (
 // Define DTOs & validate
 type FoodCommentCreateReq struct {
 	UserId  uuid.UUID `json:"-"` // Get from Token
-	FoodId  uuid.UUID `json:"restaurantId"`
+	FoodId  uuid.UUID `json:"foodId"`
 	Point   *float64  `json:"point"`
 	Comment *string   `json:"comment"`
 

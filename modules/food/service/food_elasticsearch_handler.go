@@ -21,13 +21,13 @@ func NewFoodElasticsearchHandler(indexRepo ISyncFoodByIdRepo) *FoodElasticsearch
 }
 
 // OnFoodCreated handles the food created event
-func (h *FoodElasticsearchHandler) OnFoodCreated(ctx context.Context, food *foodmodel.Food) error {
+func (h *FoodElasticsearchHandler) OnFoodCreated(ctx context.Context, food *foodmodel.FoodDto) error {
 	log.Printf("Indexing new food: %s", food.Id)
 	return h.indexRepo.IndexFood(ctx, food)
 }
 
 // OnFoodUpdated handles the food updated event
-func (h *FoodElasticsearchHandler) OnFoodUpdated(ctx context.Context, food *foodmodel.Food) error {
+func (h *FoodElasticsearchHandler) OnFoodUpdated(ctx context.Context, food *foodmodel.FoodDto) error {
 	log.Printf("Updating indexed food: %s", food.Id)
 	return h.indexRepo.IndexFood(ctx, food)
 }

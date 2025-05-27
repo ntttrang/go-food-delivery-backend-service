@@ -1,65 +1,5 @@
 package elasticsearch
 
-// FoodIndexMapping defines the Elasticsearch mapping for the food index
-// const FoodIndexMapping = `
-// {
-//   "restaurant": {
-//     "aliases": {
-
-//     },
-//     "mappings": {
-//       "_meta": {
-//         "created_by": "file-data-visualizer"
-//       },
-//       "properties": {
-//         "city": {
-//           "type": "keyword"
-//         },
-//         "cuisine": {
-//           "type": "keyword"
-//         },
-//         "lat": {
-//           "type": "double"
-//         },
-//         "location": {
-//           "type": "geo_point"
-//         },
-//         "lon": {
-//           "type": "double"
-//         },
-//         "name": {
-//           "type": "text",
-//           "fields": {
-//             "keyword": {
-//               "type": "keyword",
-//               "ignore_above": 256
-//             }
-//           }
-//         },
-//         "price": {
-//           "type": "keyword"
-//         },
-//         "region": {
-//           "type": "keyword"
-//         },
-//         "star": {
-//           "type": "long"
-//         },
-//         "url": {
-//           "type": "keyword"
-//         },
-//         "year": {
-//           "type": "long"
-//         },
-//         "zipCode": {
-//           "type": "keyword"
-//         }
-//       }
-//     }
-//   }
-// }
-// `
-
 const FoodIndexMapping = `
 {
   "settings": {
@@ -117,6 +57,9 @@ const FoodIndexMapping = `
         "type": "double"
       },
       "category_id": {
+        "type": "keyword"
+      },
+      "category_name": {
         "type": "keyword"
       },
       "status": {

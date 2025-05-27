@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -79,21 +78,21 @@ type TimeFacet struct {
 
 // RestaurantSearchResDto represents a restaurant in the search results
 type RestaurantSearchResDto struct {
-	ID               uuid.UUID       `json:"id"`
-	Name             string          `json:"name"`
-	Address          string          `json:"address"`
-	Logo             json.RawMessage `json:"logo,omitempty"`
-	Cover            json.RawMessage `json:"cover,omitempty"`
-	ShippingFeePerKm float64         `json:"shippingFeePerKm"`
-	AvgRating        float64         `json:"avgRating"`
-	RatingCount      int             `json:"ratingCount"`
-	Cuisines         []string        `json:"cuisines,omitempty"`
-	PopularityScore  float64         `json:"popularityScore"`
-	DeliveryTime     int             `json:"deliveryTime"`
-	Distance         *float64        `json:"distance,omitempty"` // Distance from user in km
-	Status           string          `json:"status"`
-	CreatedAt        *time.Time      `json:"createdAt,omitempty"`
-	UpdatedAt        *time.Time      `json:"updatedAt,omitempty"`
+	ID               uuid.UUID  `json:"id"`
+	Name             string     `json:"name"`
+	Address          string     `json:"address"`
+	Logo             string     `json:"logo,omitempty"`
+	Cover            string     `json:"cover,omitempty"`
+	ShippingFeePerKm float64    `json:"shippingFeePerKm"`
+	AvgRating        float64    `json:"avgRating"`
+	RatingCount      int        `json:"ratingCount"`
+	Cuisines         []string   `json:"cuisines,omitempty"`
+	PopularityScore  float64    `json:"popularityScore"`
+	DeliveryTime     int        `json:"deliveryTime"`
+	Distance         *float64   `json:"distance,omitempty"` // Distance from user in km
+	Status           string     `json:"status"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt        *time.Time `json:"updatedAt,omitempty"`
 }
 
 // RestaurantSearchRes represents the search response for restaurants
@@ -106,17 +105,6 @@ type RestaurantSearchRes struct {
 // FromRestaurantDocument converts an Elasticsearch document to a RestaurantSearchResDto
 func FromRestaurantDocument(doc map[string]interface{}) RestaurantSearchResDto {
 	id, _ := uuid.Parse(doc["id"].(string))
-
-	var logo, cover json.RawMessage
-	if logoVal, ok := doc["logo"]; ok && logoVal != nil {
-		logoBytes, _ := json.Marshal(logoVal)
-		logo = logoBytes
-	}
-
-	if coverVal, ok := doc["cover"]; ok && coverVal != nil {
-		coverBytes, _ := json.Marshal(coverVal)
-		cover = coverBytes
-	}
 
 	// Parse cuisines
 	var cuisines []string
@@ -173,8 +161,8 @@ func FromRestaurantDocument(doc map[string]interface{}) RestaurantSearchResDto {
 		ID:               id,
 		Name:             doc["name"].(string),
 		Address:          doc["address"].(string),
-		Logo:             logo,
-		Cover:            cover,
+		Logo:             doc["logo"].(string),
+		Cover:            doc["cover"].(string),
 		ShippingFeePerKm: doc["shipping_fee_per_km"].(float64),
 		AvgRating:        avgRating,
 		RatingCount:      ratingCount,

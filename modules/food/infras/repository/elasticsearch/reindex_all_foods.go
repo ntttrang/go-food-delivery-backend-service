@@ -8,7 +8,7 @@ import (
 )
 
 // ReindexAllFoods reindexes all foods from the database
-func (r *FoodSearchRepo) ReindexAllFoods(ctx context.Context, foods []foodmodel.Food) error {
+func (r *FoodSearchRepo) ReindexAllFoods(ctx context.Context, foods []foodmodel.FoodDto) error {
 	log.Printf("Reindexing %d foods", len(foods))
 	return r.BulkIndexFoods(ctx, foods)
 }

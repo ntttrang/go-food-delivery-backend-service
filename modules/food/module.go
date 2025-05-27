@@ -41,9 +41,12 @@ func SetupFoodModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		panic(err)
 	}
 	foodSearchRepo := elasticsearch.NewFoodSearchRepo(esClient)
+	rpcCategoryRepo := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().FoodServiceURL)
+	rpcRestaurantRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
+
 	searchFoodQueryHdl := foodService.NewSearchFoodQueryHandler(foodSearchRepo)
-	syncFoodByIdCmdHdl := foodService.NewSyncFoodByIdCommandHandler(foodRepo, foodSearchRepo)
-	syncFoodIndexCmdHdl := foodService.NewSyncFoodIndexCommandHandler(foodRepo, foodSearchRepo)
+	syncFoodByIdCmdHdl := foodService.NewSyncFoodByIdCommandHandler(foodRepo, foodSearchRepo, rpcRestaurantRepo, rpcCategoryRepo)
+	syncFoodIndexCmdHdl := foodService.NewSyncFoodIndexCommandHandler(foodRepo, foodSearchRepo, rpcRestaurantRepo, rpcCategoryRepo)
 
 	foodCtrl := foodHttpgin.NewFoodHttpController(
 		createCmdHdl, listCmdHdl, getDetailCmdHdl, updateCmdHdl, deleteCmdHdl, foodRepo,
