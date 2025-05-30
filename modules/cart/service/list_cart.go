@@ -33,7 +33,7 @@ type CartDto struct {
 	UserID         uuid.UUID `json:"userId"`
 	RestaurantId   uuid.UUID `json:"restaurantId"`
 	RestaurantName string    `json:"restaurantName"`
-	ItemQuantity   int64     `json:"itemQuantity"`
+	Quantity       int       `json:"quantity"`
 	EstDistance    float64   `json:"estDistance"` // Km
 	EstTime        float64   `json:"estTime"`     // minute
 
@@ -77,7 +77,7 @@ func (hdl *ListQueryHandler) Execute(ctx context.Context, req CartListReq) (*Car
 			ID:           cart.ID,
 			UserID:       cart.UserID,
 			RestaurantId: cart.RestaurantId,
-			ItemQuantity: cart.ItemQuantity,
+			Quantity:     cart.Quantity,
 		})
 		restaurantIds = append(restaurantIds, cart.RestaurantId)
 	}

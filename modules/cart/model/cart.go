@@ -22,7 +22,7 @@ type Cart struct {
 	DropOffLng   float64   `gorm:"column:dropoff_lng" json:"-"`
 	sharedmodel.DateDto
 
-	ItemQuantity int64 `gorm:"item_quantity" json:"-"`
+	//ItemQuantity int64 `gorm:"item_quantity" json:"-"`
 }
 
 func (Cart) TableName() string {

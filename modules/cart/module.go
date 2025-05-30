@@ -25,7 +25,7 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	updateCmdHdl := cartService.NewUpdateCommandHandler(repo)
 	deleteCmdHdl := cartService.NewDeleteCommandHandler(repo)
 
-	// Setup controller
+	// Setup controller (RPC operations call repository directly, no service layer needed)
 	cartCtl := cartHttpgin.NewCartHttpController(
 		createCmdHdl,
 		listQueryHdl,
@@ -33,6 +33,7 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		getDetailQueryHdl,
 		updateCmdHdl,
 		deleteCmdHdl,
+		repo,
 	)
 
 	// Setup routes

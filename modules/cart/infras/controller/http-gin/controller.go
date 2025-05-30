@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
+	gormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/repository/gorm-mysql"
 	"github.com/ntttrang/go-food-delivery-backend-service/modules/cart/service"
 	sharedrpc "github.com/ntttrang/go-food-delivery-backend-service/shared/infras/rpc"
 )
@@ -34,6 +36,14 @@ type IDeleteCommandHandler interface {
 	Execute(ctx context.Context, req service.CartDeleteReq) error
 }
 
+// Repository interface for direct cart operations
+type ICartRepository interface {
+	UpdateCartStatusByCartID(ctx context.Context, cartID uuid.UUID, status string) error
+	//FindCartItemsByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) ([]CartItem, error)
+	//FindCartByCartIDAndUserID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*CartItem, error)
+	GetCartSummaryByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*gormmysql.CartSummaryData, error)
+}
+
 type CartHttpController struct {
 	createCmdHdl         ICreateCommandHandler
 	listCartQueryHdl     IListCartQueryHandler
@@ -41,6 +51,7 @@ type CartHttpController struct {
 	getDetailQueryHdl    IGetDetailQueryHandler
 	updateCmdHdl         IUpdateCommandHandler
 	deleteCmdHdl         IDeleteCommandHandler
+	repo                 ICartRepository // Direct repository access for simple operations
 }
 
 func NewCartHttpController(
@@ -50,6 +61,7 @@ func NewCartHttpController(
 	getDetailQueryHdl IGetDetailQueryHandler,
 	updateCmdHdl IUpdateCommandHandler,
 	deleteCmdHdl IDeleteCommandHandler,
+	repo ICartRepository,
 ) *CartHttpController {
 	return &CartHttpController{
 		createCmdHdl:         createCmdHdl,
@@ -58,6 +70,7 @@ func NewCartHttpController(
 		getDetailQueryHdl:    getDetailQueryHdl,
 		updateCmdHdl:         updateCmdHdl,
 		deleteCmdHdl:         deleteCmdHdl,
+		repo:                 repo,
 	}
 }
 
@@ -71,4 +84,8 @@ func (ctrl *CartHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.GET("/:userId/:foodId", ctrl.GetCartByUserIdAndFoodIdAPI)
 	g.PATCH("/:id", ctrl.UpdateCartByIdAPI)
 	g.DELETE("/:userId/:foodId", ctrl.DeleteCartByIdAPI)
+
+	// RPC endpoints for order service integration
+	g.PATCH("/update-status", ctrl.UpdateCartStatusAPI)
+	g.GET("/cart-summary", ctrl.GetCartSummaryAPI) // GET /cart-summaryrts?cardId=zzz?userId=xxx
 }
