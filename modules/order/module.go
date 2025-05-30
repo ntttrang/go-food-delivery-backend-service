@@ -10,12 +10,20 @@ import (
 
 func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	dbCtx := appCtx.DbContext()
+	// config := appCtx.GetConfig() // TODO: Use when implementing RPC integration
 
 	// Setup repository
 	repo := orderRepo.NewOrderRepo(dbCtx)
 
-	// Setup command handlers
-	createCmdHdl := orderService.NewCreateCommandHandler(repo)
+	// Setup RPC clients
+	// cartRPCClient := sharerpc.NewCartRPCClient(config.CartServiceURL)
+
+	// Setup services for order creation from cart
+	// cartConversionService := orderService.NewCartToOrderConversionServiceWithRPC(cartRPCClient)
+	// TODO: Integrate cart conversion service with full order creation flow
+
+	// For now, use simple command handler until we implement full services
+	createCmdHdl := orderService.NewCreateCommandHandlerSimple(repo)
 	listQueryHdl := orderService.NewListQueryHandler(repo)
 	getDetailQueryHdl := orderService.NewGetDetailQueryHandler(repo)
 	updateCmdHdl := orderService.NewUpdateCommandHandler(repo)

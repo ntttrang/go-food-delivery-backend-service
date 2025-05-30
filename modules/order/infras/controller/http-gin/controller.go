@@ -12,6 +12,7 @@ import (
 
 type ICreateCommandHandler interface {
 	Execute(ctx context.Context, data *service.OrderCreateDto) (string, error)
+	ExecuteFromCart(ctx context.Context, data *service.OrderCreateFromCartDto) (string, error)
 }
 
 type IListQueryHandler interface {
@@ -59,8 +60,14 @@ func (ctrl *OrderHttpController) SetupRoutes(g *gin.RouterGroup) {
 
 	// Order routes
 	g.POST("", middleware.Auth(introspectRpcClient), ctrl.CreateOrderAPI)
+	g.POST("/from-cart", middleware.Auth(introspectRpcClient), ctrl.CreateOrderFromCartAPI)
 	g.GET("", ctrl.ListOrdersAPI)
 	g.GET("/:id", ctrl.GetOrderDetailAPI)
 	g.PATCH("/:id", ctrl.UpdateOrderAPI)
 	g.DELETE("/:id", ctrl.DeleteOrderAPI)
+
+	// Order state management routes
+	g.PATCH("/:id/state", middleware.Auth(introspectRpcClient), ctrl.UpdateOrderStateAPI)
+	g.PATCH("/:id/assign-shipper", middleware.Auth(introspectRpcClient), ctrl.AssignShipperAPI)
+	g.PATCH("/:id/payment-status", middleware.Auth(introspectRpcClient), ctrl.UpdatePaymentStatusAPI)
 }

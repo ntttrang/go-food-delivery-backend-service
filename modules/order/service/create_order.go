@@ -18,7 +18,17 @@ type OrderCreateDto struct {
 	RestaurantID    string                 `json:"restaurantId"`
 	DeliveryAddress *ordermodel.Address    `json:"deliveryAddress"`
 	PaymentMethod   string                 `json:"paymentMethod"`
+	CardID          *string                `json:"cardId,omitempty"` // Required for card payments
 	OrderDetails    []OrderDetailCreateDto `json:"orderDetails"`
+}
+
+// New DTO for creating order from cart
+type OrderCreateFromCartDto struct {
+	UserID          string              `json:"-"` // Get from token
+	CartID          string              `json:"cartId"`
+	DeliveryAddress *ordermodel.Address `json:"deliveryAddress"`
+	PaymentMethod   string              `json:"paymentMethod"`
+	CardID          *string             `json:"cardId,omitempty"` // Required for card payments
 }
 
 type OrderDetailCreateDto struct {
@@ -48,6 +58,44 @@ func (o *OrderCreateDto) Validate() error {
 		return ordermodel.ErrRestaurantRequired
 	}
 
+	if o.PaymentMethod == "" {
+		return ordermodel.ErrPaymentMethodRequired
+	}
+
+	// Validate payment method and card requirement
+	if o.PaymentMethod == "card" && o.CardID == nil {
+		return ordermodel.ErrCardIdRequired
+	}
+
+	if o.DeliveryAddress == nil {
+		return ordermodel.ErrDeliveryAddressRequired
+	}
+
+	return nil
+}
+
+func (o *OrderCreateFromCartDto) Validate() error {
+	if o.UserID == "" {
+		return ordermodel.ErrUserIdRequired
+	}
+
+	if o.CartID == "" {
+		return ordermodel.ErrCartIdRequired
+	}
+
+	if o.PaymentMethod == "" {
+		return ordermodel.ErrPaymentMethodRequired
+	}
+
+	// Validate payment method and card requirement
+	if o.PaymentMethod == "card" && o.CardID == nil {
+		return ordermodel.ErrCardIdRequired
+	}
+
+	if o.DeliveryAddress == nil {
+		return ordermodel.ErrDeliveryAddressRequired
+	}
+
 	return nil
 }
 
@@ -57,14 +105,39 @@ type ICreateOrderRepository interface {
 }
 
 type CreateCommandHandler struct {
-	repo ICreateOrderRepository
+	repo                  ICreateOrderRepository
+	cartConversionService *CartToOrderConversionService
+	paymentService        *PaymentProcessingService
+	inventoryService      *InventoryCheckingService
+	notificationService   *OrderNotificationService
 }
 
-func NewCreateCommandHandler(repo ICreateOrderRepository) *CreateCommandHandler {
-	return &CreateCommandHandler{repo: repo}
+func NewCreateCommandHandler(
+	repo ICreateOrderRepository,
+	cartConversionService *CartToOrderConversionService,
+	paymentService *PaymentProcessingService,
+	inventoryService *InventoryCheckingService,
+	notificationService *OrderNotificationService,
+) *CreateCommandHandler {
+	return &CreateCommandHandler{
+		repo:                  repo,
+		cartConversionService: cartConversionService,
+		paymentService:        paymentService,
+		inventoryService:      inventoryService,
+		notificationService:   notificationService,
+	}
 }
 
-// Implement
+// Enhanced CreateCommandHandler for backward compatibility
+func NewCreateCommandHandlerSimple(repo ICreateOrderRepository) *CreateCommandHandler {
+	return &CreateCommandHandler{
+		repo: repo,
+	}
+}
+
+// Execute creates an order with manual order details
+// NOTE: This method is restricted to ADMIN users only via API layer
+// Use ExecuteFromCart for standard customer order creation
 func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto) (string, error) {
 	if err := data.Validate(); err != nil {
 		return "", datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
@@ -124,6 +197,129 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 	// Insert to database
 	if err := s.repo.Insert(ctx, order, orderTracking, orderDetails); err != nil {
 		return "", datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+	}
+
+	return orderId, nil
+}
+
+// ExecuteFromCart creates an order from a cart
+func (s *CreateCommandHandler) ExecuteFromCart(ctx context.Context, data *OrderCreateFromCartDto) (string, error) {
+	if err := data.Validate(); err != nil {
+		return "", datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
+	}
+
+	// Check if all required services are available
+	if s.cartConversionService == nil {
+		return "", datatype.ErrInternalServerError.WithError("cart conversion service not available")
+	}
+
+	userID, err := uuid.Parse(data.UserID)
+	if err != nil {
+		return "", datatype.ErrBadRequest.WithError("invalid user ID format")
+	}
+
+	cartID, err := uuid.Parse(data.CartID)
+	if err != nil {
+		return "", datatype.ErrBadRequest.WithError("invalid cart ID format")
+	}
+
+	// Validate cart can be converted to order
+	if err := s.cartConversionService.ValidateCartForOrder(ctx, cartID, userID); err != nil {
+		return "", err
+	}
+
+	// Convert cart to order data
+	orderData, err := s.cartConversionService.ConvertCartToOrderData(ctx, cartID, userID)
+	if err != nil {
+		return "", err
+	}
+
+	// Set delivery address and payment method from request
+	orderData.DeliveryAddress = data.DeliveryAddress
+	orderData.PaymentMethod = data.PaymentMethod
+	orderData.CardID = data.CardID
+
+	// Check inventory if service is available
+	if s.inventoryService != nil {
+		restaurantID, err := uuid.Parse(orderData.RestaurantID)
+		if err != nil {
+			return "", datatype.ErrBadRequest.WithError("invalid restaurant ID format")
+		}
+
+		// Convert order details to inventory items
+		var inventoryItems []OrderItem
+		for _, detail := range orderData.OrderDetails {
+			foodID, err := uuid.Parse(detail.FoodOrigin.Id)
+			if err != nil {
+				return "", datatype.ErrBadRequest.WithError("invalid food ID format")
+			}
+			inventoryItems = append(inventoryItems, OrderItem{
+				FoodID:   foodID,
+				Quantity: detail.Quantity,
+			})
+		}
+
+		// Check inventory
+		if err := s.inventoryService.CheckOrderInventory(ctx, restaurantID, inventoryItems); err != nil {
+			return "", err
+		}
+	}
+
+	// Process payment if service is available
+	if s.paymentService != nil {
+		paymentReq := &PaymentRequest{
+			UserID:        data.UserID,
+			Amount:        orderData.TotalPrice,
+			PaymentMethod: data.PaymentMethod,
+			CardID:        data.CardID,
+		}
+
+		// Validate payment method first
+		if err := s.paymentService.ValidatePaymentMethod(ctx, paymentReq); err != nil {
+			return "", err
+		}
+	}
+
+	// Create the order using the standard flow
+	orderId, err := s.Execute(ctx, orderData)
+	if err != nil {
+		return "", err
+	}
+
+	// Process payment after order creation
+	if s.paymentService != nil {
+		paymentReq := &PaymentRequest{
+			OrderID:       orderId,
+			UserID:        data.UserID,
+			Amount:        orderData.TotalPrice,
+			PaymentMethod: data.PaymentMethod,
+			CardID:        data.CardID,
+		}
+
+		paymentResult, err := s.paymentService.ProcessPayment(ctx, paymentReq)
+		if err != nil {
+			// TODO: In a real implementation, you might want to cancel the order here
+			// or mark it as payment failed
+			return "", datatype.ErrInternalServerError.WithWrap(err).WithDebug("payment processing failed")
+		}
+
+		if !paymentResult.Success {
+			// TODO: Handle payment failure
+			return "", datatype.ErrBadRequest.WithWrap(ordermodel.ErrPaymentFailed).WithDebug(paymentResult.ErrorMessage)
+		}
+	}
+
+	// Mark cart as processed
+	if err := s.cartConversionService.MarkCartAsProcessed(ctx, cartID); err != nil {
+		// Log error but don't fail the order creation
+		// The order was successfully created, cart processing is secondary
+	}
+
+	// Send notifications
+	if s.notificationService != nil {
+		if err := s.notificationService.NotifyOrderCreated(ctx, orderId, data.UserID, orderData.RestaurantID); err != nil {
+			// Log error but don't fail the operation
+		}
 	}
 
 	return orderId, nil
