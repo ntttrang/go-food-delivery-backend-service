@@ -116,6 +116,9 @@ func (es *ElasticsearchClient) DeleteDocument(ctx context.Context, id string) er
 
 // Search performs a search in Elasticsearch
 func (es *ElasticsearchClient) Search(ctx context.Context, query map[string]interface{}, from, size int) ([]map[string]interface{}, int64, map[string]interface{}, error) {
+
+	fmt.Println(query)
+
 	// Convert query to JSON
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {

@@ -7,7 +7,7 @@ import (
 )
 
 // BulkIndexRestaurants indexes multiple restaurants in a single request
-func (r *RestaurantSearchRepo) BulkIndexRestaurants(ctx context.Context, restaurants []restaurantmodel.Restaurant) error {
+func (r *RestaurantSearchRepo) BulkIndexRestaurants(ctx context.Context, restaurants []restaurantmodel.RestaurantInfoDto) error {
 	if len(restaurants) == 0 {
 		return nil
 	}

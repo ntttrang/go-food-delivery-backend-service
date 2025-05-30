@@ -8,7 +8,7 @@ import (
 )
 
 // ReindexAllRestaurants reindexes all restaurants from the database
-func (r *RestaurantSearchRepo) ReindexAllRestaurants(ctx context.Context, restaurants []restaurantmodel.Restaurant) error {
+func (r *RestaurantSearchRepo) ReindexAllRestaurants(ctx context.Context, restaurants []restaurantmodel.RestaurantInfoDto) error {
 	log.Printf("Reindexing %d restaurants", len(restaurants))
 	return r.BulkIndexRestaurants(ctx, restaurants)
 }

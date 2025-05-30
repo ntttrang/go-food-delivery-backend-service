@@ -42,8 +42,6 @@ func (r RestaurantInsertDto) ConvertToRestaurant() *restaurantmodel.Restaurant {
 		Lat:              r.Lat,
 		Lng:              r.Lng,
 		ShippingFeePerKm: r.ShippingFeePerKm,
-		Cover:            "[]",
-		Logo:             "[]",
 	}
 }
 

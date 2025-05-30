@@ -78,7 +78,7 @@ type ISyncRestaurantIndexCommandHandler interface {
 }
 
 type RpcRestaurantRepo interface {
-	FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]model.Restaurant, error)
+	FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]restaurantservice.FindRestaurantByIdsDto, error)
 }
 
 type RestaurantHttpController struct {

@@ -10,13 +10,13 @@ import (
 func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[string]any {
 	// Start with a bool query
 	boolQuery := map[string]any{
-		"must":   []any{},
-		"filter": []any{},
+		"must":   []interface{}{},
+		"filter": []interface{}{},
 	}
 
 	// Add keyword search if provided
 	if req.Keyword != "" {
-		boolQuery["must"] = append(boolQuery["must"].([]any), map[string]any{
+		boolQuery["must"] = append(boolQuery["must"].([]interface{}), map[string]any{
 			"multi_match": map[string]any{
 				"query":     req.Keyword,
 				"fields":    []string{"name", "address"},
@@ -28,7 +28,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 
 	// Add name search if provided
 	if req.Name != "" {
-		boolQuery["must"] = append(boolQuery["must"].([]any), map[string]any{
+		boolQuery["must"] = append(boolQuery["must"].([]interface{}), map[string]any{
 			"match": map[string]any{
 				"name": map[string]any{
 					"query": req.Name,
@@ -40,7 +40,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 
 	// Add city filter if provided
 	if req.CityID != nil {
-		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]any{
 			"term": map[string]any{
 				"city_id": *req.CityID,
 			},
@@ -49,7 +49,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 
 	// Add cuisines filter if provided
 	if len(req.Cuisines) > 0 {
-		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]any{
 			"terms": map[string]any{
 				"cuisines": req.Cuisines,
 			},
@@ -58,7 +58,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 
 	// Add rating filter if provided
 	if req.Rating != nil {
-		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]any{
 			"range": map[string]any{
 				"avg_rating": map[string]any{
 					"gte": *req.Rating,
@@ -69,7 +69,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 
 	// Add free shipping filter if provided
 	if req.FreeShipping != nil && *req.FreeShipping {
-		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]any{
 			"term": map[string]any{
 				"shipping_fee_per_km": 0,
 			},
@@ -78,7 +78,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 
 	// Add geo distance filter if lat, lng, and radius are provided
 	if req.Lat != nil && req.Lng != nil && req.Radius != nil {
-		boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
+		boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]any{
 			"geo_distance": map[string]any{
 				"distance": fmt.Sprintf("%.1fkm", *req.Radius),
 				"location": map[string]any{
@@ -90,21 +90,21 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 	}
 
 	// Add status filter (always filter for active restaurants)
-	boolQuery["filter"] = append(boolQuery["filter"].([]any), map[string]any{
-		"term": map[string]any{
+	boolQuery["filter"] = append(boolQuery["filter"].([]interface{}), map[string]interface{}{
+		"match": map[string]interface{}{
 			"status": "ACTIVE",
 		},
 	})
 
-	// If no must clauses, match all documents
-	if len(boolQuery["must"].([]any)) == 0 {
-		boolQuery["must"] = append(boolQuery["must"].([]any), map[string]any{
+	// If no must clauses, match all documents/
+	if len(boolQuery["must"].([]interface{})) == 0 {
+		boolQuery["must"] = append(boolQuery["must"].([]interface{}), map[string]any{
 			"match_all": map[string]any{},
 		})
 	}
 
 	// Build sort
-	sort := []any{}
+	sort := []interface{}{}
 
 	if req.SortBy != "" {
 		direction := "desc"
@@ -173,7 +173,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 		"ratings": map[string]any{
 			"range": map[string]any{
 				"field": "avg_rating",
-				"ranges": []any{
+				"ranges": []interface{}{
 					map[string]any{"from": 4, "to": 5},
 					map[string]any{"from": 3, "to": 4},
 					map[string]any{"from": 2, "to": 3},
@@ -185,7 +185,7 @@ func buildRestaurantSearchQuery(req restaurantservice.RestaurantSearchReq) map[s
 		"delivery_time": map[string]any{
 			"range": map[string]any{
 				"field": "delivery_time",
-				"ranges": []any{
+				"ranges": []interface{}{
 					map[string]any{"to": 15},
 					map[string]any{"from": 15, "to": 30},
 					map[string]any{"from": 30, "to": 45},

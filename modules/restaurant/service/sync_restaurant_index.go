@@ -2,51 +2,112 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log"
 
+	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
+type FindRestaurantByIdsDto struct {
+	restaurantmodel.Restaurant
+	AvgPoint   float64 `json:"avgPoint"`
+	CommentQty int     `json:"commentQty"`
+	LikesQty   int     `json:"likesQty"`
+}
+
 // IRestaurantRepo defines the interface for restaurant repository operations
 type IRestaurantRepo interface {
-	FindAll(ctx context.Context) ([]restaurantmodel.Restaurant, error)
+	FindRestaurantByIds(ctx context.Context, ids []uuid.UUID) ([]FindRestaurantByIdsDto, error)
+}
+
+type IRestaurantFoodRestaurantIndexRepo interface {
+	FindFoodByRestaurantIds(ctx context.Context, ids []uuid.UUID) ([]restaurantmodel.RestaurantFood, error)
 }
 
 // IRestaurantIndexRepo defines the interface for restaurant indexing operations
 type IRestaurantBulkIndexRepo interface {
-	ReindexAllRestaurants(ctx context.Context, restaurants []restaurantmodel.Restaurant) error
+	ReindexAllRestaurants(ctx context.Context, restaurants []restaurantmodel.RestaurantInfoDto) error
+}
+
+type IRpcFoodSyncRestaurantIndexRepo interface {
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantmodel.Foods, error)
 }
 
 // SyncRestaurantIndexCommandHandler handles commands to sync restaurant data with Elasticsearch
 type SyncRestaurantIndexCommandHandler struct {
-	restaurantRepo IRestaurantRepo
-	indexRepo      IRestaurantBulkIndexRepo
+	restaurantRepo     IRestaurantRepo
+	restaurantFoodRepo IRestaurantFoodRestaurantIndexRepo
+	indexRepo          IRestaurantBulkIndexRepo
+	rpcFood            IRpcFoodSyncRestaurantIndexRepo
 }
 
 // NewSyncRestaurantIndexCommandHandler creates a new SyncRestaurantIndexCommandHandler
 func NewSyncRestaurantIndexCommandHandler(
 	restaurantRepo IRestaurantRepo,
+	restaurantFoodRepo IRestaurantFoodRestaurantIndexRepo,
 	indexRepo IRestaurantBulkIndexRepo,
+	rpcFood IRpcFoodSyncRestaurantIndexRepo,
 ) *SyncRestaurantIndexCommandHandler {
 	return &SyncRestaurantIndexCommandHandler{
-		restaurantRepo: restaurantRepo,
-		indexRepo:      indexRepo,
+		restaurantRepo:     restaurantRepo,
+		restaurantFoodRepo: restaurantFoodRepo,
+		indexRepo:          indexRepo,
+		rpcFood:            rpcFood,
 	}
 }
 
 // SyncAll synchronizes all restaurants with Elasticsearch
 func (s *SyncRestaurantIndexCommandHandler) SyncAll(ctx context.Context) error {
 	// Get all restaurants from the database
-	restaurants, err := s.restaurantRepo.FindAll(ctx)
+	restaurants, err := s.restaurantRepo.FindRestaurantByIds(ctx, []uuid.UUID{})
 	if err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
-	log.Printf("Syncing %d restaurants to Elasticsearch", len(restaurants))
+	var foodIds []uuid.UUID
+	var restaurantIds []uuid.UUID
+	var restaurantDtos []restaurantmodel.RestaurantInfoDto
+	for _, r := range restaurants {
+		restaurantIds = append(restaurantIds, r.Id)
+
+		var dto restaurantmodel.RestaurantInfoDto
+		if err := copier.Copy(&dto, &r); err != nil {
+			return datatype.ErrInternalServerError.WithWrap(errors.New("copier libraries failed"))
+		}
+		restaurantDtos = append(restaurantDtos, dto)
+	}
+
+	// Get restaurant food
+	restaurantFoods, err := s.restaurantFoodRepo.FindFoodByRestaurantIds(ctx, restaurantIds)
+	if err != nil {
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+	}
+
+	for _, rf := range restaurantFoods {
+		foodIds = append(foodIds, rf.FoodId)
+	}
+
+	// Call RPC to get food info
+	foodMap, err := s.rpcFood.FindByIds(ctx, foodIds)
+	if err != nil {
+		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+	}
+
+	for i := 0; i < len(restaurantFoods); i++ {
+		foodInfo := restaurantmodel.FoodInfo{
+			CategoryId: foodMap[restaurantFoods[i].FoodId].CategoryId,
+			FoodId:     foodMap[restaurantFoods[i].FoodId].Id,
+			FoodName:   foodMap[restaurantFoods[i].FoodId].Name,
+		}
+		restaurantDtos[i].FoodInfos = append(restaurantDtos[i].FoodInfos, foodInfo)
+	}
+	log.Printf("Syncing %d restaurants to Elasticsearch", len(restaurantDtos))
 
 	// Reindex all restaurants
-	if err := s.indexRepo.ReindexAllRestaurants(ctx, restaurants); err != nil {
+	if err := s.indexRepo.ReindexAllRestaurants(ctx, restaurantDtos); err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 

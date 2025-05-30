@@ -16,8 +16,8 @@ type Restaurant struct {
 	CityId           int       `gorm:"column:city_id;"`
 	Lat              float64   `gorm:"column:lat;"`
 	Lng              float64   `gorm:"column:lng;"`
-	Cover            string    `gorm:"column:cover;"` // json
-	Logo             string    `gorm:"column:logo;"`  // json
+	Cover            string    `gorm:"column:cover;"`
+	Logo             string    `gorm:"column:logo;"`
 	ShippingFeePerKm float64   `gorm:"column:shipping_fee_per_km;"`
 	Status           string    `gorm:"column:status;"`
 	sharedmodel.DateDto
@@ -35,9 +35,9 @@ func (r *Restaurant) BeforeCreate(tx *gorm.DB) {
 }
 
 // ToRestaurantDocument converts a Restaurant to an Elasticsearch document
-func (r *Restaurant) ToRestaurantDocument() map[string]any {
+func (r *RestaurantInfoDto) ToRestaurantDocument() map[string]interface{} {
 	// Create a base document with all the fields
-	doc := map[string]any{
+	doc := map[string]interface{}{
 		"id":                  r.Id.String(),
 		"name":                r.Name,
 		"address":             r.Addr,
@@ -59,11 +59,17 @@ func (r *Restaurant) ToRestaurantDocument() map[string]any {
 	}
 
 	// Default values for search-specific fields
-	doc["avg_rating"] = 0.0
-	doc["rating_count"] = 0
-	doc["popularity_score"] = 0.0
+	doc["avg_rating"] = r.AvgPoint
+	doc["rating_count"] = r.CommentQty
+	doc["popularity_score"] = r.LikesQty
 	doc["delivery_time"] = 30 // Default delivery time in minutes
-	doc["cuisines"] = []string{}
 
+	var foodInfos = r.FoodInfos
+	var categoryIds []uuid.UUID
+	for _, f := range foodInfos {
+		categoryIds = append(categoryIds, f.CategoryId)
+	}
+	doc["cuisines"] = categoryIds
+	doc["food_infos"] = foodInfos
 	return doc
 }

@@ -93,8 +93,24 @@ const RestaurantIndexMapping = `
       },
       "updated_at": {
         "type": "date"
+      },
+      "food_infos": {
+            "type": "nested",
+            "properties": {
+              "food_id": {
+                "type": "keyword"
+              },
+              "food_name": {
+                "type": "text",
+                "analyzer": "autocomplete",
+                "search_analyzer": "autocomplete_search"
+              },
+              "category_id": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
       }
-    }
-  }
 }
 `

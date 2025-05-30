@@ -7,7 +7,7 @@ import (
 )
 
 // IndexRestaurant indexes a restaurant document in Elasticsearch
-func (r *RestaurantSearchRepo) IndexRestaurant(ctx context.Context, restaurant *restaurantmodel.Restaurant) error {
+func (r *RestaurantSearchRepo) IndexRestaurant(ctx context.Context, restaurant *restaurantmodel.RestaurantInfoDto) error {
 	restaurantDoc := restaurant.ToRestaurantDocument()
 	return r.esClient.IndexDocument(ctx, restaurant.Id.String(), restaurantDoc)
 }
