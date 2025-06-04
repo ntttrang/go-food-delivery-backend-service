@@ -4,49 +4,23 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	cartmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/model"
+	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/rpc-client"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
-// CartItem represents a cart item with food details
-type CartItem struct {
-	ID           uuid.UUID `json:"id"`
-	UserID       uuid.UUID `json:"userId"`
-	FoodID       uuid.UUID `json:"foodId"`
-	RestaurantID uuid.UUID `json:"restaurantId"`
-	Quantity     int       `json:"quantity"`
-	Status       string    `json:"status"`
-	Food         FoodInfo  `json:"food"`
-}
-
-type FoodInfo struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Images      string    `json:"images"`
-	Price       float64   `json:"price"`
-}
-
-type RestaurantInfo struct {
-	ID               uuid.UUID `json:"id"`
-	Name             string    `json:"name"`
-	Status           string    `json:"status"`
-	ShippingFeePerKm float64   `json:"shippingFeePerKm"`
-}
-
 // Repository interfaces
 type ICartConversionRepo interface {
-	FindCartItemsByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) ([]CartItem, error)
+	FindById(ctx context.Context, cartId string, userId string) ([]rpcclient.CartSummaryData, error)
 	UpdateCartStatus(ctx context.Context, cartID uuid.UUID, status string) error
 }
 
 type IFoodConversionRepo interface {
-	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]FoodInfo, error)
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]ordermodel.Food, error)
 }
 
 type IRestaurantConversionRepo interface {
-	FindByID(ctx context.Context, id uuid.UUID) (*RestaurantInfo, error)
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]rpcclient.RPCGetByIdsResponseDTO, error)
 }
 
 // Cart conversion service interface
@@ -78,7 +52,7 @@ func NewCartToOrderConversionService(
 // ConvertCartToOrderData converts cart items to order data
 func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*OrderCreateDto, error) {
 	// Get cart items
-	cartItems, err := s.cartRepo.FindCartItemsByCartID(ctx, cartID, userID)
+	cartItems, err := s.cartRepo.FindById(ctx, cartID.String(), userID.String())
 	if err != nil {
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
@@ -89,7 +63,7 @@ func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Contex
 
 	// Check if cart is already processed
 	for _, item := range cartItems {
-		if item.Status == cartmodel.CartStatusProcessed {
+		if item.Status == datatype.CartStatusProcessed {
 			return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrCartAlreadyProcessed).WithDebug(ordermodel.ErrCartAlreadyProcessed.Error())
 		}
 	}
@@ -105,7 +79,7 @@ func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Contex
 	// Get food details
 	var foodIDs []uuid.UUID
 	for _, item := range cartItems {
-		foodIDs = append(foodIDs, item.FoodID)
+		foodIDs = append(foodIDs, item.FoodId)
 	}
 
 	foodMap, err := s.foodRepo.FindByIds(ctx, foodIDs)
@@ -114,11 +88,12 @@ func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Contex
 	}
 
 	// Get restaurant details
-	restaurant, err := s.restaurantRepo.FindByID(ctx, restaurantID)
+	restaurantMap, err := s.restaurantRepo.FindByIds(ctx, []uuid.UUID{restaurantID})
 	if err != nil {
 		return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 
+	restaurant := restaurantMap[restaurantID]
 	// Check restaurant availability
 	if restaurant.Status != "ACTIVE" {
 		return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrRestaurantNotAvailable).WithDebug(ordermodel.ErrRestaurantNotAvailable.Error())
@@ -129,14 +104,14 @@ func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Contex
 	var totalPrice float64
 
 	for _, item := range cartItems {
-		food, exists := foodMap[item.FoodID]
+		food, exists := foodMap[item.FoodId]
 		if !exists {
-			return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrFoodNotAvailable).WithDebug("food not found: " + item.FoodID.String())
+			return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrFoodNotAvailable).WithDebug("food not found: " + item.FoodId.String())
 		}
 
 		// Create food origin JSON
 		foodOrigin := &FoodOriginDto{
-			Id:          food.ID.String(),
+			Id:          food.Id.String(),
 			Name:        food.Name,
 			Description: food.Description,
 			Image:       food.Images,
@@ -166,7 +141,7 @@ func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Contex
 
 // MarkCartAsProcessed marks the cart as processed after successful order creation
 func (s *CartToOrderConversionService) MarkCartAsProcessed(ctx context.Context, cartID uuid.UUID) error {
-	err := s.cartRepo.UpdateCartStatus(ctx, cartID, cartmodel.CartStatusProcessed)
+	err := s.cartRepo.UpdateCartStatus(ctx, cartID, datatype.CartStatusProcessed)
 	if err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
@@ -175,7 +150,7 @@ func (s *CartToOrderConversionService) MarkCartAsProcessed(ctx context.Context, 
 
 // ValidateCartForOrder validates that cart can be converted to order
 func (s *CartToOrderConversionService) ValidateCartForOrder(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) error {
-	cartItems, err := s.cartRepo.FindCartItemsByCartID(ctx, cartID, userID)
+	cartItems, err := s.cartRepo.FindById(ctx, cartID.String(), userID.String())
 	if err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
@@ -186,7 +161,7 @@ func (s *CartToOrderConversionService) ValidateCartForOrder(ctx context.Context,
 
 	// Check if cart is already processed
 	for _, item := range cartItems {
-		if item.Status == cartmodel.CartStatusProcessed {
+		if item.Status == datatype.CartStatusProcessed {
 			return datatype.ErrBadRequest.WithWrap(ordermodel.ErrCartAlreadyProcessed).WithDebug(ordermodel.ErrCartAlreadyProcessed.Error())
 		}
 	}

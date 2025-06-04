@@ -12,6 +12,9 @@ import (
 
 type ICreateCommandHandler interface {
 	Execute(ctx context.Context, data *service.OrderCreateDto) (string, error)
+}
+
+type ICreateFromCartCommandHandler interface {
 	ExecuteFromCart(ctx context.Context, data *service.OrderCreateFromCartDto) (string, error)
 }
 
@@ -32,26 +35,29 @@ type IDeleteCommandHandler interface {
 }
 
 type OrderHttpController struct {
-	createCmdHdl      ICreateCommandHandler
-	listQueryHdl      IListQueryHandler
-	getDetailQueryHdl IGetDetailQueryHandler
-	updateCmdHdl      IUpdateCommandHandler
-	deleteCmdHdl      IDeleteCommandHandler
+	createCmdHdl         ICreateCommandHandler
+	createFromCartCmdHdl ICreateFromCartCommandHandler
+	listQueryHdl         IListQueryHandler
+	getDetailQueryHdl    IGetDetailQueryHandler
+	updateCmdHdl         IUpdateCommandHandler
+	deleteCmdHdl         IDeleteCommandHandler
 }
 
 func NewOrderHttpController(
 	createCmdHdl ICreateCommandHandler,
+	createFromCartCmdHdl ICreateFromCartCommandHandler,
 	listQueryHdl IListQueryHandler,
 	getDetailQueryHdl IGetDetailQueryHandler,
 	updateCmdHdl IUpdateCommandHandler,
 	deleteCmdHdl IDeleteCommandHandler,
 ) *OrderHttpController {
 	return &OrderHttpController{
-		createCmdHdl:      createCmdHdl,
-		listQueryHdl:      listQueryHdl,
-		getDetailQueryHdl: getDetailQueryHdl,
-		updateCmdHdl:      updateCmdHdl,
-		deleteCmdHdl:      deleteCmdHdl,
+		createCmdHdl:         createCmdHdl,
+		createFromCartCmdHdl: createFromCartCmdHdl,
+		listQueryHdl:         listQueryHdl,
+		getDetailQueryHdl:    getDetailQueryHdl,
+		updateCmdHdl:         updateCmdHdl,
+		deleteCmdHdl:         deleteCmdHdl,
 	}
 }
 
@@ -59,6 +65,8 @@ func (ctrl *OrderHttpController) SetupRoutes(g *gin.RouterGroup) {
 	introspectRpcClient := sharedrpc.NewIntrospectRpcClient(os.Getenv("USER_SERVICE_URL"))
 
 	// Order routes
+	// NOTE: This CreateOrderAPI is restricted to ADMIN users only via API layer
+	// Use CreateOrderFromCartAPI for standard customer order creation
 	g.POST("", middleware.Auth(introspectRpcClient), ctrl.CreateOrderAPI)
 	g.POST("/from-cart", middleware.Auth(introspectRpcClient), ctrl.CreateOrderFromCartAPI)
 	g.GET("", ctrl.ListOrdersAPI)

@@ -4,34 +4,72 @@ import (
 	"github.com/gin-gonic/gin"
 	orderHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/controller/http-gin"
 	orderRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/gorm-mysql"
+	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/rpc-client"
 	orderService "github.com/ntttrang/go-food-delivery-backend-service/modules/order/service"
+	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
 func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	dbCtx := appCtx.DbContext()
-	// config := appCtx.GetConfig() // TODO: Use when implementing RPC integration
+	config := appCtx.GetConfig()
 
 	// Setup repository
-	repo := orderRepo.NewOrderRepo(dbCtx)
-
+	orderRepo := orderRepo.NewOrderRepo(dbCtx)
 	// Setup RPC clients
-	// cartRPCClient := sharerpc.NewCartRPCClient(config.CartServiceURL)
+	foodRpcClientRepo := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
+	restaurantRpcClientRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
+	cartRpcClientRepo := rpcclient.NewCartRPCClient(config.CartServiceURL)
+	cardRpcClientRepo := rpcclient.NewCardRPCClient(appCtx.GetConfig().PaymentServiceURL)
+	userRpcClientRepo := rpcclient.NewUserRPCClient(appCtx.GetConfig().UserServiceURL)
+	emailSvc := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
 
-	// Setup services for order creation from cart
-	// cartConversionService := orderService.NewCartToOrderConversionServiceWithRPC(cartRPCClient)
-	// TODO: Integrate cart conversion service with full order creation flow
+	// Setup service
+	cartConversionService := orderService.NewCartToOrderConversionService(cartRpcClientRepo, foodRpcClientRepo, restaurantRpcClientRepo)
+	paymentService := orderService.NewPaymentProcessingService(
+		cardRpcClientRepo,
+	)
 
-	// For now, use simple command handler until we implement full services
-	createCmdHdl := orderService.NewCreateCommandHandlerSimple(repo)
-	listQueryHdl := orderService.NewListQueryHandler(repo)
-	getDetailQueryHdl := orderService.NewGetDetailQueryHandler(repo)
-	updateCmdHdl := orderService.NewUpdateCommandHandler(repo)
-	deleteCmdHdl := orderService.NewDeleteCommandHandler(repo)
+	inventoryService := orderService.NewInventoryCheckingService(
+		foodRpcClientRepo,
+		restaurantRpcClientRepo,
+	)
+
+	notificationService := orderService.NewOrderNotificationService(
+		orderRepo,
+		userRpcClientRepo,
+		restaurantRpcClientRepo,
+		emailSvc,
+		nil, // smsSvc - TODO: implement when SMS service is ready
+		nil, // pushSvc - TODO: implement when push notification service is ready
+	)
+
+	// Create command handler with all services
+	createCmdHdl := orderService.NewCreateCommandHandler(
+		orderRepo,
+		paymentService,
+		inventoryService,
+		notificationService,
+	)
+
+	// Create the cart-to-order handler with all services
+	createFromCartCmdHdl := orderService.NewCreateFromCartCommandHandler(
+		createCmdHdl,
+		cartConversionService,
+		paymentService,
+		inventoryService,
+		notificationService,
+	)
+
+	listQueryHdl := orderService.NewListQueryHandler(orderRepo)
+	getDetailQueryHdl := orderService.NewGetDetailQueryHandler(orderRepo)
+	updateCmdHdl := orderService.NewUpdateCommandHandler(orderRepo)
+	deleteCmdHdl := orderService.NewDeleteCommandHandler(orderRepo)
 
 	// Setup controller
 	orderCtl := orderHttpgin.NewOrderHttpController(
 		createCmdHdl,
+		createFromCartCmdHdl,
 		listQueryHdl,
 		getDetailQueryHdl,
 		updateCmdHdl,

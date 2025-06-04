@@ -12,4 +12,5 @@ type FoodInfoDto struct {
 	CommentQty   int       `json:"commentQty"`
 	CategoryId   uuid.UUID `json:"categoryId"`
 	RestaurantId uuid.UUID `json:"restaurantId"`
+	Status       string    `json:"status"`
 }

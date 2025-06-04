@@ -82,14 +82,16 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *CartUpsertDto)
 	// Check if cart already exists for this user and food
 	existingCart, err := s.repo.FindByUserIdAndFoodId(ctx, data.UserID, data.FoodID)
 	if err == nil && existingCart != nil {
-		// Cart exists, update quantity instead
-		existingCart.Quantity += data.Quantity
-		existingCart.Status = cartmodel.CartStatusUpdated
-		if err := s.repo.Update(ctx, existingCart); err != nil {
-			return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+		if existingCart.Status == datatype.CartStatusActive {
+			// Cart exists, update quantity instead
+			existingCart.Quantity += data.Quantity
+			existingCart.Status = datatype.CartStatusUpdated
+			if err := s.repo.Update(ctx, existingCart); err != nil {
+				return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
+			}
+			data.ID = existingCart.ID
+			return nil
 		}
-		data.ID = existingCart.ID
-		return nil
 	}
 
 	// Create new cart
@@ -99,13 +101,17 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *CartUpsertDto)
 	var cartId uuid.UUID
 	existingCartByRestaurants, err := s.repo.FindByUserIdAndRestaurantId(ctx, data.UserID, food[data.FoodID].RestaurantId)
 	if err == nil && len(existingCartByRestaurants) > 0 {
-		cartId = existingCartByRestaurants[0].ID
+		if existingCartByRestaurants[0].Status == datatype.CartStatusActive {
+			cartId = existingCartByRestaurants[0].ID
+		} else {
+			cartId, _ = uuid.NewV7()
+		}
 	} else {
 		cartId, _ = uuid.NewV7()
 	}
 	cart.ID = cartId
 
-	cart.Status = cartmodel.CartStatusActive // Always set Active Status when insert
+	cart.Status = datatype.CartStatusActive // Always set Active Status when insert
 	cart.RestaurantId = food[data.FoodID].RestaurantId
 
 	if err := s.repo.Insert(ctx, cart); err != nil {

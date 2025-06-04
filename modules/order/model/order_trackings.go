@@ -3,7 +3,6 @@ package ordermodel
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/datatypes"
 )
 
@@ -13,8 +12,8 @@ type OrderTracking struct {
 	OrderID         string         `gorm:"column:order_id;type:VARCHAR(36);index" json:"orderId"`
 	State           string         `gorm:"column:state;type:ENUM('waiting_for_shipper','preparing','on_the_way','delivered','cancel');not null" json:"state"`
 	PaymentStatus   string         `gorm:"column:payment_status;type:ENUM('pending','paid');not null" json:"paymentStatus"`
-	PaymentMethod   string         `gorm:"column:payment_method;type:ENUM('cash','card');not null" json:"paymentMethod"`
-	CardId          uuid.UUID      `gorm:"column:card_id;" json:"cardId"`
+	PaymentMethod   string         `gorm:"column:payment_method;type:ENUM('CASH','CARD');not null" json:"paymentMethod"`
+	CardId          *string        `gorm:"column:card_id;" json:"cardId"`
 	DeliveryAddress datatypes.JSON `gorm:"column:delivery_address;type:JSON"           json:"deliveryAddress"`
 	DeliveryFee     float64        `gorm:"column:delivery_fee;type:FLOAT;default:0"     json:"deliveryFee"`
 	EstimatedTime   int            `gorm:"column:estimated_time;type:INT;default:0"     json:"estimatedTime"`

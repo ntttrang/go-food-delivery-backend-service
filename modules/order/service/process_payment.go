@@ -40,41 +40,31 @@ type PaymentResult struct {
 
 // Repository interfaces
 type IPaymentCardRepo interface {
-	FindByID(ctx context.Context, id uuid.UUID) (*PaymentCard, error)
-	FindByUserID(ctx context.Context, userID uuid.UUID) ([]PaymentCard, error)
-}
-
-// External payment gateway interface (for future implementation)
-type IPaymentGateway interface {
-	ProcessCardPayment(ctx context.Context, card *PaymentCard, amount float64, orderID string) (*PaymentResult, error)
-	ProcessCashPayment(ctx context.Context, amount float64, orderID string) (*PaymentResult, error)
+	FindById(ctx context.Context, id uuid.UUID) (*ordermodel.Card, error)
 }
 
 // Service
 type PaymentProcessingService struct {
-	cardRepo       IPaymentCardRepo
-	paymentGateway IPaymentGateway
+	cardRepo IPaymentCardRepo
 }
 
 func NewPaymentProcessingService(
 	cardRepo IPaymentCardRepo,
-	paymentGateway IPaymentGateway,
 ) *PaymentProcessingService {
 	return &PaymentProcessingService{
-		cardRepo:       cardRepo,
-		paymentGateway: paymentGateway,
+		cardRepo: cardRepo,
 	}
 }
 
 // ValidatePaymentMethod validates the payment method and associated data
 func (s *PaymentProcessingService) ValidatePaymentMethod(ctx context.Context, req *PaymentRequest) error {
 	// Validate payment method
-	if req.PaymentMethod != "cash" && req.PaymentMethod != "card" {
-		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidPaymentMethod).WithDebug("payment method must be 'cash' or 'card'")
+	if req.PaymentMethod != MethodCash && req.PaymentMethod != MethodCreditCard && req.PaymentMethod != MethodDebitCard {
+		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidPaymentMethod).WithDebug("payment method must be 'CASH' or 'CREDIT_CARD' or 'DEBIT_CARD' ")
 	}
 
 	// For card payments, validate card exists and belongs to user
-	if req.PaymentMethod == "card" {
+	if req.PaymentMethod == MethodCreditCard || req.PaymentMethod == MethodDebitCard {
 		if req.CardID == nil {
 			return datatype.ErrBadRequest.WithWrap(ordermodel.ErrCardIdRequired).WithDebug(ordermodel.ErrCardIdRequired.Error())
 		}
@@ -84,7 +74,7 @@ func (s *PaymentProcessingService) ValidatePaymentMethod(ctx context.Context, re
 			return datatype.ErrBadRequest.WithError("invalid card ID format")
 		}
 
-		card, err := s.cardRepo.FindByID(ctx, cardID)
+		card, err := s.cardRepo.FindById(ctx, cardID)
 		if err != nil {
 			return datatype.ErrNotFound.WithWrap(err).WithDebug("card not found")
 		}
@@ -114,27 +104,24 @@ func (s *PaymentProcessingService) ProcessPayment(ctx context.Context, req *Paym
 	}
 
 	switch req.PaymentMethod {
-	case "cash":
+	case MethodCash:
 		return s.processCashPayment(ctx, req)
-	case "card":
+	case MethodDebitCard, MethodCreditCard:
 		return s.processCardPayment(ctx, req)
 	default:
 		return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidPaymentMethod).WithDebug("unsupported payment method")
 	}
 }
 
-// processCashPayment handles cash payment (no actual processing needed)
+// processCashPayment handles cash payment
 func (s *PaymentProcessingService) processCashPayment(ctx context.Context, req *PaymentRequest) (*PaymentResult, error) {
 	// For cash payments, we just mark as pending
 	// The payment will be completed when the order is delivered
-	if s.paymentGateway != nil {
-		return s.paymentGateway.ProcessCashPayment(ctx, req.Amount, req.OrderID)
-	}
 
-	// Default implementation - cash payments are always "successful" but pending
+	// Default implementation - simulate successful payment
 	return &PaymentResult{
 		Success:       true,
-		TransactionID: "cash_" + req.OrderID,
+		TransactionID: req.PaymentMethod + "_" + req.OrderID,
 	}, nil
 }
 
@@ -149,40 +136,30 @@ func (s *PaymentProcessingService) processCardPayment(ctx context.Context, req *
 		return nil, datatype.ErrBadRequest.WithError("invalid card ID format")
 	}
 
-	card, err := s.cardRepo.FindByID(ctx, cardID)
-	if err != nil {
-		return nil, datatype.ErrNotFound.WithWrap(err).WithDebug("card not found")
-	}
-
-	// Process payment through gateway
-	if s.paymentGateway != nil {
-		result, err := s.paymentGateway.ProcessCardPayment(ctx, card, req.Amount, req.OrderID)
-		if err != nil {
-			return nil, datatype.ErrInternalServerError.WithWrap(err).WithDebug("payment gateway error")
-		}
-		return result, nil
-	}
+	// TODO: (TBD)
+	// In a real implementation, this would integrate with Stripe, PayPal, etc.
+	// Step 1: Get card info
+	// Step 2: Process payment through gateway
 
 	// Default implementation - simulate successful payment
-	// In a real implementation, this would integrate with Stripe, PayPal, etc.
 	return &PaymentResult{
 		Success:       true,
-		TransactionID: "card_" + req.OrderID + "_" + cardID.String(),
+		TransactionID: req.PaymentMethod + "_" + req.OrderID + "_" + cardID.String(),
 	}, nil
 }
 
 // GetPaymentStatus determines the payment status based on payment method and result
-func (s *PaymentProcessingService) GetPaymentStatus(paymentMethod string, result *PaymentResult) string {
-	if !result.Success {
-		return "failed"
-	}
+// func (s *PaymentProcessingService) GetPaymentStatus(paymentMethod string, result *PaymentResult) string {
+// 	if !result.Success {
+// 		return "failed"
+// 	}
 
-	switch paymentMethod {
-	case "cash":
-		return "pending" // Cash payments are pending until delivery
-	case "card":
-		return "paid" // Card payments are immediately paid if successful
-	default:
-		return "pending"
-	}
-}
+// 	switch paymentMethod {
+// 	case MethodCash:
+// 		return "pending" // Cash payments are pending until delivery
+// 	case MethodDebitCard, MethodCreditCard:
+// 		return "paid" // Card payments are immediately paid if successful
+// 	default:
+// 		return "pending"
+// 	}
+// }

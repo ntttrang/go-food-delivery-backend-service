@@ -5,12 +5,6 @@ import (
 	sharedmodel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
 )
 
-const (
-	CartStatusActive    = "ACTIVE"
-	CartStatusUpdated   = "UPDATED"   // When Frontend update quantity
-	CartStatusProcessed = "PROCESSED" // Auto updated by Backend. All items go to Order
-)
-
 type Cart struct {
 	ID           uuid.UUID `gorm:"column:id;" json:"id"` // Can be duplicate
 	UserID       uuid.UUID `gorm:"column:user_id" json:"userId"`

@@ -21,6 +21,8 @@ type RPCGetByIdsResponseDTO struct {
 	Cover            string    `json:"cover"`
 	Logo             string    `json:"logo"`
 	ShippingFeePerKm float64   `json:"shippingFeePerKm"`
+	OwnerId          uuid.UUID `json:"ownerId"`
+	Status           string    `json:"status"`
 }
 
 func (ctl *RestaurantHttpController) RPCGetByIds(c *gin.Context) {
@@ -52,6 +54,8 @@ func (ctl *RestaurantHttpController) RPCGetByIds(c *gin.Context) {
 			Cover:            r.Cover,
 			Logo:             r.Logo,
 			ShippingFeePerKm: r.ShippingFeePerKm,
+			OwnerId:          r.OwnerId,
+			Status:           r.Status,
 		})
 	}
 

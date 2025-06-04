@@ -19,8 +19,8 @@ const (
 
 // PaymentStatus constants
 const (
-	PaymentStatusPending = "pending"
-	PaymentStatusPaid    = "paid"
+	PaymentStatusPending = "PENDING"
+	PaymentStatusPaid    = "PAID"
 )
 
 // StateTransitionRequest represents a request to change order state

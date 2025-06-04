@@ -59,7 +59,7 @@ func (hdl *ValidateCartOwnershipQueryHandler) Execute(ctx context.Context, req C
 	}
 
 	// Check if cart is already processed
-	if cart.Status == cartmodel.CartStatusProcessed {
+	if cart.Status == datatype.CartStatusProcessed {
 		return &CartValidationRes{
 			Valid:  false,
 			Reason: "cart has already been processed",

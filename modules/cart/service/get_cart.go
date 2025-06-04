@@ -68,7 +68,7 @@ func (hdl *GetDetailQueryHandler) Execute(ctx context.Context, req CartDetailReq
 	}
 
 	// Check if cart is processed
-	if cart.Status == cartmodel.CartStatusProcessed {
+	if cart.Status == datatype.CartStatusProcessed {
 		return nil, datatype.ErrDeleted.WithWrap(cartmodel.ErrCartIsProcessed).WithDebug(cartmodel.ErrCartIsProcessed.Error())
 	}
 

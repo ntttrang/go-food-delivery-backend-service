@@ -5,6 +5,7 @@ import (
 
 	cartmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/modules/cart/service"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	"github.com/pkg/errors"
 )
 
@@ -18,7 +19,7 @@ func (r *CartRepo) ListByUserId(ctx context.Context, req service.CartListReq) ([
 	}
 
 	// By default, only return active carts
-	db = db.Where("status != ?", cartmodel.CartStatusProcessed).Group("id,user_id, restaurant_id, dropoff_lat, dropoff_lng")
+	db = db.Where("status != ?", datatype.CartStatusProcessed).Group("id,user_id, restaurant_id, dropoff_lat, dropoff_lng")
 
 	// TODO: Sort newest cart
 	// sortStr := "created_at DESC"

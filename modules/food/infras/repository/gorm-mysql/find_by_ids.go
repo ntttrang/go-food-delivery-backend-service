@@ -17,6 +17,7 @@ type FoodInfoDto struct {
 	AvgPoint    float64   `json:"avgPoint"`
 	CommentQty  int       `json:"commentQty"`
 	CategoryId  uuid.UUID `json:"categoryId"`
+	Status      string    `json:"status"`
 }
 
 func (r *FoodRepo) FindByIds(ctx context.Context, ids []uuid.UUID) ([]foodmodel.FoodInfoDto, error) {
@@ -28,6 +29,7 @@ func (r *FoodRepo) FindByIds(ctx context.Context, ids []uuid.UUID) ([]foodmodel.
 				f.images, 
 				f.price, 
 				f.category_id,
+				f.status,
 				COUNT(fr.comment) AS comment_qty,
 				AVG(fr.point) AS avg_point,
 				f.restaurant_id

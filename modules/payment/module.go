@@ -26,7 +26,12 @@ func SetupPaymentModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		getCardByIDHandler,
 		getCardsByUserIDHandler,
 		updateCardStatusHandler,
+
+		cardRepo,
 	)
+
+	// RPC routes
+	g.POST("/rpc/payments/find-by-id", cardController.RPCGetById)
 
 	// Setup routes
 	cardController.SetupRoutes(g, appCtx.MiddlewareProvider().Auth())

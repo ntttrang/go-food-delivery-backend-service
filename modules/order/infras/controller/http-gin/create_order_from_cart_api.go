@@ -21,7 +21,7 @@ func (ctrl *OrderHttpController) CreateOrderFromCartAPI(c *gin.Context) {
 	req.UserID = requester.Subject().String()
 
 	// Call business logic in service
-	orderId, err := ctrl.createCmdHdl.ExecuteFromCart(c.Request.Context(), &req)
+	orderId, err := ctrl.createFromCartCmdHdl.ExecuteFromCart(c.Request.Context(), &req)
 	if err != nil {
 		panic(err)
 	}

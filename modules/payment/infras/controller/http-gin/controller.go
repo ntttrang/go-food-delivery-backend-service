@@ -25,12 +25,18 @@ type IGetByUserIdQueryHandler interface {
 	Execute(ctx context.Context, userID uuid.UUID) ([]model.Card, error)
 }
 
+type ICardRepository interface {
+	FindByID(context.Context, uuid.UUID) (*model.Card, error)
+}
+
 // CardController handles HTTP requests for cards
 type CardController struct {
 	createCardHandler       ICreateCommandHandler
 	getCardByIDHandler      IGetCardByIDQueryHandler
 	getCardsByUserIDHandler IGetByUserIdQueryHandler
 	updateCardStatusHandler IUpdateStatusCommandHandler
+
+	repo ICardRepository
 }
 
 // NewCardController creates a new card controller
@@ -39,12 +45,14 @@ func NewCardController(
 	getCardByIDHandler IGetCardByIDQueryHandler,
 	getCardsByUserIDHandler IGetByUserIdQueryHandler,
 	updateCardStatusHandler IUpdateStatusCommandHandler,
+	repo ICardRepository,
 ) *CardController {
 	return &CardController{
 		createCardHandler:       createCardHandler,
 		getCardByIDHandler:      getCardByIDHandler,
 		getCardsByUserIDHandler: getCardsByUserIDHandler,
 		updateCardStatusHandler: updateCardStatusHandler,
+		repo:                    repo,
 	}
 }
 

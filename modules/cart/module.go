@@ -36,6 +36,10 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		repo,
 	)
 
+	// RPC endpoints for order service integration
+	g.PATCH("/rpc/carts/update-status", cartCtl.UpdateCartStatusAPI)
+	g.GET("/rpc/carts/cart-summary", cartCtl.GetCartSummaryAPI) // GET /cart-summaryrts?cardId=zzz?userId=xxx
+
 	// Setup routes
 	carts := g.Group("/carts")
 	cartCtl.SetupRoutes(carts)

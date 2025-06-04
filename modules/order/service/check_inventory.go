@@ -4,19 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/rpc-client"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
-
-// FoodInventory represents food item with availability info
-type FoodInventory struct {
-	ID           uuid.UUID `json:"id"`
-	RestaurantID uuid.UUID `json:"restaurantId"`
-	Name         string    `json:"name"`
-	Price        float64   `json:"price"`
-	Status       string    `json:"status"`
-	Available    bool      `json:"available"`
-}
 
 // RestaurantAvailability represents restaurant availability info
 type RestaurantAvailability struct {
@@ -36,13 +27,11 @@ type OrderItem struct {
 
 // Repository interfaces
 type IInventoryFoodRepo interface {
-	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]FoodInventory, error)
-	CheckAvailability(ctx context.Context, foodID uuid.UUID, quantity int) (bool, error)
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]ordermodel.Food, error)
 }
 
 type IInventoryRestaurantRepo interface {
-	FindByID(ctx context.Context, id uuid.UUID) (*RestaurantAvailability, error)
-	IsAcceptingOrders(ctx context.Context, restaurantID uuid.UUID) (bool, error)
+	FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]rpcclient.RPCGetByIdsResponseDTO, error)
 }
 
 // Service
@@ -63,24 +52,15 @@ func NewInventoryCheckingService(
 
 // CheckRestaurantAvailability checks if restaurant is available for orders
 func (s *InventoryCheckingService) CheckRestaurantAvailability(ctx context.Context, restaurantID uuid.UUID) error {
-	restaurant, err := s.restaurantRepo.FindByID(ctx, restaurantID)
+	restaurantMap, err := s.restaurantRepo.FindByIds(ctx, []uuid.UUID{restaurantID})
 	if err != nil {
 		return datatype.ErrNotFound.WithWrap(err).WithDebug("restaurant not found")
 	}
 
+	restaurant := restaurantMap[restaurantID]
 	// Check if restaurant is active
 	if restaurant.Status != "ACTIVE" {
 		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrRestaurantNotAvailable).WithDebug("restaurant is not active")
-	}
-
-	// Check if restaurant is accepting orders
-	acceptingOrders, err := s.restaurantRepo.IsAcceptingOrders(ctx, restaurantID)
-	if err != nil {
-		return datatype.ErrInternalServerError.WithWrap(err).WithDebug("failed to check restaurant order acceptance")
-	}
-
-	if !acceptingOrders {
-		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrRestaurantNotAvailable).WithDebug("restaurant is not accepting orders")
 	}
 
 	return nil
@@ -115,21 +95,6 @@ func (s *InventoryCheckingService) CheckFoodAvailability(ctx context.Context, it
 		if food.Status != "ACTIVE" {
 			return datatype.ErrBadRequest.WithWrap(ordermodel.ErrFoodNotAvailable).WithDebug("food is not active: " + food.Name)
 		}
-
-		// Check if food is available
-		if !food.Available {
-			return datatype.ErrBadRequest.WithWrap(ordermodel.ErrFoodNotAvailable).WithDebug("food is not available: " + food.Name)
-		}
-
-		// Check specific quantity availability
-		available, err := s.foodRepo.CheckAvailability(ctx, item.FoodID, item.Quantity)
-		if err != nil {
-			return datatype.ErrInternalServerError.WithWrap(err).WithDebug("failed to check food quantity availability")
-		}
-
-		if !available {
-			return datatype.ErrBadRequest.WithWrap(ordermodel.ErrInventoryInsufficient).WithDebug("insufficient quantity for: " + food.Name)
-		}
 	}
 
 	return nil
@@ -137,12 +102,12 @@ func (s *InventoryCheckingService) CheckFoodAvailability(ctx context.Context, it
 
 // CheckOrderInventory performs comprehensive inventory check for an order
 func (s *InventoryCheckingService) CheckOrderInventory(ctx context.Context, restaurantID uuid.UUID, items []OrderItem) error {
-	// Check restaurant availability first
+	// Check restaurant availability: check status = ACTIVE
 	if err := s.CheckRestaurantAvailability(ctx, restaurantID); err != nil {
 		return err
 	}
 
-	// Check food availability
+	// Check food availability: check food exist and status = ACTIVE
 	if err := s.CheckFoodAvailability(ctx, items); err != nil {
 		return err
 	}
@@ -173,20 +138,10 @@ func (s *InventoryCheckingService) validateItemsRestaurant(ctx context.Context, 
 			return datatype.ErrBadRequest.WithWrap(ordermodel.ErrFoodNotAvailable).WithDebug("food not found: " + item.FoodID.String())
 		}
 
-		if food.RestaurantID != restaurantID {
+		if food.RestaurantId != restaurantID {
 			return datatype.ErrBadRequest.WithError("food item does not belong to the specified restaurant: " + food.Name)
 		}
 	}
 
 	return nil
-}
-
-// GetRestaurantInfo gets restaurant information for order processing
-func (s *InventoryCheckingService) GetRestaurantInfo(ctx context.Context, restaurantID uuid.UUID) (*RestaurantAvailability, error) {
-	restaurant, err := s.restaurantRepo.FindByID(ctx, restaurantID)
-	if err != nil {
-		return nil, datatype.ErrNotFound.WithWrap(err).WithDebug("restaurant not found")
-	}
-
-	return restaurant, nil
 }

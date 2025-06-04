@@ -30,12 +30,12 @@ func (ctrl *CartHttpController) GetCartSummaryAPI(c *gin.Context) {
 	}
 
 	// Call repository directly to get cart summary
-	summary, err := ctrl.repo.GetCartSummaryByCartID(c.Request.Context(), cartID, userID)
+	summaries, err := ctrl.repo.GetCartSummaryByCartID(c.Request.Context(), cartID, userID)
 	if err != nil {
 		panic(datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error()))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": summary,
+		"data": summaries,
 	})
 }
