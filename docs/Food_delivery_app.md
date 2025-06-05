@@ -1,42 +1,52 @@
 # go-food-delivery-backend-service
 
 ## **Overview**
+
 The food delivery app's UI is designed with a dark theme and orange highlights, providing a modern and sleek look. The UI flows smoothly across multiple functionalities, including onboarding, authentication, menu browsing, order tracking, and payment processing.
 
 ## **Key UI Components**
+
 ### **Onboarding Screens:**
+
 - Welcome screen introducing the app.
 - User guidance on menu browsing, ordering, and delivery options.
 
 ### **Authentication Screens:**
+
 - Sign-up and login with email/password and social authentication.
 - Verification and password reset functionality.
 
 ### **Home & Menu Screens:**
+
 - Restaurant listings with filtering and sorting options.
 - Food details with price, ingredients, and add-to-cart functionality.
 
 ### **Cart & Checkout:**
+
 - Order summary and payment gateway integration.
 - Multiple payment methods including card scanning.
 
 ### **Order Tracking & Delivery:**
+
 - Real-time order tracking with map view.
 - Estimated delivery time and contact options.
 
 ### **User Profile & History:**
+
 - User profile with order history.
 - Review and rating system for restaurants and orders.
 
-
 ## User Stories
+
 ### **User Roles:**
+
 1. **Customer** – Places and tracks orders.
 2. **Restaurant Owner** – Manages menu and orders.
 3. **Delivery Partner** – Delivers orders.
 4. **Admin** – Manages platform operations.
 
 #### **Customer User Stories:**
+
 1. **As a customer**, I want to sign up and log in so that I can place orders securely.
 2. **As a customer**, I want to browse restaurants and menus so that I can choose my meal.
 3. **As a customer**, I want to filter restaurants based on cuisine, price, and ratings so that I can find the best options.
@@ -46,18 +56,19 @@ The food delivery app's UI is designed with a dark theme and orange highlights, 
 7. **As a customer**, I want to leave a review so that I can share my experience.
 
 #### **Restaurant Owner User Stories:**
+
 1. **As a restaurant owner**, I want to list my menu so that customers can place orders.
 2. **As a restaurant owner**, I want to receive and manage orders so that I can prepare them on time.
 
 #### **Delivery Partner User Stories:**
+
 1. **As a delivery partner**, I want to accept delivery requests so that I can deliver food.
 2. **As a delivery partner**, I want to update order statuses so that customers stay informed.
 
 #### **Admin User Stories:**
+
 1. **As an admin**, I want to manage user accounts so that only valid users can access the app.
 2. **As an admin**, I want to oversee transactions to ensure secure payments.
-
-
 
 ## Database Design (ERD)
 
@@ -81,6 +92,7 @@ The food delivery app's UI is designed with a dark theme and orange highlights, 
    - A user can review a restaurant.
 
 ### **Relationships:**
+
 - One **User** can place multiple **Orders**.
 - One **Order** can contain multiple **OrderDetails**.
 - One **Restaurant** has multiple **MenuItems**.
@@ -88,12 +100,13 @@ The food delivery app's UI is designed with a dark theme and orange highlights, 
 - One **Order** has a single **Payment** record.
 
 ## Microservices
-1. User Service 
+
+1. User Service
    - User registration and authentication
    - Profile management
-   - Technology: 
+   - Technology:
      - JWT for authentication
-     - Google Oauth2 
+     - Google Oauth2
          [https://console.cloud.google.com/apis/dashboard?project=fooddeliveryapp-456910]
          [https://myaccount.google.com/apppasswords]
 

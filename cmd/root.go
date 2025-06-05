@@ -104,7 +104,7 @@ var rootCmd = &cobra.Command{
 			food.RegisterFoodServer(s, foodgrpcctl.NewFoodGrpcServer(foodgormmysql.NewFoodRepo(appCtx.DbContext())))
 
 			// Serve gRPC Server
-			log.Println(fmt.Sprintf("Serving gRPC on 0.0.0.0:%s", grpcPort))
+			log.Printf("Serving gRPC on 0.0.0.0:%s \n", grpcPort)
 			log.Fatal(s.Serve(lis))
 		}()
 
