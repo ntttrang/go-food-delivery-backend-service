@@ -21,7 +21,8 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	foodRPCClient := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
 	//catRPCClient := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().CatServiceURL)
 	// GRPC
-	catGrpcClient := grpcclient.NewCategoryGRPCClient("0.0.0.0:6000")
+	catGrpcClient := grpcclient.NewCategoryGRPCClient(appCtx.GetConfig().GrpcServiceURL)
+	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcServiceURL)
 
 	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(dbCtx)
 	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx, *foodRPCClient)
@@ -53,7 +54,7 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	deleteCommentRestaurantCmdl := restaurantService.NewDeleteCommentCommandHandler(restaurantRatingRepo)
 
 	createMenuItemCmdHdl := restaurantService.NewCreateMenuItemCommandHandler(restaurantFoodRepo)
-	listMenuItemCmdHdl := restaurantService.NewListMenuItemQueryHandler(restaurantFoodRepo, foodRPCClient, catGrpcClient)
+	listMenuItemCmdHdl := restaurantService.NewListMenuItemQueryHandler(restaurantFoodRepo, foodGrpcClient, catGrpcClient)
 	deleteMenuItemCmdHdl := restaurantService.NewDeleteMenuItemCommandHandler(restaurantFoodRepo)
 
 	// Setup Elasticsearch

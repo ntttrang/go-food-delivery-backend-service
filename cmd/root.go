@@ -10,12 +10,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/category"
+	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/food"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	cartmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/cart"
 	categoryModule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	categorygrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/controller/grpc-ctrl"
 	categorygormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository/gorm-mysql"
 	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
+	foodgrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/controller/grpc-ctrl"
+	foodgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
 	ordermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/order"
 	paymentmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/payment"
@@ -81,8 +84,14 @@ var rootCmd = &cobra.Command{
 
 		// Run gRPC server
 		go func() {
+
+			grpcPort := os.Getenv("GRPC_PORT")
+			if grpcPort == "" {
+				grpcPort = "6000"
+			}
+
 			// Create a listener on TCP port
-			lis, err := net.Listen("tcp", ":6000")
+			lis, err := net.Listen("tcp", ":"+grpcPort)
 			if err != nil {
 				log.Fatalln("Failed to listen:", err)
 			}
@@ -92,9 +101,10 @@ var rootCmd = &cobra.Command{
 
 			// Register GRPC
 			category.RegisterCategoryServer(s, categorygrpcctl.NewCategoryGrpcServer(categorygormmysql.NewCategoryRepo(appCtx.DbContext())))
+			food.RegisterFoodServer(s, foodgrpcctl.NewFoodGrpcServer(foodgormmysql.NewFoodRepo(appCtx.DbContext())))
 
 			// Serve gRPC Server
-			log.Println("Serving gRPC on 0.0.0.0:6000")
+			log.Println(fmt.Sprintf("Serving gRPC on 0.0.0.0:%s", grpcPort))
 			log.Fatal(s.Serve(lis))
 		}()
 

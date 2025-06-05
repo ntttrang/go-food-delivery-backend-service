@@ -194,10 +194,13 @@ const file_proto_category_category_proto_rawDesc = "" +
 	"\x03ids\x18\x01 \x03(\tR\x03ids\".\n" +
 	"\n" +
 	"CatIdsResp\x12 \n" +
-	"\x04data\x18\x01 \x03(\v2\f.CategoryDTOR\x04data\"3\n" +
+	"\x04data\x18\x01 \x03(\v2\f.CategoryDTOR\x04data\"\x7f\n" +
 	"\vCategoryDTO\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title2B\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x12\n" +
+	"\x04icon\x18\x04 \x01(\tR\x04icon\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status2B\n" +
 	"\bCategory\x126\n" +
 	"\x12GetCategoriesByIds\x12\x11.GetCatIdsRequest\x1a\v.CatIdsResp\"\x00B\vZ\tcategory/b\x06proto3"
 
