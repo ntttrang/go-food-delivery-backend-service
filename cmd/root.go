@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +33,55 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// setupHTTPServer sets up and returns the HTTP server with all routes
+func setupHTTPServer(appCtx shareinfras.IAppContext, port string) *http.Server {
+	r := gin.Default()
+
+	r.Use(middleware.Recover())
+
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
+
+	r.Static("/uploads", "./uploads")
+
+	v1 := r.Group("/v1")
+
+	// Setup all modules
+	categoryModule.SetupCategoryModule(appCtx, v1)
+	restaurantmodule.SetupRestaurantModule(appCtx, v1)
+	usermodule.SetupUserModule(appCtx, v1)
+	foodmodule.SetupFoodModule(appCtx, v1)
+	mediamodule.SetupMediaModule(appCtx, v1)
+	paymentmodule.SetupPaymentModule(appCtx, v1)
+	cartmodule.SetupCartModule(appCtx, v1)
+	ordermodule.SetupOrderModule(appCtx, v1)
+
+	return &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: r,
+	}
+}
+
+// setupGRPCServer sets up and returns the gRPC server
+func setupGRPCServer(appCtx shareinfras.IAppContext) (*grpc.Server, net.Listener, error) {
+	// Create a listener on TCP port
+	lis, err := net.Listen("tcp", ":6000")
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to listen: %v", err)
+	}
+
+	// Create a gRPC server object
+	s := grpc.NewServer()
+
+	// Register GRPC services
+	category.RegisterCategoryServer(s, categorygrpcctl.NewCategoryGrpcServer(categorygormmysql.NewCategoryRepo(appCtx.DbContext())))
+
+	return s, lis, nil
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "app",
 	Short: "Start service",
@@ -38,6 +91,7 @@ var rootCmd = &cobra.Command{
 			port = "3000"
 		}
 
+		// Initialize application
 		newLogger := logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
@@ -46,61 +100,73 @@ var rootCmd = &cobra.Command{
 				Colorful:      true,
 			},
 		)
+
 		dsn := os.Getenv("DB_DSN")
 		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 			Logger: newLogger,
 		})
 		if err != nil {
-			log.Fatalf("failed to connect database: %v", err)
+			log.Printf("failed to connect database: %v \n", err)
 		}
 		log.Print("connected to database \n")
 
-		r := gin.Default()
-
-		r.Use(middleware.Recover())
-
-		r.GET("/ping", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "pong",
-			})
-		})
-
-		r.Static("/uploads", "./uploads")
-
-		v1 := r.Group("/v1")
 		appCtx := shareinfras.NewAppContext(db)
 
-		categoryModule.SetupCategoryModule(appCtx, v1)
-		restaurantmodule.SetupRestaurantModule(appCtx, v1)
-		usermodule.SetupUserModule(appCtx, v1)
-		foodmodule.SetupFoodModule(appCtx, v1)
-		mediamodule.SetupMediaModule(appCtx, v1)
-		paymentmodule.SetupPaymentModule(appCtx, v1)
-		cartmodule.SetupCartModule(appCtx, v1)
-		ordermodule.SetupOrderModule(appCtx, v1)
+		// Setup HTTP server
+		httpServer := setupHTTPServer(appCtx, port)
 
-		// Run gRPC server
+		// Setup gRPC server
+		grpcServer, grpcListener, err := setupGRPCServer(appCtx)
+		if err != nil {
+			log.Fatalf("Failed to setup gRPC server: %v", err)
+		}
+
+		// Channel to listen for interrupt signal to terminate gracefully
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+		// Use WaitGroup to wait for both servers to shutdown
+		var wg sync.WaitGroup
+
+		// Start gRPC server in a goroutine
+		wg.Add(1)
 		go func() {
-			// Create a listener on TCP port
-			lis, err := net.Listen("tcp", ":6000")
-			if err != nil {
-				log.Fatalln("Failed to listen:", err)
+			defer wg.Done()
+			log.Println("Starting gRPC server on :6000")
+			if err := grpcServer.Serve(grpcListener); err != nil {
+				log.Printf("gRPC server error: %v", err)
 			}
-
-			// Create a gRPC server object
-			s := grpc.NewServer()
-
-			// Register GRPC
-			category.RegisterCategoryServer(s, categorygrpcctl.NewCategoryGrpcServer(categorygormmysql.NewCategoryRepo(appCtx.DbContext())))
-
-			// Serve gRPC Server
-			log.Println("Serving gRPC on 0.0.0.0:6000")
-			log.Fatal(s.Serve(lis))
 		}()
 
-		// Run app server
-		r.Run(fmt.Sprintf(":%s", port))
+		// Start HTTP server in a goroutine
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Printf("Starting HTTP server on :%s", port)
+			if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Printf("HTTP server error: %v", err)
+			}
+		}()
 
+		// Wait for interrupt signal
+		<-quit
+		log.Println("Shutting down servers...")
+
+		// Create a context with timeout for graceful shutdown
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		// Shutdown HTTP server gracefully
+		if err := httpServer.Shutdown(ctx); err != nil {
+			log.Printf("HTTP server forced to shutdown: %v", err)
+		}
+
+		// Shutdown gRPC server gracefully
+		grpcServer.GracefulStop()
+
+		// Wait for all servers to finish
+		wg.Wait()
+		log.Println("Servers stopped")
 	},
 }
 
