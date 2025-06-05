@@ -7,6 +7,7 @@ import (
 	restaurantHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/controller/http-gin"
 	elasticsearchrepo "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/elasticsearch"
 	restaurantgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/gorm-mysql"
+	grpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/grpc-client"
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/infras/repository/rpc-client"
 	restaurantService "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
 	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
@@ -16,8 +17,11 @@ import (
 func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	dbCtx := appCtx.DbContext()
 
+	// RPC
 	foodRPCClient := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
-	catRPCClient := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().CatServiceURL)
+	//catRPCClient := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().CatServiceURL)
+	// GRPC
+	catGrpcClient := grpcclient.NewCategoryGRPCClient("0.0.0.0:6000")
 
 	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(dbCtx)
 	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx, *foodRPCClient)
@@ -49,7 +53,7 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	deleteCommentRestaurantCmdl := restaurantService.NewDeleteCommentCommandHandler(restaurantRatingRepo)
 
 	createMenuItemCmdHdl := restaurantService.NewCreateMenuItemCommandHandler(restaurantFoodRepo)
-	listMenuItemCmdHdl := restaurantService.NewListMenuItemQueryHandler(restaurantFoodRepo, foodRPCClient, catRPCClient)
+	listMenuItemCmdHdl := restaurantService.NewListMenuItemQueryHandler(restaurantFoodRepo, foodRPCClient, catGrpcClient)
 	deleteMenuItemCmdHdl := restaurantService.NewDeleteMenuItemCommandHandler(restaurantFoodRepo)
 
 	// Setup Elasticsearch
