@@ -114,7 +114,7 @@ func (s *PaymentProcessingService) ProcessPayment(ctx context.Context, req *Paym
 }
 
 // processCashPayment handles cash payment
-func (s *PaymentProcessingService) processCashPayment(ctx context.Context, req *PaymentRequest) (*PaymentResult, error) {
+func (s *PaymentProcessingService) processCashPayment(_ context.Context, req *PaymentRequest) (*PaymentResult, error) {
 	// For cash payments, we just mark as pending
 	// The payment will be completed when the order is delivered
 
@@ -126,7 +126,7 @@ func (s *PaymentProcessingService) processCashPayment(ctx context.Context, req *
 }
 
 // processCardPayment handles card payment processing
-func (s *PaymentProcessingService) processCardPayment(ctx context.Context, req *PaymentRequest) (*PaymentResult, error) {
+func (s *PaymentProcessingService) processCardPayment(_ context.Context, req *PaymentRequest) (*PaymentResult, error) {
 	if req.CardID == nil {
 		return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrCardIdRequired).WithDebug(ordermodel.ErrCardIdRequired.Error())
 	}
@@ -158,7 +158,7 @@ func (s *PaymentProcessingService) processCardPayment(ctx context.Context, req *
 // 	case MethodCash:
 // 		return "pending" // Cash payments are pending until delivery
 // 	case MethodDebitCard, MethodCreditCard:
-// 		return "paid" // Card payments are immediately paid if successful
+// 		return PaymentStatusPaid // Card payments are immediately paid if successful
 // 	default:
 // 		return "pending"
 // 	}

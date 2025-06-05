@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
@@ -51,20 +50,7 @@ func (s *OrderNotificationService) notifyShipperAssignment(ctx context.Context, 
 		return fmt.Errorf("failed to send email to shipper: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "New Order Assignment"
-		pushBody := fmt.Sprintf("You have been assigned to order %s", orderID)
-		data := map[string]interface{}{
-			"orderID":      orderID,
-			"restaurantID": restaurantID,
-			"type":         "shipper_assignment",
-		}
-		if err := s.sendPushNotification(ctx, shipperID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to shipper: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -88,20 +74,7 @@ func (s *OrderNotificationService) notifyShipperPaymentStatusChange(ctx context.
 		return fmt.Errorf("failed to send email to shipper: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Payment Confirmed"
-		pushBody := fmt.Sprintf("Payment confirmed for order %s. Order is ready for processing!", orderID)
-		data := map[string]interface{}{
-			"orderID":       orderID,
-			"paymentStatus": paymentStatus,
-			"type":          "payment_status_change",
-		}
-		if err := s.sendPushNotification(ctx, shipperID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to shipper: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -125,21 +98,7 @@ func (s *OrderNotificationService) notifyShipperOrderCreated(ctx context.Context
 		return fmt.Errorf("failed to send email to shipper: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "New Order Available"
-		pushBody := fmt.Sprintf("New order %s assigned to you. Value: $%.2f", orderID, order.TotalPrice)
-		data := map[string]interface{}{
-			"orderID":      orderID,
-			"restaurantID": restaurantID,
-			"totalPrice":   order.TotalPrice,
-			"type":         "order_created",
-		}
-		if err := s.sendPushNotification(ctx, shipperID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to shipper: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -163,21 +122,7 @@ func (s *OrderNotificationService) notifyShipperOrderCancelled(ctx context.Conte
 		return fmt.Errorf("failed to send email to shipper: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Order Cancelled"
-		pushBody := fmt.Sprintf("Order %s has been cancelled. You are no longer assigned to this order.", orderID)
-		data := map[string]interface{}{
-			"orderID":    orderID,
-			"reason":     reason,
-			"totalPrice": order.TotalPrice,
-			"type":       "order_cancelled",
-		}
-		if err := s.sendPushNotification(ctx, shipperID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to shipper: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }

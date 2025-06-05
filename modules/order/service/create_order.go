@@ -38,9 +38,9 @@ type FoodOriginDto struct {
 
 // Payment method constants
 const (
-	MethodCash       = "CASH"
-	MethodCreditCard = "CREDIT_CARD"
-	MethodDebitCard  = "DEBIT_CARD"
+	MethodCash       = "cash"
+	MethodCreditCard = "credit_card"
+	MethodDebitCard  = "debit_card"
 )
 
 func (o *OrderCreateDto) Validate() error {

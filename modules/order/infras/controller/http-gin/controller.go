@@ -26,21 +26,23 @@ type IGetDetailQueryHandler interface {
 	Execute(ctx context.Context, req service.OrderDetailReq) (*service.OrderDetailRes, error)
 }
 
-type IUpdateCommandHandler interface {
-	Execute(ctx context.Context, req service.OrderUpdateReq) error
+type IUpdateOrderStateCommandHandler interface {
+	Execute(ctx context.Context, req *service.StateTransitionRequest) error
 }
+
+// Note: We can remove these interfaces since we'll use the unified state management
 
 type IDeleteCommandHandler interface {
 	Execute(ctx context.Context, req service.OrderDeleteReq) error
 }
 
 type OrderHttpController struct {
-	createCmdHdl         ICreateCommandHandler
-	createFromCartCmdHdl ICreateFromCartCommandHandler
-	listQueryHdl         IListQueryHandler
-	getDetailQueryHdl    IGetDetailQueryHandler
-	updateCmdHdl         IUpdateCommandHandler
-	deleteCmdHdl         IDeleteCommandHandler
+	createCmdHdl           ICreateCommandHandler
+	createFromCartCmdHdl   ICreateFromCartCommandHandler
+	listQueryHdl           IListQueryHandler
+	getDetailQueryHdl      IGetDetailQueryHandler
+	updateOrderStateCmdHdl IUpdateOrderStateCommandHandler
+	deleteCmdHdl           IDeleteCommandHandler
 }
 
 func NewOrderHttpController(
@@ -48,16 +50,16 @@ func NewOrderHttpController(
 	createFromCartCmdHdl ICreateFromCartCommandHandler,
 	listQueryHdl IListQueryHandler,
 	getDetailQueryHdl IGetDetailQueryHandler,
-	updateCmdHdl IUpdateCommandHandler,
+	updateOrderStateCmdHdl IUpdateOrderStateCommandHandler,
 	deleteCmdHdl IDeleteCommandHandler,
 ) *OrderHttpController {
 	return &OrderHttpController{
-		createCmdHdl:         createCmdHdl,
-		createFromCartCmdHdl: createFromCartCmdHdl,
-		listQueryHdl:         listQueryHdl,
-		getDetailQueryHdl:    getDetailQueryHdl,
-		updateCmdHdl:         updateCmdHdl,
-		deleteCmdHdl:         deleteCmdHdl,
+		createCmdHdl:           createCmdHdl,
+		createFromCartCmdHdl:   createFromCartCmdHdl,
+		listQueryHdl:           listQueryHdl,
+		getDetailQueryHdl:      getDetailQueryHdl,
+		updateOrderStateCmdHdl: updateOrderStateCmdHdl,
+		deleteCmdHdl:           deleteCmdHdl,
 	}
 }
 
@@ -65,17 +67,10 @@ func (ctrl *OrderHttpController) SetupRoutes(g *gin.RouterGroup) {
 	introspectRpcClient := sharedrpc.NewIntrospectRpcClient(os.Getenv("USER_SERVICE_URL"))
 
 	// Order routes
-	// NOTE: This CreateOrderAPI is restricted to ADMIN users only via API layer
-	// Use CreateOrderFromCartAPI for standard customer order creation
 	g.POST("", middleware.Auth(introspectRpcClient), ctrl.CreateOrderAPI)
 	g.POST("/from-cart", middleware.Auth(introspectRpcClient), ctrl.CreateOrderFromCartAPI)
 	g.GET("", ctrl.ListOrdersAPI)
 	g.GET("/:id", ctrl.GetOrderDetailAPI)
-	g.PATCH("/:id", ctrl.UpdateOrderAPI)
 	g.DELETE("/:id", ctrl.DeleteOrderAPI)
-
-	// Order state management routes
 	g.PATCH("/:id/state", middleware.Auth(introspectRpcClient), ctrl.UpdateOrderStateAPI)
-	g.PATCH("/:id/assign-shipper", middleware.Auth(introspectRpcClient), ctrl.AssignShipperAPI)
-	g.PATCH("/:id/payment-status", middleware.Auth(introspectRpcClient), ctrl.UpdatePaymentStatusAPI)
 }

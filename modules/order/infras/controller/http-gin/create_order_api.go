@@ -8,6 +8,7 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
+// CreateOrderAPI is restricted to ADMIN users only
 func (ctrl *OrderHttpController) CreateOrderAPI(c *gin.Context) {
 	var req service.OrderCreateDto
 

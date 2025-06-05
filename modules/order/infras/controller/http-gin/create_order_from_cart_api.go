@@ -8,7 +8,7 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
-// CreateOrderFromCartAPI handles creating an order from a cart
+// CreateOrderFromCartAPI handles creating an order from a cart (for standard customer order creation)
 func (ctrl *OrderHttpController) CreateOrderFromCartAPI(c *gin.Context) {
 	var req service.OrderCreateFromCartDto
 

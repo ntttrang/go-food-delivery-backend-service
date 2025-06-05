@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
@@ -29,20 +28,7 @@ func (s *OrderNotificationService) notifyCustomerStateChange(ctx context.Context
 		return fmt.Errorf("failed to send email to customer: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Order Status Update"
-		pushBody := fmt.Sprintf("Your order %s is now %s", orderID, s.getStateDisplayName(newState))
-		data := map[string]interface{}{
-			"orderID":  orderID,
-			"newState": newState,
-			"type":     "order_state_change",
-		}
-		if err := s.sendPushNotification(ctx, userID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to customer: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -66,20 +52,7 @@ func (s *OrderNotificationService) notifyCustomerShipperAssignment(ctx context.C
 		return fmt.Errorf("failed to send email to customer: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Shipper Assigned"
-		pushBody := fmt.Sprintf("A shipper has been assigned to your order %s", orderID)
-		data := map[string]interface{}{
-			"orderID":   orderID,
-			"shipperID": shipperID,
-			"type":      "shipper_assignment",
-		}
-		if err := s.sendPushNotification(ctx, userID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to customer: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -103,25 +76,7 @@ func (s *OrderNotificationService) notifyCustomerPaymentStatusChange(ctx context
 		return fmt.Errorf("failed to send email to customer: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Payment Status Update"
-		var pushBody string
-		if paymentStatus == "paid" {
-			pushBody = fmt.Sprintf("Payment confirmed for order %s. Your order is being prepared!", orderID)
-		} else {
-			pushBody = fmt.Sprintf("Payment status for order %s: %s", orderID, paymentStatus)
-		}
-		data := map[string]interface{}{
-			"orderID":       orderID,
-			"paymentStatus": paymentStatus,
-			"type":          "payment_status_change",
-		}
-		if err := s.sendPushNotification(ctx, userID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to customer: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -145,21 +100,7 @@ func (s *OrderNotificationService) notifyCustomerOrderCreated(ctx context.Contex
 		return fmt.Errorf("failed to send email to customer: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Order Confirmed!"
-		pushBody := fmt.Sprintf("Your order %s has been placed successfully. Total: $%.2f", orderID, order.TotalPrice)
-		data := map[string]interface{}{
-			"orderID":      orderID,
-			"restaurantID": restaurantID,
-			"totalPrice":   order.TotalPrice,
-			"type":         "order_created",
-		}
-		if err := s.sendPushNotification(ctx, userID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to customer: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -183,21 +124,7 @@ func (s *OrderNotificationService) notifyCustomerOrderCancelled(ctx context.Cont
 		return fmt.Errorf("failed to send email to customer: %w", err)
 	}
 
-	// Send push notification if available
-	if s.pushSvc != nil {
-		title := "Order Cancelled"
-		pushBody := fmt.Sprintf("Your order %s has been cancelled. Reason: %s", orderID, reason)
-		data := map[string]interface{}{
-			"orderID":    orderID,
-			"reason":     reason,
-			"totalPrice": order.TotalPrice,
-			"type":       "order_cancelled",
-		}
-		if err := s.sendPushNotification(ctx, userID, title, pushBody, data); err != nil {
-			log.Printf("Failed to send push notification to customer: %v", err)
-			// Don't return error for push notification failure
-		}
-	}
+	// TODO: Send push notification if available ( TBD)
 
 	return nil
 }
@@ -205,7 +132,7 @@ func (s *OrderNotificationService) notifyCustomerOrderCancelled(ctx context.Cont
 // Customer message creation methods
 
 // createCustomerStateChangeMessage creates email subject and body for customer notifications
-func (s *OrderNotificationService) createCustomerStateChangeMessage(orderID, oldState, newState string) (string, string) {
+func (s *OrderNotificationService) createCustomerStateChangeMessage(orderID, _ /* oldState */, newState string) (string, string) {
 	subject := fmt.Sprintf("Order %s: %s", orderID, s.getStateDisplayName(newState))
 
 	var body string

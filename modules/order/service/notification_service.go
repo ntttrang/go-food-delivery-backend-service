@@ -44,16 +44,11 @@ type IRestaurantNotificationRepo interface {
 }
 
 // External notification services interfaces
+// Email: Implemented
+// SMS: TBD
+// Push Notification: TBD
 type IEmailService interface {
 	SendEmail(message sharedModel.EmailMessage) error
-}
-
-type ISMSService interface {
-	SendSMS(ctx context.Context, to, message string) error
-}
-
-type IPushNotificationService interface {
-	SendPushNotification(ctx context.Context, userID, title, body string, data map[string]interface{}) error
 }
 
 // Service
@@ -62,8 +57,6 @@ type OrderNotificationService struct {
 	userRepo       IUserNotificationRepo
 	restaurantRepo IRestaurantNotificationRepo
 	emailSvc       IEmailService
-	smsSvc         ISMSService
-	pushSvc        IPushNotificationService
 	enabled        bool
 }
 
@@ -73,16 +66,12 @@ func NewOrderNotificationService(
 	userRepo IUserNotificationRepo,
 	restaurantRepo IRestaurantNotificationRepo,
 	emailSvc IEmailService,
-	smsSvc ISMSService,
-	pushSvc IPushNotificationService,
 ) *OrderNotificationService {
 	return &OrderNotificationService{
 		orderRepo:      orderRepo,
 		userRepo:       userRepo,
 		restaurantRepo: restaurantRepo,
 		emailSvc:       emailSvc,
-		smsSvc:         smsSvc,
-		pushSvc:        pushSvc,
 		enabled:        true, // Can be configured via environment variables
 	}
 }
@@ -195,7 +184,7 @@ func (s *OrderNotificationService) NotifyPaymentStatusChange(ctx context.Context
 	}
 
 	// Send notification to restaurant if payment is successful (they can start preparing)
-	if paymentStatus == "paid" {
+	if paymentStatus == PaymentStatusPaid {
 		if err := s.notifyRestaurantPaymentStatusChange(ctx, tracking.RestaurantID, orderID, paymentStatus); err != nil {
 			log.Printf("Failed to notify restaurant about payment status change: %v", err)
 			// Don't return error
@@ -203,7 +192,7 @@ func (s *OrderNotificationService) NotifyPaymentStatusChange(ctx context.Context
 	}
 
 	// Send notification to shipper if assigned and payment is successful
-	if order.ShipperID != nil && paymentStatus == "paid" {
+	if order.ShipperID != nil && paymentStatus == PaymentStatusPaid {
 		if err := s.notifyShipperPaymentStatusChange(ctx, *order.ShipperID, orderID, paymentStatus); err != nil {
 			log.Printf("Failed to notify shipper about payment status change: %v", err)
 			// Don't return error
@@ -318,7 +307,7 @@ func (s *OrderNotificationService) shouldNotifyShipper(newState string) bool {
 
 // notifyRestaurantStateChange sends notification to restaurant about order state change
 // sendEmailNotification sends an email notification
-func (s *OrderNotificationService) sendEmailNotification(ctx context.Context, to, subject, body string) error {
+func (s *OrderNotificationService) sendEmailNotification(_ context.Context, to, subject, body string) error {
 	if s.emailSvc == nil {
 		return fmt.Errorf("email service not configured")
 	}
@@ -328,24 +317,6 @@ func (s *OrderNotificationService) sendEmailNotification(ctx context.Context, to
 	msg.Subject = subject
 	msg.Body = body
 	return s.emailSvc.SendEmail(msg)
-}
-
-// sendSMSNotification sends an SMS notification
-// TODO: [TBD]
-func (s *OrderNotificationService) sendSMSNotification(ctx context.Context, to, message string) error {
-	if s.smsSvc == nil {
-		return fmt.Errorf("SMS service not configured")
-	}
-	return s.smsSvc.SendSMS(ctx, to, message)
-}
-
-// sendPushNotification sends a push notification
-// TODO: [TBD]
-func (s *OrderNotificationService) sendPushNotification(ctx context.Context, userID, title, body string, data map[string]interface{}) error {
-	if s.pushSvc == nil {
-		return fmt.Errorf("push notification service not configured")
-	}
-	return s.pushSvc.SendPushNotification(ctx, userID, title, body, data)
 }
 
 // logNotification logs notification for debugging/monitoring
@@ -368,15 +339,15 @@ func (s *OrderNotificationService) IsEnabled() bool {
 // getStateDisplayName returns a user-friendly display name for order states
 func (s *OrderNotificationService) getStateDisplayName(state string) string {
 	switch state {
-	case "waiting_for_shipper":
+	case StateWaitingForShipper:
 		return "waiting for shipper"
-	case "preparing":
+	case StatePreparing:
 		return "being prepared"
-	case "on_the_way":
+	case StateOnTheWay:
 		return "on the way"
-	case "delivered":
+	case StateDelivered:
 		return "delivered"
-	case "cancel":
+	case StateCancelled:
 		return "cancelled"
 	default:
 		return state

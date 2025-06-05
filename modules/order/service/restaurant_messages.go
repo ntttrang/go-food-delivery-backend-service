@@ -10,7 +10,7 @@ import (
 // Restaurant message creation methods
 
 // createRestaurantStateChangeMessage creates email subject and body for restaurant notifications
-func (s *OrderNotificationService) createRestaurantStateChangeMessage(orderID, oldState, newState string) (string, string) {
+func (s *OrderNotificationService) createRestaurantStateChangeMessage(orderID, _ /* oldState */, newState string) (string, string) {
 	subject := fmt.Sprintf("Order %s: %s", orderID, s.getStateDisplayName(newState))
 
 	var body string
@@ -53,7 +53,7 @@ Food Delivery Platform`, orderID, s.getStateDisplayName(newState))
 }
 
 // createRestaurantShipperAssignmentMessage creates email subject and body for restaurant shipper assignment notifications
-func (s *OrderNotificationService) createRestaurantShipperAssignmentMessage(orderID, shipperID string) (string, string) {
+func (s *OrderNotificationService) createRestaurantShipperAssignmentMessage(orderID, _ /* shipperID */ string) (string, string) {
 	subject := fmt.Sprintf("Shipper Assigned - Order %s", orderID)
 
 	body := fmt.Sprintf(`Order %s: Shipper assigned
@@ -72,7 +72,7 @@ func (s *OrderNotificationService) createRestaurantPaymentStatusChangeMessage(or
 
 	var body string
 	switch paymentStatus {
-	case "paid":
+	case PaymentStatusPaid:
 		body = fmt.Sprintf(`Order %s: Payment confirmed ✓
 
 Start preparation now.
@@ -91,7 +91,7 @@ Food Delivery Platform`, orderID, strings.ToUpper(paymentStatus))
 }
 
 // createRestaurantOrderCreatedMessage creates email subject and body for restaurant order creation notifications
-func (s *OrderNotificationService) createRestaurantOrderCreatedMessage(orderID, userID string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, orderDetails []ordermodel.OrderDetail) (string, string) {
+func (s *OrderNotificationService) createRestaurantOrderCreatedMessage(orderID, _ /* userID */ string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, orderDetails []ordermodel.OrderDetail) (string, string) {
 	subject := fmt.Sprintf("New Order Received - Order %s", orderID)
 
 	// Build order items list

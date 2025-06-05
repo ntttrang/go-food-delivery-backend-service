@@ -10,7 +10,7 @@ import (
 // Customer message creation methods (continued)
 
 // createCustomerShipperAssignmentMessage creates email subject and body for customer shipper assignment notifications
-func (s *OrderNotificationService) createCustomerShipperAssignmentMessage(orderID, shipperID string) (string, string) {
+func (s *OrderNotificationService) createCustomerShipperAssignmentMessage(orderID, _ /* shipperID */ string) (string, string) {
 	subject := fmt.Sprintf("Shipper Assigned - Order %s", orderID)
 
 	body := fmt.Sprintf(`Order %s: Shipper assigned!
@@ -30,7 +30,7 @@ func (s *OrderNotificationService) createCustomerPaymentStatusChangeMessage(orde
 
 	var body string
 	switch paymentStatus {
-	case "paid":
+	case PaymentStatusPaid:
 		body = fmt.Sprintf(`Order %s: Payment confirmed ✓
 
 Your order is now being prepared.
@@ -63,7 +63,7 @@ Food Delivery Team`, orderID, strings.ToUpper(paymentStatus))
 }
 
 // createCustomerOrderCreatedMessage creates email subject and body for customer order creation notifications
-func (s *OrderNotificationService) createCustomerOrderCreatedMessage(orderID, restaurantID string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, orderDetails []ordermodel.OrderDetail) (string, string) {
+func (s *OrderNotificationService) createCustomerOrderCreatedMessage(orderID, _ /* restaurantID */ string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, _ /* orderDetails */ []ordermodel.OrderDetail) (string, string) {
 	subject := fmt.Sprintf("Order Confirmed #%s", orderID)
 
 	body := fmt.Sprintf(`Order #%s confirmed ✓
@@ -79,11 +79,11 @@ Food Delivery Team`, orderID, order.TotalPrice, tracking.EstimatedTime)
 }
 
 // createCustomerOrderCancelledMessage creates email subject and body for customer order cancellation notifications
-func (s *OrderNotificationService) createCustomerOrderCancelledMessage(orderID, reason string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, orderDetails []ordermodel.OrderDetail) (string, string) {
+func (s *OrderNotificationService) createCustomerOrderCancelledMessage(orderID, reason string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, _ /* orderDetails */ []ordermodel.OrderDetail) (string, string) {
 	subject := fmt.Sprintf("Order Cancelled #%s", orderID)
 
 	var refundInfo string
-	if tracking.PaymentStatus == "paid" {
+	if tracking.PaymentStatus == PaymentStatusPaid {
 		refundInfo = "Refund will be processed within 3-5 business days."
 	} else {
 		refundInfo = "No payment was processed."

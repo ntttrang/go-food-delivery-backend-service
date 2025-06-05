@@ -10,7 +10,7 @@ import (
 // Shipper message creation methods
 
 // createShipperStateChangeMessage creates email subject and body for shipper notifications
-func (s *OrderNotificationService) createShipperStateChangeMessage(orderID, oldState, newState string) (string, string) {
+func (s *OrderNotificationService) createShipperStateChangeMessage(orderID, _ /* oldState */, newState string) (string, string) {
 	subject := fmt.Sprintf("Order %s: %s", orderID, s.getStateDisplayName(newState))
 
 	var body string
@@ -53,7 +53,7 @@ Food Delivery Platform`, orderID, s.getStateDisplayName(newState))
 }
 
 // createShipperAssignmentMessage creates email subject and body for shipper assignment notifications
-func (s *OrderNotificationService) createShipperAssignmentMessage(orderID, restaurantID string) (string, string) {
+func (s *OrderNotificationService) createShipperAssignmentMessage(orderID, _ /* restaurantID */ string) (string, string) {
 	subject := fmt.Sprintf("New Assignment - Order %s", orderID)
 
 	body := fmt.Sprintf(`Order %s assigned to you
@@ -72,7 +72,7 @@ func (s *OrderNotificationService) createShipperPaymentStatusChangeMessage(order
 
 	var body string
 	switch paymentStatus {
-	case "paid":
+	case PaymentStatusPaid:
 		body = fmt.Sprintf(`Order %s: Payment confirmed ✓
 
 Order ready for processing.
@@ -91,7 +91,7 @@ Food Delivery Platform`, orderID, strings.ToUpper(paymentStatus))
 }
 
 // createShipperOrderCreatedMessage creates email subject and body for shipper order creation notifications
-func (s *OrderNotificationService) createShipperOrderCreatedMessage(orderID, restaurantID string, order *ordermodel.Order, tracking *ordermodel.OrderTracking) (string, string) {
+func (s *OrderNotificationService) createShipperOrderCreatedMessage(orderID, _ /* restaurantID */ string, order *ordermodel.Order, tracking *ordermodel.OrderTracking) (string, string) {
 	subject := fmt.Sprintf("New Order #%s", orderID)
 
 	body := fmt.Sprintf(`Order #%s assigned
@@ -108,7 +108,7 @@ Food Delivery Platform`, orderID, order.TotalPrice, tracking.EstimatedTime, stri
 }
 
 // createShipperOrderCancelledMessage creates email subject and body for shipper order cancellation notifications
-func (s *OrderNotificationService) createShipperOrderCancelledMessage(orderID, reason string, order *ordermodel.Order, tracking *ordermodel.OrderTracking) (string, string) {
+func (s *OrderNotificationService) createShipperOrderCancelledMessage(orderID, reason string, order *ordermodel.Order, _ /* tracking */ *ordermodel.OrderTracking) (string, string) {
 	subject := fmt.Sprintf("Order Cancelled #%s", orderID)
 
 	body := fmt.Sprintf(`Order #%s cancelled

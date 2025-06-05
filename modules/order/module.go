@@ -40,8 +40,6 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		userRpcClientRepo,
 		restaurantRpcClientRepo,
 		emailSvc,
-		nil, // smsSvc - TODO: implement when SMS service is ready
-		nil, // pushSvc - TODO: implement when push notification service is ready
 	)
 
 	// Create command handler with all services
@@ -51,8 +49,6 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		inventoryService,
 		notificationService,
 	)
-
-	// Create the cart-to-order handler with all services
 	createFromCartCmdHdl := orderService.NewCreateFromCartCommandHandler(
 		createCmdHdl,
 		cartConversionService,
@@ -60,19 +56,18 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		inventoryService,
 		notificationService,
 	)
-
 	listQueryHdl := orderService.NewListQueryHandler(orderRepo)
 	getDetailQueryHdl := orderService.NewGetDetailQueryHandler(orderRepo)
-	updateCmdHdl := orderService.NewUpdateCommandHandler(orderRepo)
+	updateOrderStateCmdHdl := orderService.NewOrderStateManagementService(orderRepo, notificationService)
 	deleteCmdHdl := orderService.NewDeleteCommandHandler(orderRepo)
 
-	// Setup controller
+	// Setup controller with unified state management
 	orderCtl := orderHttpgin.NewOrderHttpController(
 		createCmdHdl,
 		createFromCartCmdHdl,
 		listQueryHdl,
 		getDetailQueryHdl,
-		updateCmdHdl,
+		updateOrderStateCmdHdl,
 		deleteCmdHdl,
 	)
 

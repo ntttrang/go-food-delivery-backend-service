@@ -39,8 +39,6 @@ type IDeleteCommandHandler interface {
 // Repository interface for direct cart operations
 type ICartRepository interface {
 	UpdateCartStatusByCartID(ctx context.Context, cartID uuid.UUID, status string) error
-	//FindCartItemsByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) ([]CartItem, error)
-	//FindCartByCartIDAndUserID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*CartItem, error)
 	GetCartSummaryByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) ([]gormmysql.CartSummaryData, error)
 }
 

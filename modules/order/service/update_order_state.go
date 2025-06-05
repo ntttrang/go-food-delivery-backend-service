@@ -19,17 +19,18 @@ const (
 
 // PaymentStatus constants
 const (
-	PaymentStatusPending = "PENDING"
-	PaymentStatusPaid    = "PAID"
+	PaymentStatusPending = "pending"
+	PaymentStatusPaid    = "paid"
 )
 
 // StateTransitionRequest represents a request to change order state
 type StateTransitionRequest struct {
-	OrderID       string  `json:"orderId"`
-	NewState      string  `json:"newState"`
-	ShipperID     *string `json:"shipperId,omitempty"`
-	PaymentStatus *string `json:"paymentStatus,omitempty"`
-	UpdatedBy     string  `json:"updatedBy"` // User ID who is making the update
+	OrderID            string  `json:"orderId"`
+	NewState           string  `json:"newState"`
+	ShipperID          *string `json:"shipperId,omitempty"`
+	PaymentStatus      *string `json:"paymentStatus,omitempty"`
+	UpdatedBy          string  `json:"updatedBy"`                    // User ID who is making the update
+	CancellationReason *string `json:"cancellationReason,omitempty"` // Required when cancelling
 }
 
 // Repository interface
@@ -43,6 +44,7 @@ type IOrderNotificationService interface {
 	NotifyOrderStateChange(ctx context.Context, orderID string, oldState string, newState string) error
 	NotifyShipperAssignment(ctx context.Context, orderID string, shipperID string) error
 	NotifyPaymentStatusChange(ctx context.Context, orderID string, paymentStatus string) error
+	NotifyOrderCancelled(ctx context.Context, orderID string, reason string) error
 }
 
 // Service
@@ -58,11 +60,13 @@ func NewOrderStateManagementService(
 	return &OrderStateManagementService{
 		repo:                repo,
 		notificationService: notificationService,
+		// refundService and inventoryService are optional for now
+		// They can be set later via setter methods or dependency injection
 	}
 }
 
-// ValidateStateTransition validates if the state transition is allowed
-func (s *OrderStateManagementService) ValidateStateTransition(currentState, newState string) error {
+// validateStateTransition validates if the state transition is allowed
+func (s *OrderStateManagementService) validateStateTransition(currentState, newState string) error {
 	validTransitions := map[string][]string{
 		StateWaitingForShipper: {StatePreparing, StateCancelled},
 		StatePreparing:         {StateOnTheWay, StateCancelled},
@@ -76,6 +80,7 @@ func (s *OrderStateManagementService) ValidateStateTransition(currentState, newS
 		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidOrderState).WithDebug("invalid current state: " + currentState)
 	}
 
+	// Check if newState is in allowedStates
 	for _, allowedState := range allowedStates {
 		if allowedState == newState {
 			return nil
@@ -85,8 +90,8 @@ func (s *OrderStateManagementService) ValidateStateTransition(currentState, newS
 	return datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidOrderState).WithDebug("invalid state transition from " + currentState + " to " + newState)
 }
 
-// TransitionOrderState handles order state transitions
-func (s *OrderStateManagementService) TransitionOrderState(ctx context.Context, req *StateTransitionRequest) error {
+// Execute handles order state transitions
+func (s *OrderStateManagementService) Execute(ctx context.Context, req *StateTransitionRequest) error {
 	// Get current order
 	order, tracking, _, err := s.repo.FindById(ctx, req.OrderID)
 	if err != nil {
@@ -97,7 +102,7 @@ func (s *OrderStateManagementService) TransitionOrderState(ctx context.Context, 
 	}
 
 	// Validate state transition
-	if err := s.ValidateStateTransition(tracking.State, req.NewState); err != nil {
+	if err := s.validateStateTransition(tracking.State, req.NewState); err != nil {
 		return err
 	}
 
@@ -129,14 +134,33 @@ func (s *OrderStateManagementService) TransitionOrderState(ctx context.Context, 
 		// Set actual delivery time
 		tracking.DeliveryTime = int(time.Since(tracking.CreatedAt).Minutes())
 		// For cash payments, mark as paid when delivered
-		if tracking.PaymentMethod == "cash" && tracking.PaymentStatus == PaymentStatusPending {
+		if tracking.PaymentMethod == MethodCash && tracking.PaymentStatus == PaymentStatusPending {
 			tracking.PaymentStatus = PaymentStatusPaid
 		}
 
 	case StateCancelled:
-		// Handle cancellation logic
-		// For paid orders, might need to process refunds
-		break
+		// Validate cancellation reason is provided
+		if req.CancellationReason == nil || *req.CancellationReason == "" {
+			return datatype.ErrBadRequest.WithError("cancellation reason is required when cancelling an order")
+		}
+
+		// Handle refund for paid orders
+		if tracking.PaymentStatus == PaymentStatusPaid {
+			// Step 1: Process refund based on payment method ( TBD)
+			// Step 2: Update payment status to indicate refund is being processed
+			tracking.PaymentStatus = PaymentStatusPending
+		}
+
+		// Step 3: Restore inventory if inventory service is available (TBD)
+
+		// Clear shipper assignment if order was assigned
+		if order.ShipperID != nil {
+			order.ShipperID = nil
+			order.UpdatedAt = time.Now()
+		}
+
+		// Set cancellation timestamp (using DeliveryTime field to track cancellation time)
+		tracking.DeliveryTime = int(time.Since(tracking.CreatedAt).Minutes())
 	}
 
 	// Update payment status if provided
@@ -160,6 +184,13 @@ func (s *OrderStateManagementService) TransitionOrderState(ctx context.Context, 
 			// In production, you might want to use a message queue for reliability
 		}
 
+		// Notify cancellation with reason
+		if req.NewState == StateCancelled && req.CancellationReason != nil {
+			if err := s.notificationService.NotifyOrderCancelled(ctx, req.OrderID, *req.CancellationReason); err != nil {
+				// Log error but don't fail the operation
+			}
+		}
+
 		// Notify shipper assignment
 		if req.ShipperID != nil && order.ShipperID != nil {
 			if err := s.notificationService.NotifyShipperAssignment(ctx, req.OrderID, *order.ShipperID); err != nil {
@@ -172,82 +203,6 @@ func (s *OrderStateManagementService) TransitionOrderState(ctx context.Context, 
 			if err := s.notificationService.NotifyPaymentStatusChange(ctx, req.OrderID, *req.PaymentStatus); err != nil {
 				// Log error but don't fail the operation
 			}
-		}
-	}
-
-	return nil
-}
-
-// AssignShipper assigns a shipper to an order
-func (s *OrderStateManagementService) AssignShipper(ctx context.Context, orderID string, shipperID string) error {
-	// Get current order
-	order, tracking, _, err := s.repo.FindById(ctx, orderID)
-	if err != nil {
-		if err == ordermodel.ErrOrderNotFound {
-			return datatype.ErrNotFound.WithWrap(err).WithDebug(err.Error())
-		}
-		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
-	}
-
-	// Check if order is in a state where shipper can be assigned
-	if tracking.State != StateWaitingForShipper && tracking.State != StatePreparing {
-		return datatype.ErrBadRequest.WithError("shipper can only be assigned to orders waiting for shipper or preparing")
-	}
-
-	// Assign shipper
-	order.ShipperID = &shipperID
-	order.UpdatedAt = time.Now()
-
-	// If order is waiting for shipper, move to preparing
-	if tracking.State == StateWaitingForShipper {
-		tracking.State = StatePreparing
-		tracking.UpdatedAt = time.Now()
-	}
-
-	// Save changes
-	if err := s.repo.Update(ctx, order, tracking); err != nil {
-		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
-	}
-
-	// Send notification
-	if s.notificationService != nil {
-		if err := s.notificationService.NotifyShipperAssignment(ctx, orderID, shipperID); err != nil {
-			// Log error but don't fail the operation
-		}
-	}
-
-	return nil
-}
-
-// UpdatePaymentStatus updates the payment status of an order
-func (s *OrderStateManagementService) UpdatePaymentStatus(ctx context.Context, orderID string, paymentStatus string) error {
-	// Validate payment status
-	if paymentStatus != PaymentStatusPending && paymentStatus != PaymentStatusPaid {
-		return datatype.ErrBadRequest.WithError("invalid payment status")
-	}
-
-	// Get current order
-	_, tracking, _, err := s.repo.FindById(ctx, orderID)
-	if err != nil {
-		if err == ordermodel.ErrOrderNotFound {
-			return datatype.ErrNotFound.WithWrap(err).WithDebug(err.Error())
-		}
-		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
-	}
-
-	// Update payment status
-	tracking.PaymentStatus = paymentStatus
-	tracking.UpdatedAt = time.Now()
-
-	// Save changes
-	if err := s.repo.Update(ctx, nil, tracking); err != nil {
-		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
-	}
-
-	// Send notification
-	if s.notificationService != nil {
-		if err := s.notificationService.NotifyPaymentStatusChange(ctx, orderID, paymentStatus); err != nil {
-			// Log error but don't fail the operation
 		}
 	}
 
