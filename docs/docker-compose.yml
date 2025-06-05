@@ -1,29 +1,30 @@
 version: '3.8'
 
+name: my-food-delivery-app
 services:
   # Database
-  # mysql:
-  #   image: mysql:8.0
-  #   container_name: food-delivery-mysql
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: rootpassword
-  #     MYSQL_DATABASE: food_delivery
-  #     MYSQL_USER: foodapp
-  #     MYSQL_PASSWORD: foodpassword
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - mysql-data:/var/lib/mysql
-  #   healthcheck:
-  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_DATABASE: fddb
+      MYSQL_USER: fduser
+      MYSQL_PASSWORD: fduser@123
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis for caching
   redis:
     image: redis:7.0-alpine
-    container_name: food-delivery-redis
+    container_name: redis-container
     ports:
       - "6379:6379"
     volumes:
@@ -38,7 +39,7 @@ services:
   # MinIO for object storage
   minio:
     image: minio/minio
-    container_name: food-delivery-minio
+    container_name: minio-container
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -77,6 +78,14 @@ services:
         - elasticsearch
       ports:
         - 5601:5601
+
+  # NATs: Publish & Subscribe message
+  nats:
+    container_name: nats-container
+    image: nats:latest
+    ports:
+      - "4222:4222"   # Client connections
+      - "8222:8222"   # HTTP monitoring (optional)
 
 networks:
   es-net:

@@ -156,14 +156,14 @@ CAT_SERVICE_URL=http://localhost:3000/v1
 
    ```bash
    cd docs
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Run database migrations**
 
    ```bash
    # Import the SQL schema
-   mysql -u root -p food_delivery < docs/food_delivery.sql
+   mysql -u root -p fddb < docs/food_delivery.sql
    ```
 
 5. **Start the application**
@@ -191,14 +191,6 @@ The API will be available at `http://localhost:3000`
 ## 📚 API Documentation
 
 [https://github.com/ntttrang/go-food-delivery-backend-service/docs/food_delivery_api.json]
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Authors
-
-- **Trang Nguyen** - *Initial work* - [@ntttrang](https://github.com/ntttrang)
 
 ## 🙏 Acknowledgments
 
