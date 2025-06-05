@@ -10,6 +10,8 @@ type Config struct {
 	CatServiceURL        string
 	FoodServiceURL       string
 	RestaurantServiceURL string
+	CartServiceURL       string
+	PaymentServiceURL    string
 	EmailConfig          EmailConfig
 	RedisConfig          RedisConfig
 	GoogleConfig         GoogleConfig
@@ -32,6 +34,8 @@ func NewConfig() *Config {
 			CatServiceURL:        os.Getenv("CAT_SERVICE_URL"),
 			FoodServiceURL:       os.Getenv("FOOD_SERVICE_URL"),
 			RestaurantServiceURL: os.Getenv("RESTAURANT_SERVICE_URL"),
+			CartServiceURL:       os.Getenv("CART_SERVICE_URL"),
+			PaymentServiceURL:    os.Getenv("PAYMENT_SERVICE_URL"),
 			EmailConfig: EmailConfig{
 				SMTPHost:     os.Getenv("SMTP_HOST"),
 				SMTPPort:     smtpPort,

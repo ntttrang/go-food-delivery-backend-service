@@ -19,6 +19,8 @@ type RestaurantUpdateDto struct {
 	Lng              *float64 `json:"lng"`
 	ShippingFeePerKm *float64 `json:"shippingFeePerKm"`
 	Status           *string  `json:"status"`
+	Cover            *string  `json:"cover"`
+	Logo             *string  `json:"logo"`
 }
 
 type RestaurantUpdateReq struct {

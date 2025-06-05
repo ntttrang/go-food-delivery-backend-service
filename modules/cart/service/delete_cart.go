@@ -48,7 +48,7 @@ func (hdl *DeleteCommandHandler) Execute(ctx context.Context, req CartDeleteReq)
 	}
 
 	// Check if cart is processed
-	if cart.Status == cartmodel.CartStatusProcessed {
+	if cart.Status == datatype.CartStatusProcessed {
 		return datatype.ErrNotFound.WithWrap(cartmodel.ErrCartIsProcessed).WithDebug(cartmodel.ErrCartIsProcessed.Error())
 	}
 

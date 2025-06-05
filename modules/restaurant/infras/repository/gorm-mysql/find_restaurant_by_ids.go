@@ -20,7 +20,9 @@ func (r *RestaurantRepo) FindRestaurantByIds(ctx context.Context, ids []uuid.UUI
 				r.Lng,
 				r.Cover,
 				r.Logo,
-				r.shipping_fee_per_km, 
+				r.shipping_fee_per_km,
+				r.owner_id, 
+				r.status,
 				COUNT(rr.comment) AS comment_qty,
 				AVG(rr.point) AS avg_point,
 				COUNT(rl.restaurant_id) AS likes_qty
@@ -41,7 +43,8 @@ func (r *RestaurantRepo) FindRestaurantByIds(ctx context.Context, ids []uuid.UUI
 				r.Lng,
 				r.Cover,
 				r.Logo,
-				r.shipping_fee_per_km, 
+				r.shipping_fee_per_km,
+				r.owner_id,
 				COUNT(rr.comment) AS comment_qty,
 				AVG(rr.point) AS avg_point,
 				COUNT(rl.restaurant_id) AS likes_qty

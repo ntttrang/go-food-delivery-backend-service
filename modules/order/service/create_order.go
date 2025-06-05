@@ -18,6 +18,7 @@ type OrderCreateDto struct {
 	RestaurantID    string                 `json:"restaurantId"`
 	DeliveryAddress *ordermodel.Address    `json:"deliveryAddress"`
 	PaymentMethod   string                 `json:"paymentMethod"`
+	CardID          string                 `json:"cardId,omitempty"` // Required for card payments
 	OrderDetails    []OrderDetailCreateDto `json:"orderDetails"`
 }
 
@@ -35,6 +36,13 @@ type FoodOriginDto struct {
 	Image       string `json:"image"`
 }
 
+// Payment method constants
+const (
+	MethodCash       = "cash"
+	MethodCreditCard = "credit_card"
+	MethodDebitCard  = "debit_card"
+)
+
 func (o *OrderCreateDto) Validate() error {
 	if o.UserID == "" {
 		return ordermodel.ErrUserIdRequired
@@ -48,6 +56,19 @@ func (o *OrderCreateDto) Validate() error {
 		return ordermodel.ErrRestaurantRequired
 	}
 
+	if o.PaymentMethod == "" {
+		return ordermodel.ErrPaymentMethodRequired
+	}
+
+	// Validate payment method and card requirement
+	if (o.PaymentMethod == MethodCreditCard || o.PaymentMethod == MethodDebitCard) && o.CardID == "" {
+		return ordermodel.ErrCardIdRequired
+	}
+
+	if o.DeliveryAddress == nil {
+		return ordermodel.ErrDeliveryAddressRequired
+	}
+
 	return nil
 }
 
@@ -57,17 +78,71 @@ type ICreateOrderRepository interface {
 }
 
 type CreateCommandHandler struct {
-	repo ICreateOrderRepository
+	repo                ICreateOrderRepository
+	paymentService      *PaymentProcessingService
+	inventoryService    *InventoryCheckingService
+	notificationService *OrderNotificationService
 }
 
-func NewCreateCommandHandler(repo ICreateOrderRepository) *CreateCommandHandler {
-	return &CreateCommandHandler{repo: repo}
+func NewCreateCommandHandler(
+	repo ICreateOrderRepository,
+	paymentService *PaymentProcessingService,
+	inventoryService *InventoryCheckingService,
+	notificationService *OrderNotificationService,
+) *CreateCommandHandler {
+	return &CreateCommandHandler{
+		repo:                repo,
+		paymentService:      paymentService,
+		inventoryService:    inventoryService,
+		notificationService: notificationService,
+	}
 }
 
-// Implement
 func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto) (string, error) {
+	// Validate request
 	if err := data.Validate(); err != nil {
 		return "", datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
+	}
+
+	// Check inventory if service is available
+	if s.inventoryService != nil {
+		restaurantID, err := uuid.Parse(data.RestaurantID)
+		if err != nil {
+			return "", datatype.ErrBadRequest.WithError(ordermodel.ErrInvalidRestaurantIdFormat.Error())
+		}
+
+		// Convert order details to inventory items
+		var inventoryItems []OrderItem
+		for _, detail := range data.OrderDetails {
+			foodID, err := uuid.Parse(detail.FoodOrigin.Id)
+			if err != nil {
+				return "", datatype.ErrBadRequest.WithError(ordermodel.ErrInvalidFoodIdFormat.Error())
+			}
+			inventoryItems = append(inventoryItems, OrderItem{
+				FoodID:   foodID,
+				Quantity: detail.Quantity,
+			})
+		}
+
+		// Check inventory
+		if err := s.inventoryService.CheckOrderInventory(ctx, restaurantID, inventoryItems); err != nil {
+			return "", err
+		}
+	}
+
+	// Process payment if service is available
+	if s.paymentService != nil {
+		paymentReq := &PaymentRequest{
+			UserID:        data.UserID,
+			Amount:        data.TotalPrice,
+			PaymentMethod: data.PaymentMethod,
+			CardID:        &data.CardID,
+		}
+
+		// Validate payment method first
+		if err := s.paymentService.ValidatePaymentMethod(ctx, paymentReq); err != nil {
+			return "", err
+		}
 	}
 
 	// Generate new UUID for order
@@ -79,6 +154,8 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 		UserID:     data.UserID,
 		TotalPrice: data.TotalPrice,
 		Status:     sharedModel.StatusActive,
+		CreatedBy:  &data.UserID,
+		UpdatedBy:  &data.UserID,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
@@ -91,12 +168,15 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 	orderTracking := &ordermodel.OrderTracking{
 		ID:              uuid.New().String(),
 		OrderID:         orderId,
-		State:           "waiting_for_shipper",
-		PaymentStatus:   "pending",
+		State:           StateWaitingForShipper,
+		PaymentStatus:   PaymentStatusPending,
 		PaymentMethod:   data.PaymentMethod,
+		CardId:          &data.CardID,
 		DeliveryAddress: addressJson,
 		RestaurantID:    data.RestaurantID,
 		Status:          sharedModel.StatusActive,
+		CreatedBy:       &data.UserID,
+		UpdatedBy:       &data.UserID,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 	}
@@ -116,6 +196,8 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 			Quantity:   detail.Quantity,
 			Discount:   detail.Discount,
 			Status:     sharedModel.StatusActive,
+			CreatedBy:  &data.UserID,
+			UpdatedBy:  &data.UserID,
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
 		})

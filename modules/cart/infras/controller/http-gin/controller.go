@@ -39,9 +39,7 @@ type IDeleteCommandHandler interface {
 // Repository interface for direct cart operations
 type ICartRepository interface {
 	UpdateCartStatusByCartID(ctx context.Context, cartID uuid.UUID, status string) error
-	//FindCartItemsByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) ([]CartItem, error)
-	//FindCartByCartIDAndUserID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*CartItem, error)
-	GetCartSummaryByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*gormmysql.CartSummaryData, error)
+	GetCartSummaryByCartID(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) ([]gormmysql.CartSummaryData, error)
 }
 
 type CartHttpController struct {
@@ -84,8 +82,4 @@ func (ctrl *CartHttpController) SetupRoutes(g *gin.RouterGroup) {
 	g.GET("/:userId/:foodId", ctrl.GetCartByUserIdAndFoodIdAPI)
 	g.PATCH("/:id", ctrl.UpdateCartByIdAPI)
 	g.DELETE("/:userId/:foodId", ctrl.DeleteCartByIdAPI)
-
-	// RPC endpoints for order service integration
-	g.PATCH("/update-status", ctrl.UpdateCartStatusAPI)
-	g.GET("/cart-summary", ctrl.GetCartSummaryAPI) // GET /cart-summaryrts?cardId=zzz?userId=xxx
 }

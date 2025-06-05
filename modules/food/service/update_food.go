@@ -19,6 +19,7 @@ type FoodUpdateReq struct {
 	Status       *string `json:"status"`
 	RestaurantId *string `json:"restaurantId"` // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
 	CategoryId   *string `json:"categoryId"`   // Can be empty or missing if data type = string. Otherwise, uuid.UUID isn't
+	Image        *string `json:"image"`
 
 	Id uuid.UUID `json:"-"`
 }

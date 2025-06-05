@@ -22,7 +22,7 @@ func (c *CartUpdateReq) Validate() error {
 
 	if c.Status != nil {
 		status := *c.Status
-		if status != cartmodel.CartStatusActive && status != cartmodel.CartStatusUpdated && status != cartmodel.CartStatusProcessed {
+		if status != datatype.CartStatusActive && status != datatype.CartStatusUpdated && status != datatype.CartStatusProcessed {
 			return cartmodel.ErrCartStatusInvalid
 		}
 	}
@@ -63,7 +63,7 @@ func (hdl *UpdateCommandHandler) Execute(ctx context.Context, req CartUpdateReq)
 	}
 
 	// Check if cart is already processed
-	if carts[0].Status == cartmodel.CartStatusProcessed {
+	if carts[0].Status == datatype.CartStatusProcessed {
 		return datatype.ErrDeleted.WithWrap(cartmodel.ErrCartIsProcessed).WithDebug(cartmodel.ErrCartIsProcessed.Error())
 	}
 

@@ -46,7 +46,7 @@ func (c *IntrospectRpcClient) Validate(token string) (datatype.Requester, error)
 
 	url := fmt.Sprintf("%s/introspect-token", c.userServiceURL)
 
-	_, err := client.R().SetBody(map[string]interface{}{
+	_, err := client.R().SetBody(map[string]any{
 		"token": token,
 	}).SetResult(&response).Post(url)
 	if err != nil {
