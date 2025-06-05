@@ -17,11 +17,14 @@ Main features
 
 ```text
 ├── main.go                 # Application entry point
+├── cmd/                   # CLI commands (Cobra)
+│   └── root.go           # Root command with HTTP & gRPC servers
 ├── middleware/             # HTTP middleware (auth, recovery)
 ├── modules/               # Business modules (hexagonal architecture)
 │   ├── user/             # User management & authentication
 │   │   ├── infras/       # Infrastructure layer
 │   │   │   ├── controller/http-gin/  # HTTP controllers
+│   │   │   ├── controller/grpc-ctrl/ # gRPC controllers
 │   │   │   └── repository/gorm-mysql/ # Data repositories
 │   │   ├── model/        # Domain models
 │   │   ├── service/      # Business logic
@@ -37,13 +40,21 @@ Main features
 │   ├── component/       # Reusable components (JWT, Redis, Email, etc.)
 │   ├── datatype/        # Common data types & errors
 │   ├── infras/          # Infrastructure setup (DB, context)
-│   └── model/           # Shared models & utilities
-├── deployments/         # Deployment configurations
-├── docs/               # Documentation & docker-compose
+│   ├── model/           # Shared models & utilities
+│   └── server/          # Server configurations
+├── proto/               # Protocol Buffer definitions
+│   ├── category/        # Category service protobuf
+│   └── food/           # Food service protobuf
+├── gen/                # Generated protobuf code
+│   └── proto/          # Generated Go code from protobuf
+├── configs/            # Configuration files
+├── docs/              # Documentation & docker-compose
 │   ├── docker-compose.yml
 │   ├── food_delivery.sql
 │   └── Note.md
-└── uploads/            # File uploads directory
+├── buf.yaml           # Buf configuration for protobuf
+├── buf.gen.yaml       # Buf code generation config
+
 ```
 
 ## 🛠️ Tech Stack
@@ -56,6 +67,9 @@ Main features
 - **Object Storage**: MinIO (S3-compatible)
 - **Authentication**: JWT, OAuth2 (Google)
 - **Email**: SMTP with Gomail
+- **Inter-service Communication**: gRPC and HTTP RPC between modules
+- **Event-driven Patterns**: Automatic Elasticsearch indexing on food operations
+- **CLI Interface**: Cobra
 - **Containerization**: Docker
 - **Orchestration**: Kubernetes (planned)
 
@@ -86,6 +100,8 @@ Main features
 - Redis 7.0+
 - MinIO
 - Elasticsearch 8.12+
+- Protocol Buffers compiler (protoc)
+- Buf CLI tool (for protobuf management)
 
 ### Environment Variables
 
@@ -97,6 +113,7 @@ DB_DSN=user:password@tcp(localhost:3306)/food_delivery?charset=utf8mb4&parseTime
 
 # Server
 PORT=3000
+GRPC_PORT=6000
 GIN_MODE=release
 
 # JWT
@@ -135,6 +152,7 @@ USER_SERVICE_URL=http://localhost:3000/v1
 FOOD_SERVICE_URL=http://localhost:3000/v1
 RESTAURANT_SERVICE_URL=http://localhost:3000/v1
 CAT_SERVICE_URL=http://localhost:3000/v1
+GRPC_SERVICE_URL=localhost:6000
 ```
 
 ### Installation
@@ -152,27 +170,40 @@ CAT_SERVICE_URL=http://localhost:3000/v1
    go mod download
    ```
 
-3. **Start infrastructure services**
+3. **Generate protobuf code** (if needed)
+
+   ```bash
+   # Install buf if not already installed
+   go install github.com/bufbuild/buf/cmd/buf@latest
+
+   # Generate Go code from protobuf definitions
+   buf generate
+   ```
+
+4. **Start infrastructure services**
 
    ```bash
    cd docs
    docker compose up -d
    ```
 
-4. **Run database migrations**
+5. **Run database migrations**
 
    ```bash
    # Import the SQL schema
    mysql -u root -p fddb < docs/food_delivery.sql
    ```
 
-5. **Start the application**
+6. **Start the application**
 
    ```bash
    go run main.go
    ```
 
-The API will be available at `http://localhost:3000`
+The services will be available at:
+
+- **HTTP API**: `http://localhost:3000`
+- **gRPC Server**: `localhost:6000`
 
 ### Docker Deployment
 
@@ -194,7 +225,34 @@ The API will be available at `http://localhost:3000`
 
 ## 🙏 Acknowledgments
 
-- Built with [Gin](https://gin-gonic.com/) web framework
+### Core Frameworks & Libraries
+
+- Built with [Gin](https://gin-gonic.com/) web framework for HTTP APIs
 - Database ORM powered by [GORM](https://gorm.io/)
+- CLI interface built with [Cobra](https://cobra.dev/)
+- gRPC communication with [gRPC-Go](https://grpc.io/docs/languages/go/)
+
+### Communication & Serialization
+
+- Protocol Buffers with [protobuf](https://protobuf.dev/) for type-safe APIs
+- Schema management with [Buf](https://buf.build/)
+- Inter-service communication patterns
+
+### External Services & Storage
+
 - Search functionality by [Elasticsearch](https://www.elastic.co/)
 - Object storage with [MinIO](https://min.io/)
+- Caching with [Redis](https://redis.io/)
+- Email services with [Gomail](https://github.com/go-gomail/gomail)
+
+### Authentication & Security
+
+- JWT implementation with [golang-jwt](https://github.com/golang-jwt/jwt)
+- OAuth2 integration with [golang.org/x/oauth2](https://pkg.go.dev/golang.org/x/oauth2)
+- Google OAuth integration
+
+### Development & Deployment
+
+- Containerization with [Docker](https://www.docker.com/)
+- Database migrations and schema management
+- Environment-based configuration management
