@@ -14,6 +14,7 @@ type UpdateFoodDto struct {
 	Status       string  `json:"status"`
 	RestaurantId *string `json:"restaurantId"` // Pointer => Update value => empty
 	CategoryId   *string `json:"categoryId"`
+	Images       *string `json:"images"`
 }
 
 func (r *FoodRepo) Update(ctx context.Context, id uuid.UUID, req service.FoodUpdateReq) error {
@@ -29,6 +30,7 @@ func (r *FoodRepo) Update(ctx context.Context, id uuid.UUID, req service.FoodUpd
 		Status:       status,
 		RestaurantId: req.RestaurantId,
 		CategoryId:   req.CategoryId,
+		Images:       req.Image,
 	}
 	if err := db.Table(req.TableName()).Where("id = ?", id).Updates(updateDto).Error; err != nil {
 		db.Rollback()

@@ -29,7 +29,7 @@ type StateTransitionRequest struct {
 	NewState           string  `json:"newState"`
 	ShipperID          *string `json:"shipperId,omitempty"`
 	PaymentStatus      *string `json:"paymentStatus,omitempty"`
-	UpdatedBy          string  `json:"updatedBy"`                    // User ID who is making the update
+	UpdatedBy          string  `json:"-"`                            // User ID who is making the update - Get from Requester context
 	CancellationReason *string `json:"cancellationReason,omitempty"` // Required when cancelling
 }
 
@@ -61,7 +61,6 @@ func NewOrderStateManagementService(
 		repo:                repo,
 		notificationService: notificationService,
 		// refundService and inventoryService are optional for now
-		// They can be set later via setter methods or dependency injection
 	}
 }
 
@@ -160,6 +159,7 @@ func (s *OrderStateManagementService) Execute(ctx context.Context, req *StateTra
 		}
 
 		// Set cancellation timestamp (using DeliveryTime field to track cancellation time)
+		tracking.CancelReason = *req.CancellationReason
 		tracking.DeliveryTime = int(time.Since(tracking.CreatedAt).Minutes())
 	}
 
@@ -170,6 +170,8 @@ func (s *OrderStateManagementService) Execute(ctx context.Context, req *StateTra
 		}
 		tracking.PaymentStatus = *req.PaymentStatus
 	}
+	order.UpdatedBy = &req.UpdatedBy
+	tracking.UpdatedBy = &req.UpdatedBy
 
 	// Save changes
 	if err := s.repo.Update(ctx, order, tracking); err != nil {

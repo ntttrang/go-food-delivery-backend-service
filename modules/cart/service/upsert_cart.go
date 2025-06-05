@@ -113,6 +113,8 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *CartUpsertDto)
 
 	cart.Status = datatype.CartStatusActive // Always set Active Status when insert
 	cart.RestaurantId = food[data.FoodID].RestaurantId
+	cart.CreatedBy = data.UserID
+	cart.UpdatedBy = data.UserID
 
 	if err := s.repo.Insert(ctx, cart); err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())

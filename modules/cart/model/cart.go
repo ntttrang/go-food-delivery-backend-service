@@ -12,6 +12,8 @@ type Cart struct {
 	RestaurantId uuid.UUID `gorm:"column:restaurant_id" json:"restaurantId"`
 	Quantity     int       `gorm:"column:quantity" json:"quantity"`
 	Status       string    `gorm:"column:status" json:"status"`
+	CreatedBy    uuid.UUID `gorm:"column:created_by" json:"createdBy"`
+	UpdatedBy    uuid.UUID `gorm:"column:updated_by" json:"updatedBy"`
 	DropOffLat   float64   `gorm:"column:dropoff_lat" json:"-"`
 	DropOffLng   float64   `gorm:"column:dropoff_lng" json:"-"`
 	sharedmodel.DateDto

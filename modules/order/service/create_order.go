@@ -154,6 +154,8 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 		UserID:     data.UserID,
 		TotalPrice: data.TotalPrice,
 		Status:     sharedModel.StatusActive,
+		CreatedBy:  &data.UserID,
+		UpdatedBy:  &data.UserID,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
@@ -173,6 +175,8 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 		DeliveryAddress: addressJson,
 		RestaurantID:    data.RestaurantID,
 		Status:          sharedModel.StatusActive,
+		CreatedBy:       &data.UserID,
+		UpdatedBy:       &data.UserID,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 	}
@@ -192,6 +196,8 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 			Quantity:   detail.Quantity,
 			Discount:   detail.Discount,
 			Status:     sharedModel.StatusActive,
+			CreatedBy:  &data.UserID,
+			UpdatedBy:  &data.UserID,
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
 		})
