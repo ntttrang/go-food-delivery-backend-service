@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	cartHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/controller/http-gin"
 	cartRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/repository/gorm-mysql"
+	grpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/repository/grpc-client"
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/repository/rpcclient"
 	cartService "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/service"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
@@ -14,14 +15,19 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 
 	// Setup repository
 	repo := cartRepo.NewCartRepo(dbCtx)
-	rpcFoodRepo := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
+
+	// RPC
+	//rpcFoodRepo := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
 	rpcRestaurantRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
 
+	// GRPC
+	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcServiceURL)
+
 	// Setup command handlers
-	createCmdHdl := cartService.NewCreateCommandHandler(repo, rpcFoodRepo)
+	createCmdHdl := cartService.NewCreateCommandHandler(repo, foodGrpcClient)
 	listQueryHdl := cartService.NewListQueryHandler(repo, rpcRestaurantRepo)
-	listCartItemQueryHdl := cartService.NewListCartItemQueryHandler(repo, rpcFoodRepo, rpcRestaurantRepo)
-	getDetailQueryHdl := cartService.NewGetDetailQueryHandler(repo, rpcFoodRepo)
+	listCartItemQueryHdl := cartService.NewListCartItemQueryHandler(repo, foodGrpcClient, rpcRestaurantRepo)
+	getDetailQueryHdl := cartService.NewGetDetailQueryHandler(repo, foodGrpcClient)
 	updateCmdHdl := cartService.NewUpdateCommandHandler(repo)
 	deleteCmdHdl := cartService.NewDeleteCommandHandler(repo)
 

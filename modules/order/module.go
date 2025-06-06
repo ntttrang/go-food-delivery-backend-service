@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	orderHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/controller/http-gin"
 	orderRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/gorm-mysql"
+	grpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/grpc-client"
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/rpc-client"
 	orderService "github.com/ntttrang/go-food-delivery-backend-service/modules/order/service"
 	shareComponent "github.com/ntttrang/go-food-delivery-backend-service/shared/component"
@@ -17,21 +18,24 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	// Setup repository
 	orderRepo := orderRepo.NewOrderRepo(dbCtx)
 	// Setup RPC clients
-	foodRpcClientRepo := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
+	//foodRpcClientRepo := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
 	restaurantRpcClientRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
 	cartRpcClientRepo := rpcclient.NewCartRPCClient(config.CartServiceURL)
 	cardRpcClientRepo := rpcclient.NewCardRPCClient(appCtx.GetConfig().PaymentServiceURL)
 	userRpcClientRepo := rpcclient.NewUserRPCClient(appCtx.GetConfig().UserServiceURL)
 	emailSvc := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
 
+	// GRPC
+	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcServiceURL)
+
 	// Setup service
-	cartConversionService := orderService.NewCartToOrderConversionService(cartRpcClientRepo, foodRpcClientRepo, restaurantRpcClientRepo)
+	cartConversionService := orderService.NewCartToOrderConversionService(cartRpcClientRepo, foodGrpcClient, restaurantRpcClientRepo)
 	paymentService := orderService.NewPaymentProcessingService(
 		cardRpcClientRepo,
 	)
 
 	inventoryService := orderService.NewInventoryCheckingService(
-		foodRpcClientRepo,
+		foodGrpcClient,
 		restaurantRpcClientRepo,
 	)
 

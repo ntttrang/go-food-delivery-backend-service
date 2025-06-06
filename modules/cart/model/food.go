@@ -3,11 +3,14 @@ package cartmodel
 import "github.com/google/uuid"
 
 type Food struct {
-	Id           uuid.UUID `gorm:"column:food_id" json:"id"`
-	RestaurantId uuid.UUID `gorm:"column:food_id" json:"restaurantId"`
-	CategoryId   uuid.UUID `json:"categoryId"`
+	Id           uuid.UUID
 	Name         string
 	Description  string
 	Images       string
 	Price        float64
+	AvgPoint     float64
+	CommentQty   int
+	CategoryId   uuid.UUID
+	RestaurantId uuid.UUID
+	Status       string
 }

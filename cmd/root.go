@@ -19,6 +19,7 @@ import (
 	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
 	foodgrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/controller/grpc-ctrl"
 	foodgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
+	foodservice "github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
 	ordermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/order"
 	paymentmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/payment"
@@ -101,7 +102,11 @@ var rootCmd = &cobra.Command{
 
 			// Register GRPC
 			category.RegisterCategoryServer(s, categorygrpcctl.NewCategoryGrpcServer(categorygormmysql.NewCategoryRepo(appCtx.DbContext())))
-			food.RegisterFoodServer(s, foodgrpcctl.NewFoodGrpcServer(foodgormmysql.NewFoodRepo(appCtx.DbContext())))
+
+			// Setup food gRPC server with update service
+			foodRepo := foodgormmysql.NewFoodRepo(appCtx.DbContext())
+			updateService := foodservice.NewUpdateCommandHandler(foodRepo)
+			food.RegisterFoodServer(s, foodgrpcctl.NewFoodGrpcServer(foodRepo, updateService))
 
 			// Serve gRPC Server
 			log.Printf("Serving gRPC on 0.0.0.0:%s \n", grpcPort)

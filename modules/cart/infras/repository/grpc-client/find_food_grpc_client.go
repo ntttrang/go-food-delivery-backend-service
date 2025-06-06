@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/food"
-	restaurantmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/model"
+	cartmodel "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -29,7 +29,7 @@ func NewFoodGRPCClient(categoryGRPCServerURL string) *FoodGRPCClient {
 	return &FoodGRPCClient{foodGRPCServerURL: categoryGRPCServerURL, client: client}
 }
 
-func (c *FoodGRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantmodel.Foods, error) {
+func (c *FoodGRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]cartmodel.Food, error) {
 	strIds := make([]string, len(ids))
 
 	for i, id := range ids {
@@ -43,10 +43,10 @@ func (c *FoodGRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map[uu
 	}
 
 	foods := resp.Data
-	foodsMap := make(map[uuid.UUID]restaurantmodel.Foods, len(foods))
+	foodsMap := make(map[uuid.UUID]cartmodel.Food, len(foods))
 	for _, r := range foods {
 		uuidId := uuid.MustParse(r.Id)
-		v := restaurantmodel.Foods{
+		v := cartmodel.Food{
 			Id:           uuidId,
 			Name:         r.Name,
 			Description:  r.Name,

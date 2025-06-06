@@ -23,7 +23,7 @@ func NewCategoryGrpcServer(repo CategoryRepository) *CategoryGrpcServer {
 }
 
 func (s *CategoryGrpcServer) GetCategoriesByIds(ctx context.Context, req *category.GetCatIdsRequest) (*category.CatIdsResp, error) {
-	log.Println("GRPC - GetCategoriesByIds")
+	log.Println("[START] GRPC - GetCategoriesByIds")
 
 	uuidIds := make([]uuid.UUID, len(req.Ids))
 	for i, id := range req.Ids {
@@ -48,5 +48,6 @@ func (s *CategoryGrpcServer) GetCategoriesByIds(ctx context.Context, req *catego
 		}
 	}
 
+	log.Println("[END] GRPC - GetCategoriesByIds")
 	return &category.CatIdsResp{Data: result}, nil
 }

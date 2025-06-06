@@ -20,14 +20,19 @@ type UpdateService interface {
 
 type FoodGrpcServer struct {
 	food.UnimplementedFoodServer
-	repo FoodRepository
+	repo          FoodRepository
+	updateService UpdateService
 }
 
-func NewFoodGrpcServer(repo FoodRepository) *FoodGrpcServer {
-	return &FoodGrpcServer{repo: repo}
+func NewFoodGrpcServer(repo FoodRepository, updateService UpdateService) *FoodGrpcServer {
+	return &FoodGrpcServer{
+		repo:          repo,
+		updateService: updateService,
+	}
 }
 
 func (f *FoodGrpcServer) GetFooodsByIds(ctx context.Context, req *food.GetFoodIdsRequest) (*food.FoodIdsResp, error) {
+	log.Println("[START] GRPC - GetFooodsByIds")
 	uuidIds := make([]uuid.UUID, len(req.Ids))
 	for i, id := range req.Ids {
 		uuidIds[i] = uuid.MustParse(id)
@@ -51,16 +56,50 @@ func (f *FoodGrpcServer) GetFooodsByIds(ctx context.Context, req *food.GetFoodId
 			Avgpoint:     float32(cat.AvgPoint),
 			CommentQty:   int64(cat.CommentQty),
 			CategoryId:   cat.CategoryId.String(),
-			RestaurantId: cat.CategoryId.String(),
+			RestaurantId: cat.RestaurantId.String(),
 			Status:       cat.Status,
 		}
 	}
-
+	log.Println("[END] GRPC - GetFooodsByIds")
 	return &food.FoodIdsResp{Data: result}, nil
 }
 
 func (f *FoodGrpcServer) UpdateFoodById(ctx context.Context, req *food.UpdateFoodRequest) (*food.UpdateFoodResp, error) {
-	// TODO:
+	log.Println("[START] GRPC - UpdateFoodById")
 
+	// Parse the food ID
+	foodId, err := uuid.Parse(req.Id)
+	if err != nil {
+		log.Printf("Invalid food ID: %v", err)
+		return nil, err
+	}
+
+	// Convert gRPC request to service request
+	updateReq := service.FoodUpdateReq{
+		Id:          foodId,
+		Name:        req.Name,
+		Description: req.Description,
+	}
+
+	// Handle optional fields (use pointers for optional fields)
+	if req.Status != "" {
+		updateReq.Status = &req.Status
+	}
+	if req.RestaurantId != "" {
+		updateReq.RestaurantId = &req.RestaurantId
+	}
+	if req.CategoryId != "" {
+		updateReq.CategoryId = &req.CategoryId
+	}
+	if req.Image != "" {
+		updateReq.Image = &req.Image
+	}
+
+	// Execute the update service
+	if err := f.updateService.Execute(ctx, updateReq); err != nil {
+		log.Printf("Failed to update food: %v", err)
+		return nil, err
+	}
+	log.Println("[END] GRPC - UpdateFoodById")
 	return &food.UpdateFoodResp{Id: req.Id}, nil
 }
