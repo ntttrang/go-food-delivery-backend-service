@@ -59,10 +59,11 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 		paymentService,
 		inventoryService,
 		notificationService,
+		appCtx.MsgBroker(),
 	)
 	listQueryHdl := orderService.NewListQueryHandler(orderRepo)
 	getDetailQueryHdl := orderService.NewGetDetailQueryHandler(orderRepo)
-	updateOrderStateCmdHdl := orderService.NewOrderStateManagementService(orderRepo, notificationService)
+	updateOrderStateCmdHdl := orderService.NewOrderStateManagementService(orderRepo, notificationService, appCtx.MsgBroker())
 	deleteCmdHdl := orderService.NewDeleteCommandHandler(orderRepo)
 
 	// Setup controller with unified state management

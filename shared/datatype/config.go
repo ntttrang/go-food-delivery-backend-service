@@ -18,6 +18,7 @@ type Config struct {
 	GoogleConfig         GoogleConfig
 	MinioS3              MinioS3Config
 	ElasticSearch        ElasticSearchConfig
+	NatsURL              string
 }
 
 var config *Config
@@ -69,6 +70,7 @@ func NewConfig() *Config {
 				APIKey:    os.Getenv("ES_API_KEY"),
 				IndexName: os.Getenv("ES_INDEX_NAME"),
 			},
+			NatsURL: os.Getenv("NATS_URL"),
 		}
 	}
 	return config

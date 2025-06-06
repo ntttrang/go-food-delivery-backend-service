@@ -205,6 +205,7 @@ The services will be available at:
 - **HTTP API**: `http://localhost:3000`
 - **gRPC Server**: `localhost:6000`
 
+<!--
 ### Docker Deployment
 
 1. **Build the Docker image**
@@ -218,11 +219,12 @@ The services will be available at:
    ```bash
    docker-compose -f docs/docker-compose.yml up -d
    ```
-
+-->
 ## 📚 API Documentation
 
 [https://github.com/ntttrang/go-food-delivery-backend-service/docs/food_delivery_api.json]
 
+<!--
 ## 🙏 Acknowledgments
 
 ### Core Frameworks & Libraries
@@ -256,3 +258,4 @@ The services will be available at:
 - Containerization with [Docker](https://www.docker.com/)
 - Database migrations and schema management
 - Environment-based configuration management
+-->

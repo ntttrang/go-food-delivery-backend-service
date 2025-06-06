@@ -85,12 +85,12 @@ func (s *OrderNotificationService) notifyCustomerPaymentStatusChange(ctx context
 func (s *OrderNotificationService) notifyCustomerOrderCreated(ctx context.Context, userID, orderID, restaurantID string, order *ordermodel.Order, tracking *ordermodel.OrderTracking, orderDetails []ordermodel.OrderDetail) error {
 	// Get customer email
 	userIdUUID, _ := uuid.Parse(userID)
-	_, err := s.userRepo.FindByIds(ctx, []uuid.UUID{userIdUUID})
+	userMap, err := s.userRepo.FindByIds(ctx, []uuid.UUID{userIdUUID})
 	if err != nil {
 		return fmt.Errorf("failed to get customer: %w", err)
 	}
 
-	email := "minhtrang.2106@gmail.com" //userMap[userIdUUID].Email
+	email := userMap[userIdUUID].Email
 
 	// Create notification message
 	subject, body := s.createCustomerOrderCreatedMessage(orderID, restaurantID, order, tracking, orderDetails)

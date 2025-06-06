@@ -30,6 +30,7 @@ type IAppContext interface {
 	DbContext() IDbContext
 	GetConfig() *datatype.Config
 	Uploader() IUploader
+	MsgBroker() IMsgBroker
 }
 
 type appContext struct {
@@ -37,6 +38,7 @@ type appContext struct {
 	dbContext   IDbContext
 	config      *datatype.Config
 	uploader    IUploader
+	msgBroker   IMsgBroker
 }
 
 func NewAppContext(db *gorm.DB) IAppContext {
@@ -57,11 +59,13 @@ func NewAppContext(db *gorm.DB) IAppContext {
 		}
 	}
 
+	natsComp := shareComponent.NewNatsComp()
 	return &appContext{
 		mldProvider: provider,
 		dbContext:   dbCtx,
 		config:      config,
 		uploader:    uploader,
+		msgBroker:   natsComp,
 	}
 }
 
@@ -79,4 +83,8 @@ func (c *appContext) GetConfig() *datatype.Config {
 
 func (c *appContext) Uploader() IUploader {
 	return c.uploader
+}
+
+func (c *appContext) MsgBroker() IMsgBroker {
+	return c.msgBroker
 }

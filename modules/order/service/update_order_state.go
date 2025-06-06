@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"log"
 	"time"
 
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -51,16 +53,19 @@ type IOrderNotificationService interface {
 type OrderStateManagementService struct {
 	repo                IOrderStateRepo
 	notificationService IOrderNotificationService
+	evtPublisher        IEvtPublisher
 }
 
 func NewOrderStateManagementService(
 	repo IOrderStateRepo,
 	notificationService IOrderNotificationService,
+	evtPublisher IEvtPublisher,
 ) *OrderStateManagementService {
 	return &OrderStateManagementService{
 		repo:                repo,
 		notificationService: notificationService,
 		// refundService and inventoryService are optional for now
+		evtPublisher: evtPublisher,
 	}
 }
 
@@ -179,33 +184,88 @@ func (s *OrderStateManagementService) Execute(ctx context.Context, req *StateTra
 	}
 
 	// Send notifications
-	if s.notificationService != nil {
-		// Notify state change
-		if err := s.notificationService.NotifyOrderStateChange(ctx, req.OrderID, oldState, req.NewState); err != nil {
-			// Log error but don't fail the operation
-			// In production, you might want to use a message queue for reliability
-		}
+	// Change state
+	orderStateChangeMsg := map[string]interface{}{
+		"orderId":  req.OrderID,
+		"oldState": oldState,
+		"newState": req.NewState,
+	}
+	go func() {
+		log.Println("Publish msg: ORDER STATE CHANGE")
+		defer shared.Recover()
 
-		// Notify cancellation with reason
-		if req.NewState == StateCancelled && req.CancellationReason != nil {
-			if err := s.notificationService.NotifyOrderCancelled(ctx, req.OrderID, *req.CancellationReason); err != nil {
-				// Log error but don't fail the operation
-			}
-		}
+		evt := datatype.NewAppEvent(
+			datatype.WithTopic(datatype.EvtNotifyOrderStateChange),
+			datatype.WithData(orderStateChangeMsg),
+		)
 
-		// Notify shipper assignment
-		if req.ShipperID != nil && order.ShipperID != nil {
-			if err := s.notificationService.NotifyShipperAssignment(ctx, req.OrderID, *order.ShipperID); err != nil {
-				// Log error but don't fail the operation
-			}
+		if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
+			log.Println("Failed to publish event", err)
 		}
+	}()
 
-		// Notify payment status change
-		if req.PaymentStatus != nil {
-			if err := s.notificationService.NotifyPaymentStatusChange(ctx, req.OrderID, *req.PaymentStatus); err != nil {
-				// Log error but don't fail the operation
-			}
+	// Notify cancellation with reason
+	if req.NewState == StateCancelled && req.CancellationReason != nil {
+		orderCancelMsg := map[string]interface{}{
+			"orderId":      req.OrderID,
+			"cancelReason": *req.CancellationReason,
 		}
+		go func() {
+			log.Println("Publish msg: CANCEL ORDER")
+			defer shared.Recover()
+
+			evt := datatype.NewAppEvent(
+				datatype.WithTopic(datatype.EvtNotifyOrderCancel),
+				datatype.WithData(orderCancelMsg),
+			)
+
+			if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
+				log.Println("Failed to publish event", err)
+			}
+		}()
+	}
+
+	// Notify shipper assignment
+	if req.ShipperID != nil && order.ShipperID != nil {
+		assignShipperMsg := map[string]interface{}{
+			"orderId":   req.OrderID,
+			"shipperId": *order.ShipperID,
+		}
+		go func() {
+			log.Println("Publish msg: ASSIGN SHIPPER")
+			defer shared.Recover()
+
+			evt := datatype.NewAppEvent(
+				datatype.WithTopic(datatype.EvtNotifyShipperAssign),
+				datatype.WithData(assignShipperMsg),
+			)
+
+			if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
+				log.Println("Failed to publish event", err)
+			}
+		}()
+	}
+
+	// Notify payment status change
+	if req.PaymentStatus != nil {
+		paymentStatusChangeMsg := map[string]interface{}{
+			"orderId":       req.OrderID,
+			"paymentStatus": req.PaymentStatus,
+		}
+		go func() {
+			log.Println("Publish msg: CHANGE PAYMENT STATUS")
+			defer shared.Recover()
+
+			evt := datatype.NewAppEvent(
+				datatype.WithTopic(datatype.EvtNotifyPaymentStatusChange),
+				datatype.WithData(paymentStatusChangeMsg),
+			)
+
+			if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
+				log.Println("Failed to publish event", err)
+			}
+		}()
+
 	}
 
 	return nil

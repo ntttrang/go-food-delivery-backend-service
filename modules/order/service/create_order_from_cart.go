@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
 
@@ -43,6 +44,10 @@ func (o *OrderCreateFromCartDto) Validate() error {
 	return nil
 }
 
+type IEvtPublisher interface {
+	Publish(ctx context.Context, topic string, evt *datatype.AppEvent) error
+}
+
 // CreateFromCartCommandHandler handles creating orders from cart
 type CreateFromCartCommandHandler struct {
 	createHandler         *CreateCommandHandler
@@ -50,6 +55,7 @@ type CreateFromCartCommandHandler struct {
 	paymentService        *PaymentProcessingService
 	inventoryService      *InventoryCheckingService
 	notificationService   *OrderNotificationService
+	evtPublisher          IEvtPublisher
 }
 
 func NewCreateFromCartCommandHandler(
@@ -58,6 +64,7 @@ func NewCreateFromCartCommandHandler(
 	paymentService *PaymentProcessingService,
 	inventoryService *InventoryCheckingService,
 	notificationService *OrderNotificationService,
+	evtPublisher IEvtPublisher,
 ) *CreateFromCartCommandHandler {
 	return &CreateFromCartCommandHandler{
 		createHandler:         createHandler,
@@ -65,6 +72,7 @@ func NewCreateFromCartCommandHandler(
 		paymentService:        paymentService,
 		inventoryService:      inventoryService,
 		notificationService:   notificationService,
+		evtPublisher:          evtPublisher,
 	}
 }
 
@@ -152,7 +160,6 @@ func (s *CreateFromCartCommandHandler) ExecuteFromCart(ctx context.Context, data
 		return "", err
 	}
 
-	// TODO: Rework as event-driven
 	// Process payment after order creation
 	if s.paymentService != nil {
 		paymentReq := &PaymentRequest{
@@ -181,13 +188,25 @@ func (s *CreateFromCartCommandHandler) ExecuteFromCart(ctx context.Context, data
 		log.Print("update cart status = PROCESSED after order created \n")
 	}
 
-	// 	TODO: Rework as event-driven
 	// Send notifications
-	if s.notificationService != nil {
-		if err := s.notificationService.NotifyOrderCreated(ctx, orderId, data.UserID, orderData.RestaurantID); err != nil {
-			log.Print("Notify order created \n")
-		}
+	orderCreatedMsg := map[string]interface{}{
+		"orderId":      orderId,
+		"userId":       data.UserID,
+		"restaurantId": orderData.RestaurantID,
 	}
+	go func() {
+		log.Println("Publish msg: ORDER CREATED")
+		defer shared.Recover()
+
+		evt := datatype.NewAppEvent(
+			datatype.WithTopic(datatype.EvtNotifyOrderCreate),
+			datatype.WithData(orderCreatedMsg),
+		)
+
+		if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
+			log.Println("Failed to publish event", err)
+		}
+	}()
 
 	return orderId, nil
 }

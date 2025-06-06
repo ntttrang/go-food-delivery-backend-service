@@ -120,8 +120,9 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	setupConsumerCmd()
 	// Add command
-	// rootCmd.AddCommand(comsumerRestaurantCmd)
+	rootCmd.AddCommand(consumerCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal("failed to execute command", err)
