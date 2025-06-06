@@ -20,9 +20,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var consumerOrderStateChangeCmd = &cobra.Command{
-	Use:   "order-state-change-cmd",
-	Short: "Start consumer send email when changing the state of order",
+var consumerOrderCmd = &cobra.Command{
+	Use:   "order-create-cmd",
+	Short: "Start consumer send email when creating an order",
 	Run: func(cmd *cobra.Command, args []string) {
 		dsn := os.Getenv("DB_DSN")
 		dbMaster, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -52,6 +52,83 @@ var consumerOrderStateChangeCmd = &cobra.Command{
 			restaurantRpcClientRepo,
 			emailSvc,
 		)
+
+		nc.Subscribe(datatype.EvtNotifyOrderCreate, func(msg *nats.Msg) {
+			log.Println("Subscribe: ORDER CREATE")
+			type evtNotifyOrderCreateMsg struct {
+				OrderID      string
+				UserID       string
+				RestaurantID string
+			}
+
+			var data evtNotifyOrderCreateMsg
+
+			if err := json.Unmarshal(msg.Data, &data); err != nil {
+				log.Println("failed to unmarshal data", err)
+				return
+			}
+
+			notificationService.NotifyOrderCreated(context.Background(), data.OrderID, data.UserID, data.RestaurantID)
+
+			log.Printf("Send email notification to parties: %v \n", data)
+		})
+
+		nc.Subscribe(datatype.EvtNotifyOrderCancel, func(msg *nats.Msg) {
+			log.Println("Subscribe: CANCEL ORDER")
+			type evtNotifyOrderCancelMsg struct {
+				OrderID            string
+				CancellationReason string
+			}
+
+			var data evtNotifyOrderCancelMsg
+
+			if err := json.Unmarshal(msg.Data, &data); err != nil {
+				log.Println("failed to unmarshal data", err)
+				return
+			}
+
+			notificationService.NotifyOrderCancelled(context.Background(), data.OrderID, data.CancellationReason)
+
+			log.Printf("Send email notification to parties: %v \n", data)
+		})
+
+		nc.Subscribe(datatype.EvtNotifyPaymentStatusChange, func(msg *nats.Msg) {
+			log.Println("Subscribe: CHANGE PAYMENT STATUS")
+			type evtNotifyChangePaymentStatusMsg struct {
+				OrderID       string
+				PaymentStatus string
+			}
+
+			var data evtNotifyChangePaymentStatusMsg
+
+			if err := json.Unmarshal(msg.Data, &data); err != nil {
+				log.Println("failed to unmarshal data", err)
+				return
+			}
+
+			notificationService.NotifyPaymentStatusChange(context.Background(), data.OrderID, data.PaymentStatus)
+
+			log.Printf("Send email notification to parties: %v \n", data)
+		})
+
+		nc.Subscribe(datatype.EvtNotifyShipperAssign, func(msg *nats.Msg) {
+			log.Println("Subscribe: ASSIGN SHIPPER")
+			type evtNotifyAssignShipperMsg struct {
+				OrderID   string
+				ShipperId string
+			}
+
+			var data evtNotifyAssignShipperMsg
+
+			if err := json.Unmarshal(msg.Data, &data); err != nil {
+				log.Println("failed to unmarshal data", err)
+				return
+			}
+
+			notificationService.NotifyShipperAssignment(context.Background(), data.OrderID, data.ShipperId)
+
+			log.Printf("Send email notification to parties: %v \n", data)
+		})
 
 		nc.Subscribe(datatype.EvtNotifyOrderStateChange, func(msg *nats.Msg) {
 			log.Println("Subscribe: ORDER CHANGED STATE")
@@ -93,4 +170,14 @@ var consumerOrderStateChangeCmd = &cobra.Command{
 
 		log.Println("Consumer shutdown complete")
 	},
+}
+
+var consumerCmd = &cobra.Command{
+	Use:   "consumer",
+	Short: "Start consumer",
+}
+
+func setupConsumerCmd() {
+	consumerCmd.AddCommand(consumerOrderCmd)
+
 }

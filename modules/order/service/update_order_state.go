@@ -185,24 +185,26 @@ func (s *OrderStateManagementService) Execute(ctx context.Context, req *StateTra
 
 	// Send notifications
 	// Change state
-	orderStateChangeMsg := map[string]interface{}{
-		"orderId":  req.OrderID,
-		"oldState": oldState,
-		"newState": req.NewState,
-	}
-	go func() {
-		log.Println("Publish msg: ORDER STATE CHANGE")
-		defer shared.Recover()
-
-		evt := datatype.NewAppEvent(
-			datatype.WithTopic(datatype.EvtNotifyOrderStateChange),
-			datatype.WithData(orderStateChangeMsg),
-		)
-
-		if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
-			log.Println("Failed to publish event", err)
+	if req.NewState != "" {
+		orderStateChangeMsg := map[string]interface{}{
+			"orderId":  req.OrderID,
+			"oldState": oldState,
+			"newState": req.NewState,
 		}
-	}()
+		go func() {
+			log.Println("Publish msg: ORDER STATE CHANGE")
+			defer shared.Recover()
+
+			evt := datatype.NewAppEvent(
+				datatype.WithTopic(datatype.EvtNotifyOrderStateChange),
+				datatype.WithData(orderStateChangeMsg),
+			)
+
+			if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
+				log.Println("Failed to publish event", err)
+			}
+		}()
+	}
 
 	// Notify cancellation with reason
 	if req.NewState == StateCancelled && req.CancellationReason != nil {
