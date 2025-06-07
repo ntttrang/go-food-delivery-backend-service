@@ -211,13 +211,16 @@ The services will be available at:
 1. **Build the Docker image**
 
    ```bash
-   docker build -t food-delivery-backend .
+   docker build -f Dockerfile -t food-delivery-backend:1.0.0 . 
    ```
 
-2. **Run with Docker Compose**
+2. **Docker Images**
 
    ```bash
-   docker-compose -f docs/docker-compose.yml up -d
+   docker images
+
+   REPOSITORY                                           TAG                                                                           IMAGE ID       CREATED          SIZE
+food-delivery-backend                                1.0.0                                                                         85aaf75a06c9   18 seconds ago   61.9MB
    ```
 -->
 ## 📚 API Documentation
@@ -265,4 +268,5 @@ The services will be available at:
 - Distributed tracing platform [Jaeger] (https://www.jaegertracing.io/docs/2.6/)
 - [OpenTelemetry-Go] (https://pkg.go.dev/go.opentelemetry.io)
 - [ Go with Jaeger, Opentelemetry] (https://medium.com/@nairouasalaton/introduction-to-tracing-in-go-with-jaeger-opentelemetry-71955c2afa39)
+- [OrbStack] (https://orbstack.dev/)
 -->

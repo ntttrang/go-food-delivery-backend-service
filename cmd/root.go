@@ -158,9 +158,13 @@ func initTracer(serviceName string) (*trace.TracerProvider, error) {
 
 	// Create OTLP gRPC exporter for Jaeger
 	// Note: deprecated Jaeger HTTP => Don't use port 4318
+	jaegerEndpoint := os.Getenv("JAEGER_ENDPOINT")
+	if jaegerEndpoint == "" {
+		jaegerEndpoint = "localhost:4317"
+	}
 	exporter, err := otlptracegrpc.New(
 		context.Background(),
-		otlptracegrpc.WithEndpoint("localhost:4317"),
+		otlptracegrpc.WithEndpoint(jaegerEndpoint),
 		otlptracegrpc.WithInsecure(),
 	)
 
