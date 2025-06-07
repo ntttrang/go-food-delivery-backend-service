@@ -258,4 +258,11 @@ The services will be available at:
 - Containerization with [Docker](https://www.docker.com/)
 - Database migrations and schema management
 - Environment-based configuration management
+
+### Distributed Tracing
+
+- Generate, collect and export telementry data (metrics, logs and traces) [OpenTelemetry] (https://opentelemetry.io/)
+- Distributed tracing platform [Jaeger] (https://www.jaegertracing.io/docs/2.6/)
+- [OpenTelemetry-Go] (https://pkg.go.dev/go.opentelemetry.io)
+- [ Go with Jaeger, Opentelemetry] (https://medium.com/@nairouasalaton/introduction-to-tracing-in-go-with-jaeger-opentelemetry-71955c2afa39)
 -->
