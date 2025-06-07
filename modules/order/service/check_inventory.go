@@ -7,6 +7,7 @@ import (
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/rpc-client"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	"go.opentelemetry.io/otel"
 )
 
 // RestaurantAvailability represents restaurant availability info
@@ -102,6 +103,9 @@ func (s *InventoryCheckingService) CheckFoodAvailability(ctx context.Context, it
 
 // CheckOrderInventory performs comprehensive inventory check for an order
 func (s *InventoryCheckingService) CheckOrderInventory(ctx context.Context, restaurantID uuid.UUID, items []OrderItem) error {
+	_, dbSpanCkInvtry := otel.Tracer("").Start(ctx, "check-inventory")
+	defer dbSpanCkInvtry.End()
+
 	// Check restaurant availability: check status = ACTIVE
 	if err := s.CheckRestaurantAvailability(ctx, restaurantID); err != nil {
 		return err

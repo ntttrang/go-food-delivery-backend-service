@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	"go.opentelemetry.io/otel"
 )
 
 // PaymentCard represents a payment card
@@ -58,6 +59,9 @@ func NewPaymentProcessingService(
 
 // ValidatePaymentMethod validates the payment method and associated data
 func (s *PaymentProcessingService) ValidatePaymentMethod(ctx context.Context, req *PaymentRequest) error {
+	_, dbSpanCkPaymentMtd := otel.Tracer("").Start(ctx, "check-payment-method")
+	defer dbSpanCkPaymentMtd.End()
+
 	// Validate payment method
 	if req.PaymentMethod != MethodCash && req.PaymentMethod != MethodCreditCard && req.PaymentMethod != MethodDebitCard {
 		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidPaymentMethod).WithDebug("payment method must be 'CASH' or 'CREDIT_CARD' or 'DEBIT_CARD' ")
@@ -98,16 +102,19 @@ func (s *PaymentProcessingService) ValidatePaymentMethod(ctx context.Context, re
 
 // ProcessPayment processes the payment based on the method
 func (s *PaymentProcessingService) ProcessPayment(ctx context.Context, req *PaymentRequest) (*PaymentResult, error) {
+	dbSpanprcdPaymentCtx, dbSpanprcdPayment := otel.Tracer("").Start(ctx, "process-payment")
+	defer dbSpanprcdPayment.End()
+
 	// Validate payment method first
-	if err := s.ValidatePaymentMethod(ctx, req); err != nil {
+	if err := s.ValidatePaymentMethod(dbSpanprcdPaymentCtx, req); err != nil {
 		return nil, err
 	}
 
 	switch req.PaymentMethod {
 	case MethodCash:
-		return s.processCashPayment(ctx, req)
+		return s.processCashPayment(dbSpanprcdPaymentCtx, req)
 	case MethodDebitCard, MethodCreditCard:
-		return s.processCardPayment(ctx, req)
+		return s.processCardPayment(dbSpanprcdPaymentCtx, req)
 	default:
 		return nil, datatype.ErrBadRequest.WithWrap(ordermodel.ErrInvalidPaymentMethod).WithDebug("unsupported payment method")
 	}

@@ -9,6 +9,7 @@ import (
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharedModel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
+	"go.opentelemetry.io/otel"
 )
 
 // Define DTOs & validate
@@ -99,6 +100,10 @@ func NewCreateCommandHandler(
 }
 
 func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto) (string, error) {
+
+	creatCtx, dbSpanCrtOrder := otel.Tracer("").Start(ctx, "create-order")
+	defer dbSpanCrtOrder.End()
+
 	// Validate request
 	if err := data.Validate(); err != nil {
 		return "", datatype.ErrBadRequest.WithWrap(err).WithDebug(err.Error())
@@ -125,7 +130,7 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 		}
 
 		// Check inventory
-		if err := s.inventoryService.CheckOrderInventory(ctx, restaurantID, inventoryItems); err != nil {
+		if err := s.inventoryService.CheckOrderInventory(creatCtx, restaurantID, inventoryItems); err != nil {
 			return "", err
 		}
 	}
@@ -140,7 +145,7 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 		}
 
 		// Validate payment method first
-		if err := s.paymentService.ValidatePaymentMethod(ctx, paymentReq); err != nil {
+		if err := s.paymentService.ValidatePaymentMethod(creatCtx, paymentReq); err != nil {
 			return "", err
 		}
 	}
@@ -204,7 +209,7 @@ func (s *CreateCommandHandler) Execute(ctx context.Context, data *OrderCreateDto
 	}
 
 	// Insert to database
-	if err := s.repo.Insert(ctx, order, orderTracking, orderDetails); err != nil {
+	if err := s.repo.Insert(creatCtx, order, orderTracking, orderDetails); err != nil {
 		return "", datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
 

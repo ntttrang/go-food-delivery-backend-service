@@ -5,9 +5,13 @@ import (
 
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel"
 )
 
 func (r *OrderRepo) Insert(ctx context.Context, order *ordermodel.Order, orderTracking *ordermodel.OrderTracking, orderDetails []ordermodel.OrderDetail) error {
+	_, dbSpanCrtOrder := otel.Tracer("").Start(ctx, "Insert order, order tracking, order detail")
+	defer dbSpanCrtOrder.End()
+
 	db := r.dbCtx.GetMainConnection()
 
 	// Start a transaction

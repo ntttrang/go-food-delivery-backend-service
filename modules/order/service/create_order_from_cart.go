@@ -113,47 +113,6 @@ func (s *CreateFromCartCommandHandler) ExecuteFromCart(ctx context.Context, data
 	orderData.PaymentMethod = data.PaymentMethod
 	orderData.CardID = *data.CardID
 
-	// Check inventory if service is available
-	if s.inventoryService != nil {
-		restaurantID, err := uuid.Parse(orderData.RestaurantID)
-		if err != nil {
-			return "", datatype.ErrBadRequest.WithError("invalid restaurant ID format")
-		}
-
-		// Convert order details to inventory items
-		var inventoryItems []OrderItem
-		for _, detail := range orderData.OrderDetails {
-			foodID, err := uuid.Parse(detail.FoodOrigin.Id)
-			if err != nil {
-				return "", datatype.ErrBadRequest.WithError("invalid food ID format")
-			}
-			inventoryItems = append(inventoryItems, OrderItem{
-				FoodID:   foodID,
-				Quantity: detail.Quantity,
-			})
-		}
-
-		// Check inventory
-		if err := s.inventoryService.CheckOrderInventory(ctx, restaurantID, inventoryItems); err != nil {
-			return "", err
-		}
-	}
-
-	// Process payment if service is available
-	if s.paymentService != nil {
-		paymentReq := &PaymentRequest{
-			UserID:        data.UserID,
-			Amount:        orderData.TotalPrice,
-			PaymentMethod: data.PaymentMethod,
-			CardID:        data.CardID,
-		}
-
-		// Validate payment method first
-		if err := s.paymentService.ValidatePaymentMethod(ctx, paymentReq); err != nil {
-			return "", err
-		}
-	}
-
 	// Create the order using the standard flow
 	orderId, err := s.createHandler.Execute(ctx, orderData)
 	if err != nil {
@@ -202,7 +161,6 @@ func (s *CreateFromCartCommandHandler) ExecuteFromCart(ctx context.Context, data
 			datatype.WithTopic(datatype.EvtNotifyOrderCreate),
 			datatype.WithData(orderCreatedMsg),
 		)
-
 		if err := s.evtPublisher.Publish(ctx, evt.Topic, evt); err != nil {
 			log.Println("Failed to publish event", err)
 		}

@@ -7,6 +7,7 @@ import (
 	rpcclient "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/rpc-client"
 	ordermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/order/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	"go.opentelemetry.io/otel"
 )
 
 // Repository interfaces
@@ -51,6 +52,9 @@ func NewCartToOrderConversionService(
 
 // ConvertCartToOrderData converts cart items to order data
 func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) (*OrderCreateDto, error) {
+	_, dbSpanCvrtCart := otel.Tracer("").Start(ctx, "convert-cart")
+	defer dbSpanCvrtCart.End()
+
 	// Get cart items
 	cartItems, err := s.cartRepo.FindById(ctx, cartID.String(), userID.String())
 	if err != nil {
@@ -141,7 +145,10 @@ func (s *CartToOrderConversionService) ConvertCartToOrderData(ctx context.Contex
 
 // MarkCartAsProcessed marks the cart as processed after successful order creation
 func (s *CartToOrderConversionService) MarkCartAsProcessed(ctx context.Context, cartID uuid.UUID) error {
+	_, dbSpanupdCart := otel.Tracer("").Start(ctx, "MarkCartAsProcessed")
 	err := s.cartRepo.UpdateCartStatus(ctx, cartID, datatype.CartStatusProcessed)
+	dbSpanupdCart.AddEvent("MarkCartAsProcessed")
+	dbSpanupdCart.End()
 	if err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
@@ -150,10 +157,15 @@ func (s *CartToOrderConversionService) MarkCartAsProcessed(ctx context.Context, 
 
 // ValidateCartForOrder validates that cart can be converted to order
 func (s *CartToOrderConversionService) ValidateCartForOrder(ctx context.Context, cartID uuid.UUID, userID uuid.UUID) error {
+	dbSpanCtx, dbSpanValCart := otel.Tracer("").Start(ctx, "validate-cart")
+	defer dbSpanValCart.End()
+
+	_, span := otel.Tracer("ValidateCartForOrder").Start(dbSpanCtx, "rpc-find-cart-by-ids")
 	cartItems, err := s.cartRepo.FindById(ctx, cartID.String(), userID.String())
 	if err != nil {
 		return datatype.ErrInternalServerError.WithWrap(err).WithDebug(err.Error())
 	}
+	span.End()
 
 	if len(cartItems) == 0 {
 		return datatype.ErrBadRequest.WithWrap(ordermodel.ErrCartEmpty).WithDebug(ordermodel.ErrCartEmpty.Error())

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
+	"go.opentelemetry.io/otel"
 
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
@@ -25,6 +26,9 @@ func NewNatsComp() *natsComp {
 }
 
 func (c *natsComp) Publish(ctx context.Context, topic string, evt *datatype.AppEvent) error {
+	_, dbSpanPlbNoti := otel.Tracer("").Start(ctx, "publish-msg")
+	defer dbSpanPlbNoti.End()
+
 	dataByte, err := json.Marshal(evt.Data)
 
 	if err != nil {

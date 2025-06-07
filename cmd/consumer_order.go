@@ -16,6 +16,7 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -53,6 +54,7 @@ var consumerOrderCmd = &cobra.Command{
 			emailSvc,
 		)
 
+		_, dbSpanOrderCreate := otel.Tracer("").Start(context.Background(), "subs-order-create")
 		nc.Subscribe(datatype.EvtNotifyOrderCreate, func(msg *nats.Msg) {
 			log.Println("Subscribe: ORDER CREATE")
 			type evtNotifyOrderCreateMsg struct {
@@ -72,6 +74,8 @@ var consumerOrderCmd = &cobra.Command{
 
 			log.Printf("Send email notification to parties: %v \n", data)
 		})
+		dbSpanOrderCreate.AddEvent("Subs msg: ORDER CREATED")
+		dbSpanOrderCreate.End()
 
 		nc.Subscribe(datatype.EvtNotifyOrderCancel, func(msg *nats.Msg) {
 			log.Println("Subscribe: CANCEL ORDER")
