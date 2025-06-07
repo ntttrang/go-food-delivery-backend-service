@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -27,6 +28,13 @@ import (
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -59,9 +67,13 @@ var rootCmd = &cobra.Command{
 		}
 		log.Print("connected to database \n")
 
+		serviceName := os.Getenv("SERVICE_NAME")
+
 		r := gin.Default()
 
+		// Middleware
 		r.Use(middleware.Recover())
+		r.Use(otelgin.Middleware(serviceName))
 
 		r.GET("/ping", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
@@ -113,6 +125,18 @@ var rootCmd = &cobra.Command{
 			log.Fatal(s.Serve(lis))
 		}()
 
+		// Initialize the tracer
+		tp, err := initTracer(serviceName)
+		if err != nil {
+			log.Fatalf("Failed to initialize tracer: %v", err)
+		}
+
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Printf("Error shutting down tracer provider: %v", err)
+			}
+		}()
+
 		// Run app server
 		r.Run(fmt.Sprintf(":%s", port))
 
@@ -127,4 +151,53 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal("failed to execute command", err)
 	}
+}
+
+func initTracer(serviceName string) (*trace.TracerProvider, error) {
+	log.Println("Initializing trace with OTLP gRPC exporter")
+
+	// Create OTLP gRPC exporter for Jaeger
+	// Note: deprecated Jaeger HTTP => Don't use port 4318
+	exporter, err := otlptracegrpc.New(
+		context.Background(),
+		otlptracegrpc.WithEndpoint("localhost:4317"),
+		otlptracegrpc.WithInsecure(),
+	)
+
+	if err != nil {
+		log.Printf("Failed to create OTLP gRPC exporter: %v \n ", err)
+		return nil, err
+	}
+	log.Println("OTLP gRPC exporter created successfully")
+
+	// Create resource
+	res, err := resource.New(context.Background(),
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(serviceName),
+			semconv.ServiceVersionKey.String("1.0.0"),
+			semconv.DeploymentEnvironmentKey.String("development"),
+		),
+	)
+
+	if err != nil {
+		log.Printf("Failed to create resource: %v", err)
+		return nil, err
+	}
+	log.Println("Resource created successfully")
+
+	// Create trace provider with the exporter
+	tp := trace.NewTracerProvider(
+		trace.WithBatcher(exporter),
+		trace.WithResource(res),
+		trace.WithSampler(trace.AlwaysSample()),
+	)
+
+	// Set global trace provider
+	otel.SetTracerProvider(tp)
+
+	// Set global propagator for distributed tracing context
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+
+	log.Println("Tracer initialized successfully")
+	return tp, nil
 }
