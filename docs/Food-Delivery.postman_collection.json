@@ -1,0 +1,3334 @@
+{
+	"info": {
+		"_postman_id": "7adbac1b-adc3-463a-9b74-0c168ce45e82",
+		"name": "Food-Delivery",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "846594"
+	},
+	"item": [
+		{
+			"name": "auth - JWT",
+			"item": [
+				{
+					"name": "Register user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"customer\",\n    \"lastName\": \"-\",\n    \"email\": \"tttrang.n@gmail.com\",\n    \"password\": \"12345678\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/register",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "google/signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/google/signup",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"google",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "google/callback",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/google/callback?state=testfoodyapp2025&code=4%2F0Ab_5qlmZsBViZIomWMghoF-XWBQtD8pRNtRjHGn7CT4kuzDELGr2TLn0s2HcE8qWiE5JiA&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&prompt=none",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"google",
+								"callback"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "testfoodyapp2025"
+								},
+								{
+									"key": "code",
+									"value": "4%2F0Ab_5qlmZsBViZIomWMghoF-XWBQtD8pRNtRjHGn7CT4kuzDELGr2TLn0s2HcE8qWiE5JiA"
+								},
+								{
+									"key": "scope",
+									"value": "email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid"
+								},
+								{
+									"key": "authuser",
+									"value": "0"
+								},
+								{
+									"key": "prompt",
+									"value": "none"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test\",\n    \"email\": \"btest@gmail.com\",\n    \"password\": \"123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/api/logout",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate ( Login)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the response JSON",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    // Save the response JSON to an environment variable",
+									"    pm.environment.set(\"USER_TOKEN\", jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"sallyn715@gmail.com\",\n    \"password\": \"12345678\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/authenticate",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{user}}/v1/profile",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "rpc/introspect-token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{USER_TOKEN}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/rpc/users/introspect-token",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"rpc",
+								"users",
+								"introspect-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "generate-code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200) {",
+									"    pm.environment.set(\"verificationCode\", pm.response.json().data)",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{user}}/v1/generate-code",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"generate-code"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "verify-code",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{user}}/v1/verify/{{verificationCode}}",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"verify",
+								"{{verificationCode}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "RPC",
+					"item": [
+						{
+							"name": "users/find-by-ids",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"ids\":[\"0195b79c-82af-7bc4-bba5-487cee0165f0\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{user}}/v1/rpc/users/find-by-ids",
+									"host": [
+										"{{user}}"
+									],
+									"path": [
+										"v1",
+										"rpc",
+										"users",
+										"find-by-ids"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Admin Create User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Trang\",\n    \"lastName\": \"Nguyen\",\n    \"email\": \"sallyn715@gmail.com\",\n    \"password\": \"12345678\",\n    \"role\":\"ADMIN\",\n    \"userType\":\"EMAIL_PASSWORD\",\n    \"status\":\"ACTIVE\",\n    \"phone\":\"1111111\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/users",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Addr",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cityId\": 58,\n    \"title\": \"Home Addr\",\n    \"icon\": \"\",\n    \"addr\": \"123 Vinh Loc B, Binh Chanh\",\n    \"lat\":10.796218,\n    \"lng\":106.580697\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/users/address",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"address"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List user addr",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/users/address?userId=0196dd6b-84e7-7b81-a7e1-038609f01185",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"address"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "0196dd6b-84e7-7b81-a7e1-038609f01185"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List user",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/users",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"\",\n    \"lastName\": \"\",\n    \"phone\": \"\",\n    \"avatar\": \"uploads/1749107141568764000_devpack.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/users/:id",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01973edb-9567-76ba-937c-fe4267ab4007"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user}}/v1/users/:id",
+							"host": [
+								"{{user}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0196dd7c-fab4-7cc9-903f-97e064ec584c"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "category",
+			"item": [
+				{
+					"name": "RPC",
+					"item": [
+						{
+							"name": "find-by-ids",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"ids\":[\"01973edf-57ea-737e-89ee-8544a7c36de8\", \"01963daa-48eb-7791-a1ad-6f1e6e26a9ab\", \"0196c3c2-5bde-7509-b82e-ea7cf5958a60\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{category}}/v1/rpc/categories/find-by-ids",
+									"host": [
+										"{{category}}"
+									],
+									"path": [
+										"v1",
+										"rpc",
+										"categories",
+										"find-by-ids"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "list",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{category}}/v1/categories",
+							"host": [
+								"{{category}}"
+							],
+							"path": [
+								"v1",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Bread",
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "Bread",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "2",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const itemsList = [",
+									"    {name:\"Rice\", description:\"Rice\"},",
+									"    {name:\"Noodles & Congee\", description:\"Noodles & Congee\"},",
+									"    {name:\"Hotpot & Grill\", description:\"Hotpot & Grill\"},",
+									"    {name:\"Vietnamese Cakes\", description:\"Vietnamese Cakes\"},",
+									"    {name:\"Fast Food\", description:\"Fast Food\"},",
+									"    {name:\"Coffee - Tea - Juice\", description:\"Coffee - Tea - Juice\"},",
+									"    {name:\"Pizza\", description:\"Pizza\"},",
+									"    {name:\"International Food\", description:\"International Food\"},",
+									"    {name:\"Milk tea\", description:\"Milk tea\"},",
+									"    {name:\"Snack\", description:\"Snack\"},",
+									"    {name:\"Bread\", description:\"Bread\"},",
+									"    {name:\"Desert\", description:\"Desert\"},",
+									"    {name:\"Healthy Food\", description:\"Healthy Food\"},",
+									"    {name:\"Others\", description:\"Others\"},",
+									"    {name:\"Veggie\", description:\"Veggie\"},",
+									"    {name:\"Seafood\", description:\"Seafood\"},",
+									"];",
+									"",
+									"let currentIndex = pm.environment.get(\"currentIndex\") || 0",
+									"",
+									"if (currentIndex >= itemsList.length) {",
+									"    currentIndex = 0",
+									"    console.log(\"Completed\")",
+									"}",
+									"",
+									"pm.environment.set(\"name\", itemsList[currentIndex].name);",
+									"pm.environment.set(\"description\", itemsList[currentIndex].description);",
+									"",
+									"pm.environment.set(\"currentIndex\", parseInt(currentIndex) + 1);",
+									"",
+									"console.log(`Processing item ${currentIndex+1} of ${itemsList.length}`)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{name}}\",\r\n    \"description\": \"{{description}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{category}}/v1/categories",
+							"host": [
+								"{{category}}"
+							],
+							"path": [
+								"v1",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{category}}/v1/categories/:id",
+							"host": [
+								"{{category}}"
+							],
+							"path": [
+								"v1",
+								"categories",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0196dde9-69ce-7376-9c16-aff2f360614c"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"\",\r\n    \"description\": \"\",\r\n    \"icon\": \"uploads/1747474155167848000_devpack.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{category}}/v1/categories/:id",
+							"host": [
+								"{{category}}"
+							],
+							"path": [
+								"v1",
+								"categories",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01973edf-57ea-737e-89ee-8544a7c36de8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Test update\",\r\n    \"status\": \"inactive\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{category}}/v1/categories/:id",
+							"host": [
+								"{{category}}"
+							],
+							"path": [
+								"v1",
+								"categories",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0195d73c-0381-7134-8e9e-233091b1703b"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "restaurant",
+			"item": [
+				{
+					"name": "Elasticsearch_API",
+					"item": [
+						{
+							"name": "sync-index",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "name",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "description",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "page",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "limit",
+										"value": "10",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{restaurant}}/v1/restaurants/admin/sync-index",
+									"host": [
+										"{{restaurant}}"
+									],
+									"path": [
+										"v1",
+										"restaurants",
+										"admin",
+										"sync-index"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "sync-index",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "name",
+												"value": "",
+												"type": "text",
+												"disabled": true
+											},
+											{
+												"key": "description",
+												"value": "",
+												"type": "text",
+												"disabled": true
+											},
+											{
+												"key": "page",
+												"value": "1",
+												"type": "text"
+											},
+											{
+												"key": "limit",
+												"value": "10",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{restaurant}}/v1/restaurants/admin/sync-index",
+											"host": [
+												"{{restaurant}}"
+											],
+											"path": [
+												"v1",
+												"restaurants",
+												"admin",
+												"sync-index"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=utf-8"
+										},
+										{
+											"key": "Date",
+											"value": "Fri, 30 May 2025 08:44:17 GMT"
+										},
+										{
+											"key": "Content-Length",
+											"value": "53"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"data\": \"Restaurant index synchronized successfully\"\n}"
+								}
+							]
+						},
+						{
+							"name": "sync-index/:id",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "name",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "description",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "page",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "limit",
+										"value": "10",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{restaurant}}/v1/restaurants/admin/sync-index/:id",
+									"host": [
+										"{{restaurant}}"
+									],
+									"path": [
+										"v1",
+										"restaurants",
+										"admin",
+										"sync-index",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "0196f22b-9c71-7412-8524-496129b40947"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "RPC",
+					"item": [
+						{
+							"name": "RPC find-by-ids",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"ids\":[\"0196f22b-af85-776e-b6ce-6c914614f687\", \"01963daa-48eb-7791-a1ad-6f1e6e26a9ab\", \"0196c3c2-5bde-7509-b82e-ea7cf5958a60\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{restaurant}}/v1/rpc/restaurants/find-by-ids",
+									"host": [
+										"{{restaurant}}"
+									],
+									"path": [
+										"v1",
+										"rpc",
+										"restaurants",
+										"find-by-ids"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "List",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants"
+							],
+							"query": [
+								{
+									"key": "ownerId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "cityId",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "shipping_fee_per_km",
+									"disabled": true
+								},
+								{
+									"key": "direction",
+									"value": "ASC",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const itemsList = [",
+									"    { name: \"Com que\", addr: \"47, Le Van Khuong, To 1, Khu pho 1, Hiep Thanh, Quan 12\", cityId: 58, lat: 10.877705, lng: 106.678933, shippingFeePerKm: 2000 },",
+									"    { name: \"Com chay Dieu Thien\", addr: \"1175 Le Duc Tho, Phuong 13, Quan Go Vap\", cityId: 58, lat: 10.854281, lng: 106.657014, shippingFeePerKm: 0 },",
+									"    { name: \"Oc dem the gioi oc\", addr: \"83/5 Duong so 59, Phuong 14, Quan Go Vap\", cityId: 58, lat: 10.857461, lng: 106.651088, shippingFeePerKm: 3000 },",
+									"    { name: \"Kem tu chon I love kem\", addr: \"20A Tan Huong, Phuong Tan Quy, Quan Tan Phu\", cityId: 58, lat: 10.791872, lng: 106.628661, shippingFeePerKm: 0 },",
+									"    { name: \"Highlands Coffee Lê Duẩn\", addr: \"2B Le Duan, Ben Nghe, Quan 1\", cityId: 58, lat: 10.783390, lng: 106.701367, shippingFeePerKm: 5000 },",
+									"];",
+									"",
+									"let currentIndex = pm.environment.get(\"currentIndex\") || 0",
+									"",
+									"if (currentIndex >= itemsList.length) {",
+									"    currentIndex = 0",
+									"    console.log(\"Completed\")",
+									"}",
+									"",
+									"pm.environment.set(\"name\", itemsList[currentIndex].name);",
+									"pm.environment.set(\"addr\", itemsList[currentIndex].addr);",
+									"pm.environment.set(\"cityId\", itemsList[currentIndex].cityId);",
+									"pm.environment.set(\"lat\", itemsList[currentIndex].lat);",
+									"pm.environment.set(\"lng\", itemsList[currentIndex].lng);",
+									"pm.environment.set(\"shippingFeePerKm\", itemsList[currentIndex].shippingFeePerKm);",
+									"",
+									"pm.environment.set(\"currentIndex\", parseInt(currentIndex) + 1);",
+									"",
+									"console.log(`Processing item ${currentIndex + 1} of ${itemsList.length}`)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{name}}\",\r\n    \"addr\": \"{{addr}}\",\r\n    \"cityId\": {{cityId}},\r\n    \"lat\":{{lat}},\r\n    \"lng\":{{lng}},\r\n    \"shippingFeePerKm\": {{shippingFeePerKm}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/:id",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								":id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01973edf-52bc-7520-9ce4-f8a5c62c351d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    // \"name\": \"The Delicious Bistro v1\",\r\n    // \"addr\": \"Yen The Tan Binh\",\r\n    \"logo\": \"uploads/1749107141568764000_devpack.jpg\",\r\n    \"cover\":\"uploads/1749107141568764000_devpack.jpg\"\r\n    // \"shippingFeePerKm\": 15000,\r\n    // \"status\": \"ACTIVE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/:id",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01973ee0-1e8d-7274-8383-98535952dea9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/:id",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01963ddd-021e-75fb-aed5-a71aaaa49ea1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Favourite Restaurant",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/favorites?page=1&limit=10",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"favorites"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add /Remove favourite restaurant",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"restaurantId\": \"0196f22b-9c71-7412-8524-496129b40947\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/favorites",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"favorites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Comment",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/comments?restaurantId=01963ddd-c28c-7d52-973f-6d17b1765c56",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"comments"
+							],
+							"query": [
+								{
+									"key": "restaurantId",
+									"value": "01963ddd-c28c-7d52-973f-6d17b1765c56"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "userId",
+									"value": "01963dd0-02f9-796a-b62a-5d08162d6494",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add restaurant comment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"restaurantId\": \"0196f22b-9c71-7412-8524-496129b40947\",\r\n    \"point\":5,\r\n    \"comment\":\"Comment 3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/comments",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete restaurant rating",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/comments/:id",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"comments",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01963de0-bddb-737a-85a4-655da0946607"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Menu Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"restaurantId\": \"01973ee0-1e8d-7274-8383-98535952dea9\",\r\n    \"foodId\": \"01973edf-c815-7868-93bc-3a20a6c53052\",\r\n    \"categoryId\":\"01973edf-52bc-7520-9ce4-f8a5c62c351d\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/menu-item",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"menu-item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Menu Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"restaurantId\": \"01963ddd-c28c-7d52-973f-6d17b1765c56\",\r\n    \"foodId\": \"01963daa-48eb-7791-a1ad-6f1e6e26a9ab\",\r\n    \"categoryId\":\"01963d9b-cd14-7802-b9c1-ecdb16b47d93\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/menu-item",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"menu-item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Menu Item",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/menu-item/:restaurantId",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"menu-item",
+								":restaurantId"
+							],
+							"variable": [
+								{
+									"key": "restaurantId",
+									"value": "01973ee0-1e8d-7274-8383-98535952dea9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Restaurants",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Dieu\"\r\n\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{restaurant}}/v1/restaurants/search",
+							"host": [
+								"{{restaurant}}"
+							],
+							"path": [
+								"v1",
+								"restaurants",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "food",
+			"item": [
+				{
+					"name": "RPC",
+					"item": [
+						{
+							"name": "foods/find-by-ids",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"ids\":[\"0196f242-eea9-751c-9e86-3268538eeb8c\", \"01963daa-48eb-7791-a1ad-6f1e6e26a9ab\", \"01963da9-3587-7acd-b76d-21c0e49a2008\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{food}}/v1/rpc/foods/find-by-ids",
+									"host": [
+										"{{food}}"
+									],
+									"path": [
+										"v1",
+										"rpc",
+										"foods",
+										"find-by-ids"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "rpc update",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"restaurantId\": \"01963ddd-c28c-7d52-973f-6d17b1765c56\",\r\n    \"foodId\": \"01963daa-48eb-7791-a1ad-6f1e6e26a9ab\",\r\n    \"categoryId\":\"01963d9b-cd14-7802-b9c1-ecdb16b47d93\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{food}}/v1/rpc/foods/update/:id",
+									"host": [
+										"{{food}}"
+									],
+									"path": [
+										"v1",
+										"rpc",
+										"foods",
+										"update",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "01963daa-48eb-7791-a1ad-6f1e6e26a9ab"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Elasticsearch_API",
+					"item": [
+						{
+							"name": "sync-index",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "name",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "description",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "page",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "limit",
+										"value": "10",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{food}}/v1/foods/admin/sync-index",
+									"host": [
+										"{{food}}"
+									],
+									"path": [
+										"v1",
+										"foods",
+										"admin",
+										"sync-index"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "sync-index/:id",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "name",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "description",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "page",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "limit",
+										"value": "10",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{food}}/v1/foods/admin/sync-index/:id",
+									"host": [
+										"{{food}}"
+									],
+									"path": [
+										"v1",
+										"foods",
+										"admin",
+										"sync-index",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "0196f242-eea9-751c-9e86-3268538eeb8c"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "list",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "name",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "description",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "page",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "limit",
+								"value": "10",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const itemsList = [",
+									"    // Com que",
+									"    { name: \"Cơm gà kho sả ớt\", description: \"Chưa có mô tả chi tiết\", price: 38000 },",
+									"    { name: \"Cơm thịt kho mắm ruốc\", description: \"Chưa có mô tả chi tiết\", price: 38000 },",
+									"    { name: \"Cơm vịt kho gừng\", description: \"Chưa có mô tả chi tiết\", price: 38000 },",
+									"    { name: \"Cơm tôm ram\", description: \"Chưa có mô tả chi tiết\", price: 38000 },",
+									"    { name: \"Cơm thịt kho tôm\", description: \"Chưa có mô tả chi tiết\", price: 38000 },",
+									"",
+									"    // Com chay",
+									"    { name: \"Cơm rau thập cẩm\", description: \"Chưa có mô tả chi tiết\", price: 29000 },",
+									"    { name: \"Bún Huế chay\", description: \"Chưa có mô tả chi tiết\", price: 25000 },",
+									"    { name: \"Bún riêu chay\", description: \"Chưa có mô tả chi tiết\", price: 25000 },",
+									"    { name: \"Hủ tiếu chay\", description: \"Chưa có mô tả chi tiết\", price: 25000 },",
+									"    { name: \"Nước mát\", description: \"Chưa có mô tả chi tiết\", price: 25000 },",
+									"",
+									"    // Oc",
+									"    { name: \"Ốc hương sốt trứng muối\", description: \"Chưa có mô tả chi tiết\", price: 39000 },",
+									"    { name: \"Nghêu hấp thái\", description: \"Chưa có mô tả chi tiết\", price: 39000 },",
+									"    { name: \"Càng ghẹ rang muối\", description: \"Chưa có mô tả chi tiết\", price: 49000 },",
+									"    { name: \"Ốc len xào dừa\", description: \"Chưa có mô tả chi tiết\", price: 49000 },",
+									"    { name: \"Sò điệp nướng phô mai\", description: \"Chưa có mô tả chi tiết\", price: 49000 },",
+									"",
+									"    // Kem",
+									"    { name: \"Kem bạc hà vụn socola\", description: \"Chưa có mô tả chi tiết\", price: 36000 },",
+									"    { name: \"Kem dừa non\", description: \"Chưa có mô tả chi tiết\", price: 36000 },",
+									"    { name: \"Kem dâu tây\", description: \"Chưa có mô tả chi tiết\", price: 36000 },",
+									"    { name: \"Kem socola\", description: \"Chưa có mô tả chi tiết\", price: 36000 },",
+									"    { name: \"Kem nhãn tươi\", description: \"Chưa có mô tả chi tiết\", price: 36000 },",
+									"",
+									"    // Coffee",
+									"    { name: \"Freeze Trà xanh đá xay\", description: \"Chưa có mô tả chi tiết\", price: 55000 },",
+									"    { name: \"Trà sen vàng\", description: \"Chưa có mô tả chi tiết\", price: 45000 },",
+									"    { name: \"Phindi Hạnh Nhân - Cà phê\", description: \"Chưa có mô tả chi tiết\", price: 45000 },",
+									"    { name: \"Trà Thạch đào\", description: \"Chưa có mô tả chi tiết\", price: 45000 },",
+									"    { name: \"Trà ổi hồng Kim Quất\", description: \"Chưa có mô tả chi tiết\", price: 59000 },",
+									"];",
+									"",
+									"let currentIndex = pm.environment.get(\"currentIndex\") || 0",
+									"",
+									"if (currentIndex >= itemsList.length) {",
+									"    currentIndex = 0",
+									"    console.log(\"Completed\")",
+									"}",
+									"",
+									"pm.environment.set(\"name\", itemsList[currentIndex].name);",
+									"pm.environment.set(\"description\", itemsList[currentIndex].description);",
+									"pm.environment.set(\"price\", itemsList[currentIndex].price);",
+									"",
+									"pm.environment.set(\"currentIndex\", parseInt(currentIndex) + 1);",
+									"",
+									"console.log(`Processing item ${currentIndex + 1} of ${itemsList.length}`)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{name}}\",\r\n    \"description\": \"{{description}}\",\r\n    \"price\":{{price}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"inactive\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/:id",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0196f242-eea9-751c-9e86-3268538eeb8c"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    //\"name\": \"Caramel Phin Freeze - Da xay\",\r\n    //\"description\": \"Ca phe da xay, caramel va kem sua\",\r\n   // \"status\": \"INACTIVE\",\r\n    // \"restaurantId\": \"0196c3c2-5bde-7509-b82e-ea7cf5958a60\",\r\n    // \"categoryId\":\"01963d9b-cd14-7802-b9c1-ecdb16b47d93\",\r\n    \"image\":\"uploads/1749107141568764000_devpack.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/:id",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01973edf-bd02-7432-a825-21ab28311cae"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Test update\",\r\n    \"status\": \"inactive\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/:id",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0196a8e6-32be-7377-b5cc-4fe7f3ad8a5c"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Favourite Food",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/favorites?page=1&limit=10",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"favorites"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add /Remove favourite Food",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"foodId\": \"0196f242-eea9-751c-9e86-3268538eeb8c\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/favorites",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"favorites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Comment",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/comments",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"comments"
+							],
+							"query": [
+								{
+									"key": "foodId",
+									"value": "0196f242-eea9-751c-9e86-3268538eeb8c",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "userId",
+									"value": "0196dd6b-bd18-7557-a0b2-78d7d8a1fc33",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add food comment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"foodId\": \"0196f242-eea9-751c-9e86-3268538eeb8c\",\r\n    \"point\":5,\r\n    \"comment\":\"Bad\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/comments",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete food rating",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/comments/:id",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"comments",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01964481-fbe4-7059-89f3-18f67fbbe213"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Food",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Tra\",\r\n    \"rating\":4\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{food}}/v1/foods/search",
+							"host": [
+								"{{food}}"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "media",
+			"item": [
+				{
+					"name": "Upload image",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/Users/trang_thi_thuy.n/Downloads/devpack.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{media}}/v1/medias",
+							"host": [
+								"{{media}}"
+							],
+							"path": [
+								"v1",
+								"medias"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "payment",
+			"item": [
+				{
+					"name": "Create card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"method\": \"credit_card\",\n  \"provider\": \"paypal\",\n  \"cardholderName\": \"Emily Zhang\",\n  \"cardNumber\": \"4539589763663402\",\n  \"cardType\": \"visa\",\n  \"cvv\": \"527\",\n  \"expiryMonth\": \"07\",\n  \"expiryYear\": \"2027\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{payment}}/v1/cards",
+							"host": [
+								"{{payment}}"
+							],
+							"path": [
+								"v1",
+								"cards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get card by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"method\": \"credit_card\",\n    \"provider\": \"stripe\",\n    \"cardholderName\": \"John Doe\",\n    \"cardNumber\": \"4111111111111111\",\n    \"cardType\": \"visa\",\n    \"cvv\": \"123\",\n    \"expiryMonth\": \"12\",\n    \"expiryYear\": \"2026\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{payment}}/v1/cards/:id",
+							"host": [
+								"{{payment}}"
+							],
+							"path": [
+								"v1",
+								"cards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "01973ef6-cac2-7b5a-930d-c6ff690879eb"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get card by userId",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"method\": \"credit_card\",\n    \"provider\": \"stripe\",\n    \"cardholderName\": \"John Doe\",\n    \"cardNumber\": \"4111111111111111\",\n    \"cardType\": \"visa\",\n    \"cvv\": \"123\",\n    \"expiryMonth\": \"12\",\n    \"expiryYear\": \"2026\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{payment}}/v1/cards/user/:userId",
+							"host": [
+								"{{payment}}"
+							],
+							"path": [
+								"v1",
+								"cards",
+								"user",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "0196b4b6-4f08-7eb1-a0d7-4df12204b34c"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update card status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"INACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{payment}}/v1/cards/:id",
+							"host": [
+								"{{payment}}"
+							],
+							"path": [
+								"v1",
+								"cards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0196b4b7-ff46-7543-b786-ab843870aee6"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "RPC",
+					"item": [
+						{
+							"name": "update cart status",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "name",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "description",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "page",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "limit",
+										"value": "10",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{cart}}/v1/carts/update-status?cartId=019721c8-c407-7501-a007-abaf9a1ed7a5&status=PROCESSED",
+									"host": [
+										"{{cart}}"
+									],
+									"path": [
+										"v1",
+										"carts",
+										"update-status"
+									],
+									"query": [
+										{
+											"key": "cartId",
+											"value": "019721c8-c407-7501-a007-abaf9a1ed7a5"
+										},
+										{
+											"key": "status",
+											"value": "PROCESSED"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "cart-summary",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{USER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "name",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "description",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									},
+									{
+										"key": "page",
+										"value": "1",
+										"type": "text"
+									},
+									{
+										"key": "limit",
+										"value": "10",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{cart}}/v1/rpc/carts/cart-summary?cartId=01973b4f-71f7-756e-905d-91992c7f8d40&userId=0196dd6d-dbee-7e44-8f31-f734b125a244",
+									"host": [
+										"{{cart}}"
+									],
+									"path": [
+										"v1",
+										"rpc",
+										"carts",
+										"cart-summary"
+									],
+									"query": [
+										{
+											"key": "cartId",
+											"value": "01973b4f-71f7-756e-905d-91992c7f8d40"
+										},
+										{
+											"key": "userId",
+											"value": "0196dd6d-dbee-7e44-8f31-f734b125a244"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "list",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cart}}/v1/carts?pageSize=0&limit=10",
+							"host": [
+								"{{cart}}"
+							],
+							"path": [
+								"v1",
+								"carts"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "01973edd-fd63-7c7f-b5e1-69d7232a572f",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list cart item",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cart}}/v1/carts/cart-item?userId=01973edd-fd63-7c7f-b5e1-69d7232a572f&restaurantId=01973ee0-1e8d-7274-8383-98535952dea9",
+							"host": [
+								"{{cart}}"
+							],
+							"path": [
+								"v1",
+								"carts",
+								"cart-item"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "01973edd-fd63-7c7f-b5e1-69d7232a572f"
+								},
+								{
+									"key": "restaurantId",
+									"value": "01973ee0-1e8d-7274-8383-98535952dea9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upsert",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"foodId\": \"01973edf-c054-7728-9f10-1ac2f4e7967f\",\r\n    \"quantity\": 100\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cart}}/v1/carts",
+							"host": [
+								"{{cart}}"
+							],
+							"path": [
+								"v1",
+								"carts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cart}}/v1/carts/:userId/:foodId",
+							"host": [
+								"{{cart}}"
+							],
+							"path": [
+								"v1",
+								"carts",
+								":userId",
+								":foodId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "0196b4b6-4f08-7eb1-a0d7-4df12204b34c"
+								},
+								{
+									"key": "foodId",
+									"value": "0196c32b-9698-7b6d-970c-61e950e59ad8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update cart status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"PROCESSED\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cart}}/v1/carts/:id",
+							"host": [
+								"{{cart}}"
+							],
+							"path": [
+								"v1",
+								"carts",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "0196c3d1-bc55-716f-8070-474f22ed1f83"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete cart",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{cart}}/v1/carts/:userId/:foodId",
+							"host": [
+								"{{cart}}"
+							],
+							"path": [
+								"v1",
+								"carts",
+								":userId",
+								":foodId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "0196b4b6-4f08-7eb1-a0d7-4df12204b34c"
+								},
+								{
+									"key": "foodId",
+									"value": "0196c32b-9698-7b6d-970c-61e950e59ad2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "order",
+			"item": [
+				{
+					"name": "Create Order ( Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"restaurantId\": \"0196f22b-9c71-7412-8524-496129b40947\",\n    \"totalPrice\": 45.50,\n    \"paymentMethod\": \"CREDIT_CARD\",\n    \"cardId\": \"019739d6-17ea-74b7-b9b4-d02b540f13fc\",\n    \"deliveryAddress\": {\n        \"cityId\": 1,\n        \"cityName\": \"\",\n        \"addr\": \"123 Main St\",\n        \"lat\": 10.11,\n        \"lng\": 158\n    },\n    \"orderDetails\": [\n        {\n            \"foodOrigin\": {\n                \"id\": \"0196f242-eea9-751c-9e86-3268538eeb8c\",\n                \"name\": \"Name 001\",\n                \"description\": \"Desc 001\",\n                \"image\": \"/test1.png\"\n            },\n            \"price\": 15.50,\n            \"quantity\": 2,\n            \"discount\": 0\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{order}}/v1/orders",
+							"host": [
+								"{{order}}"
+							],
+							"path": [
+								"v1",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Order ( From Cart)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cartId\": \"01975556-2701-7c2b-a3d5-4092fa0ba905\",\n    \"paymentMethod\": \"cash\",\n    \"cardId\": \"\",\n    \"deliveryAddress\": {\n        \"cityId\": 1,\n        \"cityName\": \"\",\n        \"addr\": \"123 Main St\",\n        \"lat\": 10.11,\n        \"lng\": 158\n    }\n}"
+						},
+						"url": {
+							"raw": "{{order}}/v1/orders/from-cart",
+							"host": [
+								"{{order}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"from-cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{order}}/v1/orders?page=1&limit=10",
+							"host": [
+								"{{order}}"
+							],
+							"path": [
+								"v1",
+								"orders"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "0196dd6d-dbee-7e44-8f31-f734b125a244",
+									"disabled": true
+								},
+								{
+									"key": "restaurantId",
+									"value": "{{restaurant_id}}",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "PENDING",
+									"disabled": true
+								},
+								{
+									"key": "state",
+									"value": "NEW",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{order}}/v1/orders/:id",
+							"host": [
+								"{{order}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "a4ea8e3c-2074-4569-aa24-a294f1e331ae"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Order State",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newState\": \"cancel\",\n  //\"paymentStatus\": \"paid\"\n  //\"shipperId\": \"01973edc-e6df-7148-890d-ddcf56430c42\"\n  \"cancellationReason\":\"wait for too long\"\n}"
+						},
+						"url": {
+							"raw": "{{order}}/v1/orders/:id/state",
+							"host": [
+								"{{order}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								":id",
+								"state"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "98992fb7-9fa5-4d8b-9913-5f0538c1ed38"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Order",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{order}}/v1/orders/:id",
+							"host": [
+								"{{order}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3587137b-5520-46ec-adcc-79a20b9dc5ef"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

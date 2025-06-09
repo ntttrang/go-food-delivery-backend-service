@@ -9,16 +9,25 @@ docker run -d --name media-service --network fd-net \
   -e MINIO_DOMAIN="your_container_name:9000" \
   -e MINIO_REGION="your_region" \
   -e MINIO_SECRET_KEY="your_key" \
+  -e VIRTUAL_HOST="fooddelivery.localhost" \
+  -e VIRTUAL_PORT="3000"  \
+  -e VIRTUAL_PATH="/v1/users" \
   -p 8085:3000 \
   food-delivery-backend:1.0.0
 
+<!---
+nginx proxy ( API Gateway)
+VIRTUAL_HOST
+VIRTUAL_PORT
+VIRTUAL_PATH
+-->
 docker network ls
 docker network create fd-net
 docker network connect fd-net mysql-container
 docker network connect fd-net nats-container
 docker network connect fd-net minio-container
 docker network connect fd-net jaeger-container
-
+docker network connect fd-net nginx-container
 
 docker logs media-service
 
