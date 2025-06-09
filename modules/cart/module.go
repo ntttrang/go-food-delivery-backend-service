@@ -21,7 +21,7 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	rpcRestaurantRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
 
 	// GRPC
-	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcServiceURL)
+	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
 
 	// Setup command handlers
 	createCmdHdl := cartService.NewCreateCommandHandler(repo, foodGrpcClient)

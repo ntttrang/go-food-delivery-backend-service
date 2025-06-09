@@ -26,7 +26,7 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	emailSvc := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
 
 	// GRPC
-	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcServiceURL)
+	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
 
 	// Setup service
 	cartConversionService := orderService.NewCartToOrderConversionService(cartRpcClientRepo, foodGrpcClient, restaurantRpcClientRepo)

@@ -21,8 +21,8 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	foodRPCClient := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
 	//catRPCClient := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().CatServiceURL)
 	// GRPC
-	catGrpcClient := grpcclient.NewCategoryGRPCClient(appCtx.GetConfig().GrpcServiceURL)
-	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcServiceURL)
+	catGrpcClient := grpcclient.NewCategoryGRPCClient(appCtx.GetConfig().GrpcCatServiceURL)
+	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
 
 	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(dbCtx)
 	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx, *foodRPCClient)
