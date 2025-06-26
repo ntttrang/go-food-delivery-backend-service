@@ -6,10 +6,13 @@ import (
 )
 
 type Config struct {
+	EmailConfig  EmailConfig
+	RedisConfig  RedisConfig
+	GoogleConfig GoogleConfig
+	Minio        MinIoConfig // Same as Amazon S3
+
+	// URL for RPC
 	UserServiceURL string
-	EmailConfig    EmailConfig
-	RedisConfig    RedisConfig
-	GoogleConfig   GoogleConfig
 }
 
 var config *Config
@@ -39,6 +42,14 @@ func NewConfig() *Config {
 				ClientSecret: os.Getenv("GG_CLIENT_SECRET"),
 				RedirectUrl:  os.Getenv("GG_REDIRECT_URL"),
 			},
+			Minio: MinIoConfig{
+				AccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
+				BucketName: os.Getenv("MINIO_BUCKET_NAME"),
+				Domain:     os.Getenv("MINIO_DOMAIN"),
+				Region:     os.Getenv("MINIO_REGION"),
+				SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
+				UseSSL:     false,
+			},
 		}
 	}
 	return config
@@ -64,4 +75,12 @@ type GoogleConfig struct {
 	ClientId     string
 	ClientSecret string
 	RedirectUrl  string
+}
+type MinIoConfig struct {
+	AccessKey  string
+	BucketName string
+	Domain     string
+	Region     string
+	SecretKey  string
+	UseSSL     bool
 }
