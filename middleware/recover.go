@@ -1,22 +1,46 @@
 package middleware
 
 import (
-	"net/http"
+	"fmt"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 )
+
+type CanGetStatusCode interface {
+	StatusCode() int
+}
 
 func Recover() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
+
+			isProduction := os.Getenv("ENV") == "prod" || os.Getenv("GIN_MODE") == "release"
+
 			if r := recover(); r != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Something went wrong",
-				})
-				panic(r)
+				if appErr, ok := r.(CanGetStatusCode); ok {
+					c.JSON(appErr.StatusCode(), appErr)
+					if !isProduction {
+						log.Printf("Error: %+v", appErr)
+						panic(r)
+					}
+					return
+				}
+
+				appError := datatype.ErrInternalServerError
+
+				if isProduction {
+					c.JSON(appError.StatusCode(), appError.WithDebug(""))
+				} else {
+					c.JSON(appError.StatusCode(), appError.WithDebug(fmt.Sprintf("%s", r)))
+					panic(r)
+				}
 			}
 		}()
 
 		c.Next()
+
 	}
 }
