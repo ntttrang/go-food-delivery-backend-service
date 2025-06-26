@@ -14,10 +14,15 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/category"
+	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/food"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	categorymodule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	categorygrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/controller/grpc-ctrl"
 	categorygormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository/gorm-mysql"
+	foodmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/food"
+	foodgrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/controller/grpc-ctrl"
+	foodgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
+	foodservice "github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
@@ -58,6 +63,7 @@ var rootCmd = &cobra.Command{
 		usermodule.SetupUserModule(appCtx, v1)
 		mediamodule.SetupMediaModule(appCtx, v1)
 		categorymodule.SetupCategoryModule(appCtx, v1)
+		foodmodule.SetupFoodModule(appCtx, v1)
 
 		go func() {
 
@@ -77,6 +83,11 @@ var rootCmd = &cobra.Command{
 
 			// Register GRPC
 			category.RegisterCategoryServer(s, categorygrpcctl.NewCategoryGrpcServer(categorygormmysql.NewCategoryRepo(appCtx.DbContext())))
+
+			// Setup food gRPC server with update service
+			foodRepo := foodgormmysql.NewFoodRepo(appCtx.DbContext())
+			updateService := foodservice.NewUpdateCommandHandler(foodRepo)
+			food.RegisterFoodServer(s, foodgrpcctl.NewFoodGrpcServer(foodRepo, updateService))
 
 			// Serve gRPC Server
 			log.Printf("Serving gRPC on 0.0.0.0:%s \n", grpcPort)
