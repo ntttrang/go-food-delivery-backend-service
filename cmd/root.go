@@ -3,15 +3,21 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/category"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
+	categorymodule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
+	categorygrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/controller/grpc-ctrl"
+	categorygormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository/gorm-mysql"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
@@ -51,6 +57,31 @@ var rootCmd = &cobra.Command{
 
 		usermodule.SetupUserModule(appCtx, v1)
 		mediamodule.SetupMediaModule(appCtx, v1)
+		categorymodule.SetupCategoryModule(appCtx, v1)
+
+		go func() {
+
+			grpcPort := os.Getenv("GRPC_PORT")
+			if grpcPort == "" {
+				grpcPort = "6000"
+			}
+
+			// Create a listener on TCP port
+			lis, err := net.Listen("tcp", ":"+grpcPort)
+			if err != nil {
+				log.Fatalln("Failed to listen:", err)
+			}
+
+			// Create a gRPC server object
+			s := grpc.NewServer()
+
+			// Register GRPC
+			category.RegisterCategoryServer(s, categorygrpcctl.NewCategoryGrpcServer(categorygormmysql.NewCategoryRepo(appCtx.DbContext())))
+
+			// Serve gRPC Server
+			log.Printf("Serving gRPC on 0.0.0.0:%s \n", grpcPort)
+			log.Fatal(s.Serve(lis))
+		}()
 
 		// Run app
 		r.Run(fmt.Sprintf(":%s", port))
