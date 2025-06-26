@@ -7,10 +7,13 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
+	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
+	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
 
 var rootCmd = &cobra.Command{
@@ -42,8 +45,10 @@ var rootCmd = &cobra.Command{
 			)
 		})
 
-		// TODO
-		fmt.Println(db)
+		v1 := r.Group("/v1")
+		appCtx := shareinfras.NewAppContext(db)
+
+		usermodule.SetupUserModule(appCtx, v1)
 
 		// Run app
 		r.Run(fmt.Sprintf(":%s", port))
