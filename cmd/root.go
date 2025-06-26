@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
+	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
 )
@@ -49,6 +50,7 @@ var rootCmd = &cobra.Command{
 		appCtx := shareinfras.NewAppContext(db)
 
 		usermodule.SetupUserModule(appCtx, v1)
+		mediamodule.SetupMediaModule(appCtx, v1)
 
 		// Run app
 		r.Run(fmt.Sprintf(":%s", port))

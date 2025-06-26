@@ -102,3 +102,6 @@ terraform.tfstate.backup
 
 # Node modules (if any frontend components)
 node_modules/
+
+# temporary upload folder
+uploads/
