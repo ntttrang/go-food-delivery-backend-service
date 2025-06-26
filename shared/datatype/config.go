@@ -6,13 +6,16 @@ import (
 )
 
 type Config struct {
-	EmailConfig  EmailConfig
-	RedisConfig  RedisConfig
-	GoogleConfig GoogleConfig
-	Minio        MinIoConfig // Same as Amazon S3
+	EmailConfig   EmailConfig
+	RedisConfig   RedisConfig
+	GoogleConfig  GoogleConfig
+	Minio         MinIoConfig // Same as Amazon S3
+	ElasticSearch ElasticSearchConfig
 
 	// URL for RPC
-	UserServiceURL string
+	UserServiceURL       string
+	FoodServiceURL       string
+	RestaurantServiceURL string
 }
 
 var config *Config
@@ -26,7 +29,6 @@ func NewConfig() *Config {
 
 	if config == nil {
 		config = &Config{
-			UserServiceURL: os.Getenv("USER_SERVICE_URL"),
 			EmailConfig: EmailConfig{
 				SMTPHost:     os.Getenv("SMTP_HOST"),
 				SMTPPort:     smtpPort,
@@ -50,6 +52,17 @@ func NewConfig() *Config {
 				SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
 				UseSSL:     false,
 			},
+			ElasticSearch: ElasticSearchConfig{
+				Addresses: []string{os.Getenv("ES_ADDRESS")},
+				Username:  os.Getenv("ES_USERNAME"),
+				Password:  os.Getenv("ES_PASSWORD"),
+				CloudID:   os.Getenv("ES_CLOUD_ID"),
+				APIKey:    os.Getenv("ES_API_KEY"),
+				IndexName: os.Getenv("ES_INDEX_NAME"),
+			},
+			UserServiceURL:       os.Getenv("USER_SERVICE_URL"),
+			FoodServiceURL:       os.Getenv("FOOD_SERVICE_URL"),
+			RestaurantServiceURL: os.Getenv("RESTAURANT_SERVICE_URL"),
 		}
 	}
 	return config
@@ -83,4 +96,13 @@ type MinIoConfig struct {
 	Region     string
 	SecretKey  string
 	UseSSL     bool
+}
+
+type ElasticSearchConfig struct {
+	Addresses []string
+	Username  string
+	Password  string
+	CloudID   string
+	APIKey    string
+	IndexName string
 }

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option go_package = "food/";
+
+service Food {
+    rpc GetFooodsByIds (GetFoodIdsRequest) returns (FoodIdsResp) {}
+    rpc UpdateFoodById (UpdateFoodRequest) returns (UpdateFoodResp) {}
+}
+
+message GetFoodIdsRequest {
+    repeated string ids = 1;
+}
+
+message FoodIdsResp {
+    repeated FoodDTO data = 1;
+}
+
+message FoodDTO {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string images = 4;
+    float price = 5;
+    float avgpoint = 6;
+    int64 commentQty = 7;
+    string categoryId = 8;
+    string restaurantId = 9;
+    string status = 10;
+}
+
+message UpdateFoodRequest {
+    string name = 1;         
+    string description  = 2;  
+    string status  = 3;       
+    string restaurantId = 4;  
+    string categoryId  = 5;   
+    string image  = 6;
+    string id = 7;        
+}
+
+message UpdateFoodResp {
+    string id  = 1;
+}
