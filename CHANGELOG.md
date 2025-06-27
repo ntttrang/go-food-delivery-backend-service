@@ -17,3 +17,8 @@
 - Proto file
 - GRPC (server) FindByIds and updateFoodById
 - Elasticseach
+
+## 2025-06-27 v0.0.5
+- LCRUD restaurant
+- GRPC (client) FindByIds at Category and Food
+- Elasticseach
