@@ -16,6 +16,8 @@ type Config struct {
 	UserServiceURL       string
 	FoodServiceURL       string
 	RestaurantServiceURL string
+	GrpcCatServiceURL    string
+	GrpcFoodServiceURL   string
 }
 
 var config *Config
@@ -63,6 +65,8 @@ func NewConfig() *Config {
 			UserServiceURL:       os.Getenv("USER_SERVICE_URL"),
 			FoodServiceURL:       os.Getenv("FOOD_SERVICE_URL"),
 			RestaurantServiceURL: os.Getenv("RESTAURANT_SERVICE_URL"),
+			GrpcCatServiceURL:    os.Getenv("GRPC_CAT_SERVICE_URL"),
+			GrpcFoodServiceURL:   os.Getenv("GRPC_FOOD_SERVICE_URL"),
 		}
 	}
 	return config
