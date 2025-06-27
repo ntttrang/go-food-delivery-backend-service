@@ -36,3 +36,12 @@ const (
 const (
 	KeyRequester = "requester"
 )
+
+type CartStatus string
+
+const (
+	// Cart Status
+	CartStatusActive    CartStatus = "ACTIVE"
+	CartStatusUpdated   CartStatus = "UPDATED"   // When Frontend update quantity
+	CartStatusProcessed CartStatus = "PROCESSED" // Auto updated by Backend. All items go to Order
+)

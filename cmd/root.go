@@ -16,6 +16,7 @@ import (
 	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/category"
 	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/food"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
+	cartmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/cart"
 	categorymodule "github.com/ntttrang/go-food-delivery-backend-service/modules/category"
 	categorygrpcctl "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/controller/grpc-ctrl"
 	categorygormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/category/infras/repository/gorm-mysql"
@@ -66,6 +67,7 @@ var rootCmd = &cobra.Command{
 		categorymodule.SetupCategoryModule(appCtx, v1)
 		foodmodule.SetupFoodModule(appCtx, v1)
 		restaurantmodule.SetupRestaurantModule(appCtx, v1)
+		cartmodule.SetupCartModule(appCtx, v1)
 
 		go func() {
 
