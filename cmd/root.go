@@ -25,6 +25,7 @@ import (
 	foodgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
 	foodservice "github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
+	paymentmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/payment"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
 	shareinfras "github.com/ntttrang/go-food-delivery-backend-service/shared/infras"
@@ -68,6 +69,7 @@ var rootCmd = &cobra.Command{
 		foodmodule.SetupFoodModule(appCtx, v1)
 		restaurantmodule.SetupRestaurantModule(appCtx, v1)
 		cartmodule.SetupCartModule(appCtx, v1)
+		paymentmodule.SetupPaymentModule(appCtx, v1)
 
 		go func() {
 
