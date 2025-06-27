@@ -22,3 +22,6 @@
 - LCRUD restaurant
 - GRPC (client) FindByIds at Category and Food
 - Elasticseach
+
+## 2025-06-27 v0.0.6
+- LCRUD cart
