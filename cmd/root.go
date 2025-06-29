@@ -25,6 +25,7 @@ import (
 	foodgormmysql "github.com/ntttrang/go-food-delivery-backend-service/modules/food/infras/repository/gorm-mysql"
 	foodservice "github.com/ntttrang/go-food-delivery-backend-service/modules/food/service"
 	mediamodule "github.com/ntttrang/go-food-delivery-backend-service/modules/media"
+	ordermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/order"
 	paymentmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/payment"
 	restaurantmodule "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant"
 	usermodule "github.com/ntttrang/go-food-delivery-backend-service/modules/user"
@@ -70,6 +71,7 @@ var rootCmd = &cobra.Command{
 		restaurantmodule.SetupRestaurantModule(appCtx, v1)
 		cartmodule.SetupCartModule(appCtx, v1)
 		paymentmodule.SetupPaymentModule(appCtx, v1)
+		ordermodule.SetupOrderModule(appCtx, v1)
 
 		go func() {
 
@@ -108,7 +110,9 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	// Add command if have
-
+	setupConsumerCmd()
+	// Add command
+	rootCmd.AddCommand(consumerCmd)
 	// Start server
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal("failed to execute command", err)

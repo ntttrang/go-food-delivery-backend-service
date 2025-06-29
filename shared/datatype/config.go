@@ -11,13 +11,17 @@ type Config struct {
 	GoogleConfig  GoogleConfig
 	Minio         MinIoConfig // Same as Amazon S3
 	ElasticSearch ElasticSearchConfig
+	NatsURL       string
 
 	// URL for RPC
 	UserServiceURL       string
 	FoodServiceURL       string
 	RestaurantServiceURL string
-	GrpcCatServiceURL    string
-	GrpcFoodServiceURL   string
+	CartServiceURL       string
+	PaymentServiceURL    string
+
+	GrpcCatServiceURL  string
+	GrpcFoodServiceURL string
 }
 
 var config *Config
@@ -62,9 +66,12 @@ func NewConfig() *Config {
 				APIKey:    os.Getenv("ES_API_KEY"),
 				IndexName: os.Getenv("ES_INDEX_NAME"),
 			},
+			NatsURL:              os.Getenv("NATS_URL"),
 			UserServiceURL:       os.Getenv("USER_SERVICE_URL"),
 			FoodServiceURL:       os.Getenv("FOOD_SERVICE_URL"),
 			RestaurantServiceURL: os.Getenv("RESTAURANT_SERVICE_URL"),
+			CartServiceURL:       os.Getenv("CART_SERVICE_URL"),
+			PaymentServiceURL:    os.Getenv("PAYMENT_SERVICE_URL"),
 			GrpcCatServiceURL:    os.Getenv("GRPC_CAT_SERVICE_URL"),
 			GrpcFoodServiceURL:   os.Getenv("GRPC_FOOD_SERVICE_URL"),
 		}
