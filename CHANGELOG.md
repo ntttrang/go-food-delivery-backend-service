@@ -28,3 +28,7 @@
 
 ## 2025-06-27 v0.0.7
 - LCRUD card
+- 
+## 2025-06-29 v0.0.8
+- Implement Order flow
+- Event drivent (NATs) to send email
