@@ -45,3 +45,11 @@ const (
 	CartStatusUpdated   CartStatus = "UPDATED"   // When Frontend update quantity
 	CartStatusProcessed CartStatus = "PROCESSED" // Auto updated by Backend. All items go to Order
 )
+
+const (
+	EvtNotifyOrderCreate         = "order-create"
+	EvtNotifyOrderStateChange    = "order-state-change"
+	EvtNotifyOrderCancel         = "order-cancel"
+	EvtNotifyShipperAssign       = "order-shipper-assign"
+	EvtNotifyPaymentStatusChange = "order-payment-status-change"
+)
