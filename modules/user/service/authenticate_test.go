@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -40,6 +41,46 @@ func (m *mockTokenIssuer) ExpIn() int {
 	return 3600
 }
 
+// Mock device token repository
+type mockDeviceTokenRepo struct {
+	shouldFail bool
+}
+
+func (m *mockDeviceTokenRepo) Insert(ctx context.Context, deviceToken *usermodel.UserDeviceToken) error {
+	if m.shouldFail {
+		return errors.New("device token insert failed")
+	}
+	return nil
+}
+
+func (m *mockDeviceTokenRepo) FindByToken(ctx context.Context, token string) (*usermodel.UserDeviceToken, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockDeviceTokenRepo) RevokeByUserId(ctx context.Context, userId string) error {
+	return nil
+}
+
+func (m *mockDeviceTokenRepo) RevokeByToken(ctx context.Context, token string) error {
+	return nil
+}
+
+// Mock refresh token generator
+type mockRefreshTokenGenerator struct {
+	shouldFail bool
+}
+
+func (m *mockRefreshTokenGenerator) GenerateRefreshToken() (string, error) {
+	if m.shouldFail {
+		return "", errors.New("refresh token generation failed")
+	}
+	return "mock-refresh-token", nil
+}
+
+func (m *mockRefreshTokenGenerator) RefreshTokenExpiry() time.Duration {
+	return 30 * 24 * time.Hour // 30 days
+}
+
 func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 	// Setup test data with properly hashed passwords
 	userId := uuid.New()
@@ -73,12 +114,14 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		req             AuthenticateReq
-		mockRepo        *mockAuthRepo
-		mockTokenIssuer *mockTokenIssuer
-		wantErr         bool
-		wantToken       string
+		name                      string
+		req                       AuthenticateReq
+		mockRepo                  *mockAuthRepo
+		mockDeviceTokenRepo       *mockDeviceTokenRepo
+		mockTokenIssuer           *mockTokenIssuer
+		mockRefreshTokenGenerator *mockRefreshTokenGenerator
+		wantErr                   bool
+		wantToken                 string
 	}{
 		{
 			name: "successful authentication",
@@ -91,9 +134,11 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 					"test@example.com": activeUser,
 				},
 			},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         false,
-			wantToken:       "mock-jwt-token",
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   false,
+			wantToken:                 "mock-jwt-token",
 		},
 		{
 			name: "wrong password",
@@ -106,8 +151,10 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 					"test@example.com": activeUser,
 				},
 			},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "user not found",
@@ -118,8 +165,10 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 			mockRepo: &mockAuthRepo{
 				users: map[string]*usermodel.User{},
 			},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "deleted user",
@@ -132,8 +181,10 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 					"deleted@example.com": deletedUser,
 				},
 			},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "banned user",
@@ -146,8 +197,10 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 					"banned@example.com": bannedUser,
 				},
 			},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "token generation failure",
@@ -160,8 +213,10 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 					"test@example.com": activeUser,
 				},
 			},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: true},
-			wantErr:         true,
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: true},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "invalid email format",
@@ -169,9 +224,11 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 				Email:    "invalid-email",
 				Password: "password123",
 			},
-			mockRepo:        &mockAuthRepo{users: map[string]*usermodel.User{}},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockRepo:                  &mockAuthRepo{users: map[string]*usermodel.User{}},
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "short password",
@@ -179,9 +236,11 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "123",
 			},
-			mockRepo:        &mockAuthRepo{users: map[string]*usermodel.User{}},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockRepo:                  &mockAuthRepo{users: map[string]*usermodel.User{}},
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "empty email",
@@ -189,9 +248,11 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 				Email:    "",
 				Password: "password123",
 			},
-			mockRepo:        &mockAuthRepo{users: map[string]*usermodel.User{}},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockRepo:                  &mockAuthRepo{users: map[string]*usermodel.User{}},
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 		{
 			name: "empty password",
@@ -199,17 +260,19 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "",
 			},
-			mockRepo:        &mockAuthRepo{users: map[string]*usermodel.User{}},
-			mockTokenIssuer: &mockTokenIssuer{shouldFail: false},
-			wantErr:         true,
+			mockRepo:                  &mockAuthRepo{users: map[string]*usermodel.User{}},
+			mockDeviceTokenRepo:       &mockDeviceTokenRepo{shouldFail: false},
+			mockTokenIssuer:           &mockTokenIssuer{shouldFail: false},
+			mockRefreshTokenGenerator: &mockRefreshTokenGenerator{shouldFail: false},
+			wantErr:                   true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := NewAuthenticateCommandHandler(tt.mockRepo, tt.mockTokenIssuer)
+			handler := NewAuthenticateCommandHandler(tt.mockRepo, tt.mockDeviceTokenRepo, tt.mockTokenIssuer, tt.mockRefreshTokenGenerator)
 
-			result, err := handler.Execute(context.Background(), tt.req)
+			result, err := handler.Execute(context.Background(), tt.req, "Mozilla/5.0 (Test)")
 
 			if tt.wantErr {
 				if err == nil {
@@ -228,8 +291,8 @@ func TestAuthenticateCommandHandler_Execute(t *testing.T) {
 				return
 			}
 
-			if result.Token != tt.wantToken {
-				t.Errorf("AuthenticateCommandHandler.Execute() token = %v, want %v", result.Token, tt.wantToken)
+			if result.AccessToken != tt.wantToken {
+				t.Errorf("AuthenticateCommandHandler.Execute() token = %v, want %v", result.AccessToken, tt.wantToken)
 			}
 
 			if result.ExpIn != 3600 {

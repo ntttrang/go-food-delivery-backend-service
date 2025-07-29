@@ -2,6 +2,7 @@ package usermodule
 
 import (
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ntttrang/go-food-delivery-backend-service/middleware"
@@ -18,13 +19,17 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	// Setup Controller
 	// repo
 	userRepo := repo.NewUserRepo(dbCtx)
+	deviceTokenRepo := repo.NewUserDeviceTokenRepo(dbCtx)
 	userAddrRepo := repo.NewUserAddressRepo(dbCtx)
-	jwtComp := sharecomponent.NewJwtComp(os.Getenv("JWT_SECRET_KEY"), 3600*24*7)
+	jwtComp := sharecomponent.NewJwtComp(os.Getenv("JWT_SECRET_KEY"), 60*10)                 // 10 mins
+	refreshTokenGen := sharecomponent.NewRefreshTokenGenerator(3600 * 24 * 30 * time.Second) // 30 days
 	ggOAuth := sharecomponent.NewGoogleOauth(appCtx.GetConfig().GoogleConfig)
 	// service
 	registerCmdHdl := userService.NewRegisterUserCommandHandler(userRepo)
-	signUpGgCmdHdl := userService.NewSignUpGoogleCommandHandler(userRepo, jwtComp, ggOAuth)
-	authCmdHdl := userService.NewAuthenticateCommandHandler(userRepo, jwtComp)
+	signUpGgCmdHdl := userService.NewSignUpGoogleCommandHandler(userRepo, deviceTokenRepo, jwtComp, refreshTokenGen, ggOAuth)
+	authCmdHdl := userService.NewAuthenticateCommandHandler(userRepo, deviceTokenRepo, jwtComp, refreshTokenGen)
+	logoutCmdHdl := userService.NewLogoutCommandHandler(deviceTokenRepo)
+	refreshCmdHdl := userService.NewRefreshTokenCommandHandler(deviceTokenRepo, jwtComp, refreshTokenGen)
 	introspectCmdHdl := userService.NewIntrospectCommandHandler(jwtComp, userRepo)
 	introspectCmdHdlWrapper := userService.NewIntrospectCmdHdlWrapper(introspectCmdHdl)
 
@@ -43,7 +48,7 @@ func SetupUserModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 
 	// controller
 	userCtrl := userHttpgin.NewUserHttpController(
-		registerCmdHdl, signUpGgCmdHdl, authCmdHdl, introspectCmdHdl,
+		registerCmdHdl, signUpGgCmdHdl, authCmdHdl, logoutCmdHdl, refreshCmdHdl, introspectCmdHdl,
 		generateCode, verifyCode,
 		listQueryHdl, getDetailQueryHdl, createCmdHdl, updateCmdHdl,
 		userRepo, // user RPC

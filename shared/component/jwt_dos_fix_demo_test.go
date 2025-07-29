@@ -113,7 +113,7 @@ func TestJWTDoSVulnerabilityFixed(t *testing.T) {
 	t.Run("valid token should work correctly", func(t *testing.T) {
 		// Generate a valid token
 		expectedUserId := "test-user-123"
-		token, err := jwtComp.IssueToken(expectedUserId)
+		token, err := jwtComp.IssueToken(context.Background(), expectedUserId)
 		if err != nil {
 			t.Fatalf("Failed to generate token: %v", err)
 		}

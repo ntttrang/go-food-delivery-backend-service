@@ -14,7 +14,7 @@ type IRegisterUserCommandHandler interface {
 }
 
 type IAuthenticateCommandHandler interface {
-	Execute(ctx context.Context, req service.AuthenticateReq) (*service.AuthenticateRes, error)
+	Execute(ctx context.Context, req service.AuthenticateReq, userAgent string) (*service.AuthenticateRes, error)
 }
 type IntrospectCommandHandler interface {
 	Execute(ctx context.Context, req service.IntrospectReq) (*service.IntrospectRes, error)
@@ -49,6 +49,14 @@ type ISignUpGoogleCommandHandler interface {
 	AuthenticateByGoogle(ctx context.Context, state string, code string) (*service.AuthenticateRes, error)
 }
 
+type ILogoutCommandHandler interface {
+	Execute(ctx context.Context, refreshToken string) error
+}
+
+type IRefreshTokenCommandHandler interface {
+	Execute(ctx context.Context, refreshToken string) (*service.AuthenticateRes, error)
+}
+
 type IRepoRPCUser interface {
 	FindByIds(ctx context.Context, ids []uuid.UUID) ([]usermodel.User, error)
 }
@@ -65,6 +73,8 @@ type UserHttpController struct {
 	registerUserCmdHdl IRegisterUserCommandHandler
 	signUpGgCmdHdl     ISignUpGoogleCommandHandler
 	authCmdHdl         IAuthenticateCommandHandler
+	logoutCmdHdl       ILogoutCommandHandler
+	refreshCmdHdl      IRefreshTokenCommandHandler
 	introspectCmdHdl   IntrospectCommandHandler
 	generateCode       IGenerateCode
 	verifyCode         IVerifyCode
@@ -80,15 +90,29 @@ type UserHttpController struct {
 	createAddrCmdHdl ICreateAddrCommandHandler
 }
 
-func NewUserHttpController(registerUserCmdHdl IRegisterUserCommandHandler, signUpGgCmdHdl ISignUpGoogleCommandHandler, authCmdHdl IAuthenticateCommandHandler, introspectCmdHdl IntrospectCommandHandler,
-	generateCode IGenerateCode, verifyCode IVerifyCode,
-	listQueryHdl IListQueryHandler, getDetailQueryHdl IGetDetailQueryHandler, createCmdHdl ICreateCommandHandler, updateCmdHdl IUpdateCommandHandler,
+func NewUserHttpController(
+	registerUserCmdHdl IRegisterUserCommandHandler,
+	signUpGgCmdHdl ISignUpGoogleCommandHandler,
+	authCmdHdl IAuthenticateCommandHandler,
+	logoutCmdHdl ILogoutCommandHandler,
+	refreshCmdHdl IRefreshTokenCommandHandler,
+	introspectCmdHdl IntrospectCommandHandler,
+	generateCode IGenerateCode,
+	verifyCode IVerifyCode,
+	listQueryHdl IListQueryHandler,
+	getDetailQueryHdl IGetDetailQueryHandler,
+	createCmdHdl ICreateCommandHandler,
+	updateCmdHdl IUpdateCommandHandler,
 	rpcUser IRepoRPCUser,
-	listAddrQueryHdl IListAddrQueryHandler, createAddrCmdHdl ICreateAddrCommandHandler) *UserHttpController {
+	listAddrQueryHdl IListAddrQueryHandler,
+	createAddrCmdHdl ICreateAddrCommandHandler,
+) *UserHttpController {
 	return &UserHttpController{
 		registerUserCmdHdl: registerUserCmdHdl,
 		signUpGgCmdHdl:     signUpGgCmdHdl,
 		authCmdHdl:         authCmdHdl,
+		logoutCmdHdl:       logoutCmdHdl,
+		refreshCmdHdl:      refreshCmdHdl,
 		introspectCmdHdl:   introspectCmdHdl,
 		generateCode:       generateCode,
 		verifyCode:         verifyCode,
@@ -109,7 +133,9 @@ func (ctrl *UserHttpController) SetupRoutes(g *gin.RouterGroup, authMld gin.Hand
 	g.POST("/google/signup", ctrl.SignUpWithGoogleAPI)
 	g.GET("/google/callback", ctrl.CallbackAPI)
 
-	g.POST("/authenticate", ctrl.AuthenticateAPI) // Login
+	g.POST("/login", ctrl.AuthenticateAPI)
+	g.POST("/logout", ctrl.LogoutAPI)
+	g.POST("/refresh", ctrl.RefreshAPI)
 	g.GET("/profile", authMld, ctrl.GetProfileAPI)
 	g.POST("/rpc/users/introspect-token", ctrl.IntrospectTokenRpcAPI) // RPC
 	g.GET("/generate-code", authMld, ctrl.GenerateCodeAPI)

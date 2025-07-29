@@ -21,7 +21,7 @@ type mockAuthCommandHandler struct {
 	errorType  string
 }
 
-func (m *mockAuthCommandHandler) Execute(ctx context.Context, req service.AuthenticateReq) (*service.AuthenticateRes, error) {
+func (m *mockAuthCommandHandler) Execute(ctx context.Context, req service.AuthenticateReq, userAgent string) (*service.AuthenticateRes, error) {
 	if m.shouldFail {
 		switch m.errorType {
 		case "bad_request":
@@ -37,8 +37,9 @@ func (m *mockAuthCommandHandler) Execute(ctx context.Context, req service.Authen
 		}
 	}
 	return &service.AuthenticateRes{
-		Token: "test-token",
-		ExpIn: 3600,
+		AccessToken:  "test-token",
+		RefreshToken: "test-refresh-token",
+		ExpIn:        3600,
 	}, nil
 }
 
