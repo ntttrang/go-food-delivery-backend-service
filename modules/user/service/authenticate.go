@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	usermodel "github.com/ntttrang/go-food-delivery-backend-service/modules/user/model"
 	"github.com/ntttrang/go-food-delivery-backend-service/shared/datatype"
 	sharemodel "github.com/ntttrang/go-food-delivery-backend-service/shared/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Define DTOs & validate
@@ -84,6 +86,14 @@ func (hdl *AuthenticateCommandHandler) Execute(ctx context.Context, req Authenti
 		if user.Status == datatype.StatusDeleted || user.Status == datatype.StatusBanned {
 			return nil, datatype.ErrDeleted.WithError(usermodel.ErrUserDeletedOrBanned.Error())
 		}
+	}
+
+	// Verify password against stored hash
+	// Password is hashed using format: salt.password
+	saltPass := fmt.Sprintf("%s.%s", user.Salt, req.Password)
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(saltPass)); err != nil {
+		// Return the same error as user not found to prevent user enumeration
+		return nil, datatype.ErrNotFound.WithDebug("invalid credentials")
 	}
 
 	// JWT

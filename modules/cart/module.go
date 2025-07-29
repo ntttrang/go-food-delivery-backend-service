@@ -1,6 +1,8 @@
 package cartmodule
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	cartHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/controller/http-gin"
 	cartRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/cart/infras/repository/gorm-mysql"
@@ -21,7 +23,11 @@ func SetupCartModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	rpcRestaurantRepo := rpcclient.NewRestaurantRPCClient(appCtx.GetConfig().RestaurantServiceURL)
 
 	// GRPC
-	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
+	foodGrpcClient, err := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
+	if err != nil {
+		log.Printf("Warning: Failed to connect to Food gRPC service: %v. Food service functionality may be limited.", err)
+		foodGrpcClient = nil
+	}
 
 	// Setup command handlers
 	createCmdHdl := cartService.NewCreateCommandHandler(repo, foodGrpcClient)

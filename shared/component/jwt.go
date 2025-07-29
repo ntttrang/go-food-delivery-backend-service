@@ -2,7 +2,6 @@ package sharecomponent
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -53,7 +52,7 @@ func (j *JwtComp) Validate(tokenStr string) (string, error) {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		return "", errors.WithStack(err)
 	}
 
 	if !token.Valid {

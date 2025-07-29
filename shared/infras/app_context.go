@@ -2,6 +2,7 @@ package shareinfras
 
 import (
 	"context"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -58,7 +59,13 @@ func NewAppContext(db *gorm.DB) IAppContext {
 		}
 	}
 
-	natsComp := sharecomponent.NewNatsComp()
+	natsComp, err := sharecomponent.NewNatsComp()
+	if err != nil {
+		// Log the error but don't panic - allow the app to start without NATS
+		// This makes the system more resilient to NATS connectivity issues
+		log.Printf("Warning: Failed to connect to NATS: %v. Message broker functionality will be disabled.", err)
+		natsComp = nil
+	}
 
 	return &appContext{
 		mldProvider: provider,

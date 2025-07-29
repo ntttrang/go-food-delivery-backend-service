@@ -28,7 +28,7 @@ func (FoodUpdateReq) TableName() string {
 }
 
 func (c FoodUpdateReq) Validate() error {
-	if c.Status != nil && *c.Status != string(datatype.StatusDeleted) && *c.Status != string(datatype.StatusDeleted) && *c.Status != string(datatype.StatusInactive) {
+	if c.Status != nil && *c.Status != string(datatype.StatusActive) && *c.Status != string(datatype.StatusDeleted) && *c.Status != string(datatype.StatusInactive) {
 		return foodmodel.ErrFoodStatusInvalid
 	}
 	return nil

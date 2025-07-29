@@ -2,11 +2,11 @@ package grpcclient
 
 import (
 	"context"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/ntttrang/go-food-delivery-backend-service/gen/proto/category"
 	restaurantservice "github.com/ntttrang/go-food-delivery-backend-service/modules/restaurant/service"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -16,17 +16,17 @@ type CategoryGRPCClient struct {
 	client           category.CategoryClient
 }
 
-func NewCategoryGRPCClient(categoryGRPCServerURL string) *CategoryGRPCClient {
+func NewCategoryGRPCClient(categoryGRPCServerURL string) (*CategoryGRPCClient, error) {
 	conn, err := grpc.NewClient(
 		categoryGRPCServerURL,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.WithStack(err)
 	}
 
 	client := category.NewCategoryClient(conn)
-	return &CategoryGRPCClient{catGRPCServerURL: categoryGRPCServerURL, client: client}
+	return &CategoryGRPCClient{catGRPCServerURL: categoryGRPCServerURL, client: client}, nil
 }
 
 func (c *CategoryGRPCClient) FindByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]restaurantservice.CategoryDto, error) {

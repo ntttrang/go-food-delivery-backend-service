@@ -21,8 +21,17 @@ func SetupRestaurantModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	foodRPCClient := rpcclient.NewFoodRPCClient(appCtx.GetConfig().FoodServiceURL)
 	//catRPCClient := rpcclient.NewCategoryRPCClient(appCtx.GetConfig().CatServiceURL)
 	// GRPC
-	catGrpcClient := grpcclient.NewCategoryGRPCClient(appCtx.GetConfig().GrpcCatServiceURL)
-	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
+	catGrpcClient, err := grpcclient.NewCategoryGRPCClient(appCtx.GetConfig().GrpcCatServiceURL)
+	if err != nil {
+		log.Printf("Warning: Failed to connect to Category gRPC service: %v. Category service functionality may be limited.", err)
+		catGrpcClient = nil
+	}
+
+	foodGrpcClient, err := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
+	if err != nil {
+		log.Printf("Warning: Failed to connect to Food gRPC service: %v. Food service functionality may be limited.", err)
+		foodGrpcClient = nil
+	}
 
 	restaurantRepo := restaurantgormmysql.NewRestaurantRepo(dbCtx)
 	restaurantFoodRepo := restaurantgormmysql.NewRestaurantFoodRepo(dbCtx, *foodRPCClient)

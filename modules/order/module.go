@@ -1,6 +1,8 @@
 package ordermodule
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	orderHttpgin "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/controller/http-gin"
 	orderRepo "github.com/ntttrang/go-food-delivery-backend-service/modules/order/infras/repository/gorm-mysql"
@@ -26,7 +28,12 @@ func SetupOrderModule(appCtx shareinfras.IAppContext, g *gin.RouterGroup) {
 	emailSvc := shareComponent.NewEmailService(appCtx.GetConfig().EmailConfig)
 
 	// GRPC
-	foodGrpcClient := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
+	foodGrpcClient, err := grpcclient.NewFoodGRPCClient(appCtx.GetConfig().GrpcFoodServiceURL)
+	if err != nil {
+		log.Printf("Warning: Failed to connect to Food gRPC service: %v. Food service functionality may be limited.", err)
+		// Continue without the gRPC client - the system should handle nil gracefully
+		foodGrpcClient = nil
+	}
 
 	// Setup service
 	cartConversionService := orderService.NewCartToOrderConversionService(cartRpcClientRepo, foodGrpcClient, restaurantRpcClientRepo)

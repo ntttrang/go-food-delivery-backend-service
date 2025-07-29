@@ -16,16 +16,21 @@ type natsComp struct {
 	nc *nats.Conn
 }
 
-func NewNatsComp() *natsComp {
+func NewNatsComp() (*natsComp, error) {
 	nc, err := nats.Connect(datatype.GetConfig().NatsURL)
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.WithStack(err)
 	}
 
-	return &natsComp{nc: nc}
+	return &natsComp{nc: nc}, nil
 }
 
 func (c *natsComp) Publish(ctx context.Context, topic string, evt *datatype.AppEvent) error {
+	if c == nil || c.nc == nil {
+		log.Printf("Warning: NATS not available, skipping message publish to topic: %s", topic)
+		return nil // Gracefully handle missing NATS connection
+	}
+
 	_, dbSpanPlbNoti := otel.Tracer("").Start(ctx, "publish-msg")
 	defer dbSpanPlbNoti.End()
 

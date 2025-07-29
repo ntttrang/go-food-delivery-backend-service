@@ -6,6 +6,7 @@ import (
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/pkg/errors"
 )
 
 type s3Uploader struct {
@@ -24,7 +25,7 @@ func NewS3Uploader(apiKey, bucketName, domain, region, secretKey string, useSSL 
 		Secure: useSSL,
 	})
 	if err != nil {
-		log.Fatalln(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return &s3Uploader{
