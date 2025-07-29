@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -9,9 +8,13 @@ import (
 )
 
 func extractToken(authorizationStr string) (string, error) {
+	if authorizationStr == "" {
+		return "", datatype.ErrUnauthorized.WithError("authorization header is required")
+	}
+
 	token := strings.TrimPrefix(authorizationStr, "Bearer ")
-	if token == "" {
-		panic(errors.New("token is required"))
+	if token == "" || token == authorizationStr {
+		return "", datatype.ErrUnauthorized.WithError("bearer token is required")
 	}
 	return token, nil
 }
@@ -24,12 +27,21 @@ func Auth(tokenValidator ITokenValidator) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := extractToken(c.GetHeader("Authorization"))
 		if err != nil {
-			panic(err)
+			c.JSON(err.(interface{ StatusCode() int }).StatusCode(), err)
+			c.Abort()
+			return
 		}
 
 		requester, err := tokenValidator.Validate(token)
 		if err != nil {
-			panic(err)
+			// Handle token validation errors
+			if appErr, ok := err.(interface{ StatusCode() int }); ok {
+				c.JSON(appErr.StatusCode(), appErr)
+			} else {
+				c.JSON(datatype.ErrUnauthorized.StatusCode(), datatype.ErrUnauthorized.WithError(err.Error()))
+			}
+			c.Abort()
+			return
 		}
 
 		c.Set(datatype.KeyRequester, requester)

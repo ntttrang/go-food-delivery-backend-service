@@ -13,7 +13,8 @@ func (ctrl *OrderHttpController) CreateOrderAPI(c *gin.Context) {
 	var req service.OrderCreateDto
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		panic(datatype.ErrBadRequest.WithError(err.Error()))
+		c.JSON(http.StatusBadRequest, datatype.ErrBadRequest.WithError(err.Error()))
+		return
 	}
 
 	// Get user ID and role from requester context
@@ -21,7 +22,8 @@ func (ctrl *OrderHttpController) CreateOrderAPI(c *gin.Context) {
 
 	// Check if user has ADMIN role - only ADMIN can use this API
 	if requester.GetRole() != string(datatype.RoleAdmin) {
-		panic(datatype.ErrForbidden.WithError("only administrators can create orders manually"))
+		c.JSON(http.StatusForbidden, datatype.ErrForbidden.WithError("only administrators can create orders manually"))
+		return
 	}
 
 	req.UserID = requester.Subject().String()
@@ -29,7 +31,13 @@ func (ctrl *OrderHttpController) CreateOrderAPI(c *gin.Context) {
 	// Call business logic in service
 	orderId, err := ctrl.createCmdHdl.Execute(c.Request.Context(), &req)
 	if err != nil {
-		panic(err)
+		// Handle application errors with proper status codes
+		if appErr, ok := err.(interface{ StatusCode() int }); ok {
+			c.JSON(appErr.StatusCode(), appErr)
+		} else {
+			c.JSON(http.StatusInternalServerError, datatype.ErrInternalServerError.WithDebug(err.Error()))
+		}
+		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
